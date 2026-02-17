@@ -6,7 +6,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Spotlight } from "@/components/ui/spotlight";
 import { DotPattern } from "@/components/ui/dot-pattern";
-import { RetroGrid } from "@/components/ui/retro-grid";
+import { EtherealShadows } from "@/components/ui/ethereal-shadows";
 import { Button } from "@/components/ui/button";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { SparklesText } from "@/components/ui/sparkles-text";
@@ -25,38 +25,18 @@ export function Hero() {
         className="opacity-30 dark:opacity-20 [mask-image:radial-gradient(ellipse_at_center,white_30%,transparent_70%)]"
       />
 
-      {/* Layer 2: Retro grid at the bottom for depth */}
-      <div className="absolute inset-0 overflow-hidden">
-        <RetroGrid
-          angle={65}
-          cellSize={60}
-          opacity={0.3}
-          lightLineColor="oklch(0.511 0.262 276.966 / 0.3)"
-          darkLineColor="oklch(0.623 0.262 276.966 / 0.2)"
-        />
-      </div>
+      {/* Layer 2: Ethereal shadow blobs */}
+      <EtherealShadows
+        blur={140}
+        opacity={0.4}
+        speed={0.8}
+      />
 
       {/* Layer 3: Spotlight effects */}
       <Spotlight className="absolute -top-40 left-0 md:-top-20 md:left-60" />
 
       {/* Layer 4: Radial gradient overlay */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/15 via-background/80 to-background" />
-
-      {/* Layer 5: Grain texture */}
-      <div className="pointer-events-none absolute inset-0 z-10 opacity-[0.015] dark:opacity-[0.03]">
-        <svg className="h-full w-full">
-          <filter id="hero-grain">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.80"
-              numOctaves="4"
-              stitchTiles="stitch"
-            />
-            <feColorMatrix type="saturate" values="0" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#hero-grain)" />
-        </svg>
-      </div>
 
       {/* Content */}
       <div className="relative z-20 mx-auto max-w-5xl text-center">

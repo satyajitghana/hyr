@@ -3,39 +3,26 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
-import { RetroGrid } from "@/components/ui/retro-grid";
+import { EtherealShadows } from "@/components/ui/ethereal-shadows";
 import { BlurFade } from "@/components/ui/blur-fade";
 
 export function CTA() {
   return (
     <section className="relative overflow-hidden px-4 py-24 md:py-32">
-      {/* Retro grid background */}
-      <RetroGrid
-        angle={65}
-        cellSize={50}
-        opacity={0.25}
-        lightLineColor="oklch(0.511 0.262 276.966 / 0.4)"
-        darkLineColor="oklch(0.623 0.262 276.966 / 0.25)"
+      {/* Ethereal shadow blobs */}
+      <EtherealShadows
+        colors={{
+          primary: "oklch(0.511 0.262 276.966)",
+          secondary: "oklch(0.623 0.180 300)",
+          accent: "oklch(0.55 0.20 260)",
+        }}
+        blur={100}
+        opacity={0.3}
+        speed={0.6}
       />
 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-primary/10 via-background/80 to-background" />
-
-      {/* Grain */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.04]">
-        <svg className="h-full w-full">
-          <filter id="cta-grain">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.80"
-              numOctaves="4"
-              stitchTiles="stitch"
-            />
-            <feColorMatrix type="saturate" values="0" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#cta-grain)" />
-        </svg>
-      </div>
 
       <div className="relative z-10">
         <BlurFade inView>
