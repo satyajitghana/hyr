@@ -26,7 +26,8 @@ import {
 } from "@/components/animate-ui/components/radix/dropdown-menu";
 import { Logo } from "@/components/shared/logo";
 import { useJobStore } from "@/lib/store/job-store";
-import { ChevronsUpDown, User, Settings, ArrowLeft, LogOut } from "lucide-react";
+import { ChevronsUpDown, User, Settings, ArrowLeft, LogOut, Sparkles } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import { HouseIcon } from "@/components/ui/house-icon";
@@ -48,11 +49,12 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const isMobile = useIsMobile();
   const applicationCount = useJobStore((s) => s.applications.length);
   const collapsed = state === "collapsed";
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar collapsible="icon">
       <SidebarHeader className="px-3 py-3 transition-[padding] duration-300 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
         <Logo showText={!collapsed} size="sm" href="/app" />
       </SidebarHeader>
@@ -109,12 +111,12 @@ export function AppSidebar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                side={collapsed ? "right" : "top"}
+                side={isMobile ? "bottom" : "right"}
                 align="end"
                 sideOffset={4}
               >
                 <DropdownMenuLabel className="p-0 font-normal">
-                  <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
                       <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
                         AJ
@@ -128,22 +130,27 @@ export function AppSidebar() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem disabled>
-                  <User className="mr-2 h-4 w-4" />
+                  <Sparkles />
+                  Upgrade to Pro
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>
+                  <User />
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem disabled>
-                  <Settings className="mr-2 h-4 w-4" />
+                  <Settings />
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <Link href="/">
                   <DropdownMenuItem>
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    <ArrowLeft />
                     Back to Site
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuItem disabled>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut />
                   Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
