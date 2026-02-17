@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Wand2,
@@ -10,39 +11,68 @@ import {
   Loader2,
   FileText,
   Sparkles,
+  Link2,
+  MessageSquare,
+  Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { useResumeStore } from "@/lib/store/resume-store";
-import { TailoredResume, TailoredChange } from "@/lib/resume/types";
+import { TailoredResume, TailoredChange, Resume } from "@/lib/resume/types";
 import { MockAIProvider } from "@/lib/ai/mock-provider";
 
 type Step = "input" | "processing" | "result";
 
 const processingSteps = [
   "Analyzing job requirements...",
-  "Matching keywords and skills...",
-  "Rewriting resume sections...",
+  "Extracting key skills and keywords...",
+  "Matching resume to job description...",
+  "Rewriting summary section...",
+  "Optimizing experience bullets...",
+  "Adding relevant skills...",
   "Finalizing tailored resume...",
 ];
 
+const aiSuggestions = [
+  "Make it more concise",
+  "Add more metrics",
+  "Emphasize leadership",
+  "Tone down technical jargon",
+];
+
 export default function TailorPage() {
-  const resumes = useResumeStore((s) => s.resumes);
+  const router = useRouter();
+  const { resumes, addResume } = useResumeStore();
   const [selectedId, setSelectedId] = useState<string>("");
   const [jobDescription, setJobDescription] = useState("");
+  const [jobUrl, setJobUrl] = useState("");
+  const [inputTab, setInputTab] = useState("description");
   const [step, setStep] = useState<Step>("input");
   const [processingStep, setProcessingStep] = useState(0);
   const [result, setResult] = useState<TailoredResume | null>(null);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isRefining, setIsRefining] = useState(false);
+  const [fetchingUrl, setFetchingUrl] = useState(false);
+
+  const selectedResume = resumes.find((r) => r.id === selectedId);
+  const progressPercent = Math.round(((processingStep + 1) / processingSteps.length) * 100);
+
+  const handleFetchUrl = async () => {
+    if (!jobUrl.trim()) return;
+    setFetchingUrl(true);
+    await new Promise((r) => setTimeout(r, 1200));
+    setJobDescription(
+      `Senior Software Engineer\nTech Company\n\nWe are looking for an experienced engineer to join our team. You will work on building scalable web applications using React, TypeScript, and Node.js. Experience with cloud services (AWS/GCP), CI/CD pipelines, and agile methodologies is required.\n\nRequirements:\n- 5+ years of software engineering experience\n- Strong proficiency in React, TypeScript, and Node.js\n- Experience with cloud infrastructure and DevOps\n- Excellent communication and collaboration skills`
+    );
+    setFetchingUrl(false);
+    setInputTab("description");
+  };
 
   const handleTailor = async () => {
     const resume = resumes.find((r) => r.id === selectedId);
@@ -51,18 +81,18 @@ export default function TailorPage() {
     setStep("processing");
     setProcessingStep(0);
 
-    // Animate through processing steps
     for (let i = 0; i < processingSteps.length; i++) {
-      await new Promise((r) => setTimeout(r, 600));
+      await new Promise((r) => setTimeout(r, 500));
       setProcessingStep(i);
     }
 
     const provider = new MockAIProvider();
+    const details = await provider.extractJobDetails(jobDescription);
     const tailored = await provider.tailorResume(
       resume,
       jobDescription,
-      "Software Engineer",
-      "Company"
+      details.title,
+      details.company
     );
 
     setResult(tailored);
@@ -77,6 +107,32 @@ export default function TailorPage() {
         c.id === changeId ? { ...c, accepted: !c.accepted } : c
       ),
     });
+  };
+
+  const handleRefine = async (prompt: string) => {
+    if (!result || isRefining) return;
+    setIsRefining(true);
+    const provider = new MockAIProvider();
+    const refined = await provider.refineChanges(prompt, result.changes);
+    setResult({ ...result, changes: refined });
+    setIsRefining(false);
+    setAiPrompt("");
+  };
+
+  const handleAcceptAndSave = () => {
+    if (!result || !selectedResume) return;
+
+    const acceptedChanges = result.changes.filter((c) => c.accepted);
+    const newResume: Resume = {
+      ...result.resume,
+      id: `resume-${Date.now()}`,
+      name: `${selectedResume.name} — Tailored for ${result.jobTitle}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    addResume(newResume);
+    router.push(`/app/resume/${newResume.id}`);
   };
 
   const changeTypeConfig: Record<
@@ -111,49 +167,110 @@ export default function TailorPage() {
             exit={{ opacity: 0, y: -10 }}
             className="space-y-6"
           >
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-display text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Select Resume
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Select value={selectedId} onValueChange={setSelectedId}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choose a resume..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {resumes.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name} — {r.contact.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-display text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  Job Description
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder="Paste the full job description here..."
-                  rows={10}
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                  className="resize-none"
-                />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Tip: Include the full job listing for best results.
+            {/* Resume Selector */}
+            <div>
+              <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Select Resume
+              </h3>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {resumes.map((resume) => {
+                  const isSelected = selectedId === resume.id;
+                  return (
+                    <Card
+                      key={resume.id}
+                      className={`cursor-pointer transition-all hover:shadow-md ${
+                        isSelected
+                          ? "border-primary ring-2 ring-primary/20"
+                          : "hover:border-primary/20"
+                      }`}
+                      onClick={() => setSelectedId(isSelected ? "" : resume.id)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="rounded-lg bg-primary/10 p-2">
+                              <FileText className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold">{resume.name}</p>
+                              <p className="text-xs text-muted-foreground">{resume.contact.name}</p>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                          )}
+                        </div>
+                        <div className="mt-3 flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {resume.skills.length} skills
+                          </Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Updated {new Date(resume.updatedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+              {resumes.length === 0 && (
+                <p className="text-sm text-muted-foreground py-4">
+                  No resumes yet. Upload one first.
                 </p>
-              </CardContent>
-            </Card>
+              )}
+            </div>
+
+            {/* Job Input */}
+            <div>
+              <h3 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Job Description
+              </h3>
+              <Tabs value={inputTab} onValueChange={setInputTab}>
+                <TabsList>
+                  <TabsTrigger value="description">Paste Description</TabsTrigger>
+                  <TabsTrigger value="url">Paste Job Link</TabsTrigger>
+                </TabsList>
+                <TabsContent value="description" className="mt-4">
+                  <Textarea
+                    placeholder="Paste the full job description here..."
+                    rows={8}
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    className="resize-none"
+                  />
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Tip: Include the full job listing for best results.
+                  </p>
+                </TabsContent>
+                <TabsContent value="url" className="mt-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="https://jobs.company.com/role/12345"
+                      value={jobUrl}
+                      onChange={(e) => setJobUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleFetchUrl}
+                      disabled={!jobUrl.trim() || fetchingUrl}
+                      className="gap-2"
+                    >
+                      {fetchingUrl ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Link2 className="h-4 w-4" />
+                      )}
+                      Fetch
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    We&apos;ll extract the job description from the URL.
+                  </p>
+                </TabsContent>
+              </Tabs>
+            </div>
 
             <div className="flex justify-end">
               <ShimmerButton
@@ -177,34 +294,44 @@ export default function TailorPage() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="flex flex-col items-center justify-center py-20"
+            className="flex flex-col items-center justify-center py-16"
           >
-            <Loader2 className="mb-6 h-12 w-12 animate-spin text-primary" />
-            <div className="space-y-3 text-center">
-              {processingSteps.map((s, idx) => (
-                <motion.p
-                  key={s}
-                  initial={{ opacity: 0.3 }}
-                  animate={{
-                    opacity: idx <= processingStep ? 1 : 0.3,
-                  }}
-                  className={`text-sm ${
-                    idx === processingStep
-                      ? "font-semibold text-foreground"
-                      : idx < processingStep
-                      ? "text-muted-foreground line-through"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {idx < processingStep && (
-                    <CheckCircle2 className="mr-1 inline h-4 w-4 text-green-500" />
-                  )}
-                  {idx === processingStep && (
-                    <Loader2 className="mr-1 inline h-4 w-4 animate-spin text-primary" />
-                  )}
-                  {s}
-                </motion.p>
-              ))}
+            <div className="w-full max-w-md space-y-6">
+              <Progress value={progressPercent} className="h-2" />
+              <div className="text-center">
+                {selectedResume && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Tailoring <span className="font-medium text-foreground">{selectedResume.name}</span>
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2.5">
+                {processingSteps.map((s, idx) => (
+                  <motion.div
+                    key={s}
+                    initial={{ opacity: 0.3 }}
+                    animate={{
+                      opacity: idx <= processingStep ? 1 : 0.3,
+                    }}
+                    className={`flex items-center gap-2 text-sm ${
+                      idx === processingStep
+                        ? "font-semibold text-foreground"
+                        : idx < processingStep
+                        ? "text-muted-foreground"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {idx < processingStep ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                    ) : idx === processingStep ? (
+                      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                    ) : (
+                      <div className="h-4 w-4 shrink-0 rounded-full border border-muted-foreground/30" />
+                    )}
+                    {s}
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
@@ -226,7 +353,8 @@ export default function TailorPage() {
                     </span>
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {result.changes.length} changes suggested
+                    {result.changes.filter((c) => c.accepted).length} of{" "}
+                    {result.changes.length} changes accepted
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -239,7 +367,7 @@ export default function TailorPage() {
                   >
                     Start Over
                   </Button>
-                  <Button className="gap-2">
+                  <Button className="gap-2" onClick={handleAcceptAndSave}>
                     <CheckCircle2 className="h-4 w-4" />
                     Accept & Save
                   </Button>
@@ -304,6 +432,56 @@ export default function TailorPage() {
                 );
               })}
             </div>
+
+            {/* AI Chat */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-display text-lg flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  Ask AI to Refine
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {aiSuggestions.map((suggestion) => (
+                    <Button
+                      key={suggestion}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => handleRefine(suggestion)}
+                      disabled={isRefining}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ask AI to make changes..."
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && aiPrompt.trim()) {
+                        handleRefine(aiPrompt);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={() => handleRefine(aiPrompt)}
+                    disabled={!aiPrompt.trim() || isRefining}
+                    size="icon"
+                  >
+                    {isRefining ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
       </AnimatePresence>

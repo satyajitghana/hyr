@@ -4,12 +4,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
   SiGoogle,
-  SiMeta,
   SiStripe,
-  SiOpenai,
   SiApple,
-  SiNetflix,
-  SiAmazon,
+  SiNike,
+  SiFlipkart,
+  SiSalesforce,
 } from "react-icons/si";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { FlipWords } from "@/components/ui/flip-words";
@@ -24,12 +23,11 @@ import { SparklesIcon } from "@/components/ui/sparkles";
 
 const COMPANIES = [
   { name: "Google", icon: SiGoogle, color: "#4285F4" },
-  { name: "Meta", icon: SiMeta, color: "#0082FB" },
   { name: "Stripe", icon: SiStripe, color: "#635BFF" },
-  { name: "OpenAI", icon: SiOpenai, color: "#FFFFFF" },
   { name: "Apple", icon: SiApple, color: "#A2AAAD" },
-  { name: "Netflix", icon: SiNetflix, color: "#E50914" },
-  { name: "Amazon", icon: SiAmazon, color: "#FF9900" },
+  { name: "Nike", icon: SiNike, color: "#FF6B00" },
+  { name: "Salesforce", icon: SiSalesforce, color: "#00A1E0" },
+  { name: "Flipkart", icon: SiFlipkart, color: "#F7D03E" },
 ];
 
 const COMPANY_NAMES = COMPANIES.map((c) => c.name);
@@ -94,8 +92,9 @@ export function Hero() {
 
         <BlurFade delay={0.3} inView>
           <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            Upload your resume, paste any job description, and let AI tailor your
-            resume perfectly. Beat ATS systems. Auto-apply to dream jobs.
+            Whether you&apos;re in tech, finance, healthcare, or marketing — upload
+            your resume, paste any job description, and let AI tailor it
+            perfectly. Beat ATS systems. Auto-apply to dream jobs.
           </p>
         </BlurFade>
 

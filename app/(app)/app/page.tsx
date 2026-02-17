@@ -7,12 +7,12 @@ import {
   Wand2,
   Briefcase,
   ClipboardList,
-  ArrowRight,
   Upload,
   TrendingUp,
+  Zap,
+  Send,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { useJobStore } from "@/lib/store/job-store";
@@ -20,31 +20,45 @@ import { useJobStore } from "@/lib/store/job-store";
 const quickActions = [
   {
     title: "Upload Resume",
-    description: "Add a new resume to your collection",
     icon: Upload,
     href: "/app/resume",
     color: "text-blue-500",
+    bg: "bg-blue-500/10",
   },
   {
     title: "Tailor Resume",
-    description: "Customize for a specific job",
     icon: Wand2,
     href: "/app/tailor",
     color: "text-purple-500",
+    bg: "bg-purple-500/10",
   },
   {
     title: "Browse Jobs",
-    description: "Find your next opportunity",
     icon: Briefcase,
     href: "/app/jobs",
     color: "text-green-500",
+    bg: "bg-green-500/10",
   },
   {
-    title: "Track Applications",
-    description: "Monitor your progress",
+    title: "Applications",
     icon: ClipboardList,
     href: "/app/applications",
     color: "text-amber-500",
+    bg: "bg-amber-500/10",
+  },
+  {
+    title: "Easy Apply",
+    icon: Send,
+    href: "/app/jobs",
+    color: "text-cyan-500",
+    bg: "bg-cyan-500/10",
+  },
+  {
+    title: "Beast Mode",
+    icon: Zap,
+    href: "/app/beast-mode",
+    color: "text-rose-500",
+    bg: "bg-rose-500/10",
   },
 ];
 
@@ -126,29 +140,23 @@ export default function DashboardPage() {
         <h2 className="mb-4 font-display text-xl font-semibold">
           Quick Actions
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-wrap gap-3">
           {quickActions.map((action, idx) => (
             <motion.div
               key={action.title}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 + idx * 0.05 }}
+              transition={{ duration: 0.3, delay: 0.2 + idx * 0.04 }}
             >
               <Link href={action.href}>
-                <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/20">
-                  <CardContent className="flex flex-col gap-3 p-5">
-                    <action.icon className={`h-8 w-8 ${action.color}`} />
-                    <div>
-                      <h3 className="font-semibold group-hover:text-primary transition-colors">
-                        {action.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {action.description}
-                      </p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                  </CardContent>
-                </Card>
+                <div className="group flex flex-col items-center gap-2 rounded-xl border bg-card p-4 transition-all hover:shadow-md hover:border-primary/20 hover:scale-105 w-[110px]">
+                  <div className={`rounded-lg p-2.5 ${action.bg} transition-transform group-hover:scale-110`}>
+                    <action.icon className={`h-5 w-5 ${action.color}`} />
+                  </div>
+                  <span className="text-xs font-medium text-center group-hover:text-primary transition-colors">
+                    {action.title}
+                  </span>
+                </div>
               </Link>
             </motion.div>
           ))}

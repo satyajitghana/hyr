@@ -1,6 +1,7 @@
 import { Job } from "./types";
 
 export const MOCK_JOBS: Job[] = [
+  // ─── ENGINEERING ──────────────────────────────────────────────────
   {
     id: "1",
     title: "Senior Frontend Engineer",
@@ -8,6 +9,7 @@ export const MOCK_JOBS: Job[] = [
     location: "Mountain View, CA",
     type: "hybrid",
     level: "senior",
+    category: "engineering",
     salaryMin: 180000,
     salaryMax: 280000,
     description:
@@ -26,6 +28,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["React", "TypeScript", "Performance", "Search"],
     postedDate: "2026-02-10",
+    coordinates: { lat: 37.422, lng: -122.084 },
   },
   {
     id: "2",
@@ -34,6 +37,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "remote",
     level: "mid",
+    category: "engineering",
     salaryMin: 150000,
     salaryMax: 220000,
     description:
@@ -60,6 +64,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "onsite",
     level: "senior",
+    category: "engineering",
     salaryMin: 200000,
     salaryMax: 350000,
     description:
@@ -78,6 +83,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["Python", "ML", "AI", "LLMs"],
     postedDate: "2026-02-08",
+    coordinates: { lat: 37.7749, lng: -122.4194 },
   },
   {
     id: "4",
@@ -86,6 +92,7 @@ export const MOCK_JOBS: Job[] = [
     location: "New York, NY",
     type: "hybrid",
     level: "mid",
+    category: "design",
     salaryMin: 140000,
     salaryMax: 200000,
     description:
@@ -104,6 +111,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["Design", "UX", "UI", "Figma"],
     postedDate: "2026-02-14",
+    coordinates: { lat: 40.7128, lng: -74.006 },
   },
   {
     id: "5",
@@ -112,6 +120,7 @@ export const MOCK_JOBS: Job[] = [
     location: "Menlo Park, CA",
     type: "hybrid",
     level: "senior",
+    category: "engineering",
     salaryMin: 190000,
     salaryMax: 300000,
     description:
@@ -130,6 +139,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["Backend", "Distributed Systems", "C++", "Scale"],
     postedDate: "2026-02-11",
+    coordinates: { lat: 37.4529, lng: -122.1817 },
   },
   {
     id: "6",
@@ -138,6 +148,7 @@ export const MOCK_JOBS: Job[] = [
     location: "Los Gatos, CA",
     type: "remote",
     level: "senior",
+    category: "engineering",
     salaryMin: 170000,
     salaryMax: 290000,
     description:
@@ -164,6 +175,7 @@ export const MOCK_JOBS: Job[] = [
     location: "Cupertino, CA",
     type: "onsite",
     level: "mid",
+    category: "engineering",
     salaryMin: 160000,
     salaryMax: 250000,
     description:
@@ -182,6 +194,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["iOS", "Swift", "SwiftUI", "Mobile"],
     postedDate: "2026-02-13",
+    coordinates: { lat: 37.335, lng: -122.009 },
   },
   {
     id: "8",
@@ -190,6 +203,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "hybrid",
     level: "mid",
+    category: "data",
     salaryMin: 145000,
     salaryMax: 220000,
     description:
@@ -208,6 +222,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["Data Science", "Python", "ML", "Analytics"],
     postedDate: "2026-02-07",
+    coordinates: { lat: 37.7749, lng: -122.4194 },
   },
   {
     id: "9",
@@ -216,6 +231,7 @@ export const MOCK_JOBS: Job[] = [
     location: "Austin, TX",
     type: "remote",
     level: "senior",
+    category: "engineering",
     salaryMin: 165000,
     salaryMax: 245000,
     description:
@@ -242,6 +258,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "remote",
     level: "junior",
+    category: "engineering",
     salaryMin: 100000,
     salaryMax: 150000,
     description:
@@ -268,6 +285,7 @@ export const MOCK_JOBS: Job[] = [
     location: "Toronto, ON",
     type: "remote",
     level: "lead",
+    category: "engineering",
     salaryMin: 180000,
     salaryMax: 260000,
     description:
@@ -286,6 +304,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["Management", "E-commerce", "Leadership", "Platform"],
     postedDate: "2026-02-05",
+    coordinates: { lat: 43.6532, lng: -79.3832 },
   },
   {
     id: "12",
@@ -294,6 +313,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "hybrid",
     level: "mid",
+    category: "engineering",
     salaryMin: 140000,
     salaryMax: 210000,
     description:
@@ -312,6 +332,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["React Native", "Mobile", "TypeScript", "Real-time"],
     postedDate: "2026-02-14",
+    coordinates: { lat: 37.7749, lng: -122.4194 },
   },
   {
     id: "13",
@@ -320,6 +341,7 @@ export const MOCK_JOBS: Job[] = [
     location: "New York, NY",
     type: "hybrid",
     level: "senior",
+    category: "engineering",
     salaryMin: 175000,
     salaryMax: 270000,
     description:
@@ -338,6 +360,7 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["Go", "Platform", "Observability", "Distributed"],
     postedDate: "2026-02-10",
+    coordinates: { lat: 40.7128, lng: -74.006 },
   },
   {
     id: "14",
@@ -346,6 +369,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "remote",
     level: "mid",
+    category: "engineering",
     salaryMin: 140000,
     salaryMax: 200000,
     description:
@@ -372,6 +396,7 @@ export const MOCK_JOBS: Job[] = [
     location: "San Francisco, CA",
     type: "hybrid",
     level: "senior",
+    category: "engineering",
     salaryMin: 220000,
     salaryMax: 380000,
     description:
@@ -390,5 +415,616 @@ export const MOCK_JOBS: Job[] = [
     ],
     tags: ["ML", "Python", "AI Safety", "LLMs"],
     postedDate: "2026-02-11",
+    coordinates: { lat: 37.7749, lng: -122.4194 },
+  },
+
+  // ─── HEALTHCARE ───────────────────────────────────────────────────
+  {
+    id: "16",
+    title: "Registered Nurse",
+    company: "Kaiser Permanente",
+    location: "Oakland, CA",
+    type: "onsite",
+    level: "mid",
+    category: "healthcare",
+    salaryMin: 75000,
+    salaryMax: 95000,
+    description:
+      "Provide compassionate patient care at one of the nation's leading healthcare organizations. Work with a multidisciplinary team to deliver evidence-based nursing in a supportive environment that values professional growth.",
+    requirements: [
+      "Active RN license in California",
+      "2+ years of clinical nursing experience",
+      "BLS and ACLS certifications",
+      "BSN preferred",
+    ],
+    benefits: [
+      "Comprehensive medical and dental",
+      "Pension plan",
+      "Tuition reimbursement",
+      "Union representation",
+    ],
+    tags: ["Nursing", "Patient Care", "HIPAA", "Clinical"],
+    postedDate: "2026-02-12",
+    coordinates: { lat: 37.8044, lng: -122.2712 },
+  },
+  {
+    id: "17",
+    title: "Clinical Research Coordinator",
+    company: "Mayo Clinic",
+    location: "Rochester, MN",
+    type: "onsite",
+    level: "junior",
+    category: "healthcare",
+    salaryMin: 55000,
+    salaryMax: 75000,
+    description:
+      "Coordinate clinical trials that advance medical science. Manage participant recruitment, data collection, and regulatory compliance for cutting-edge research studies at the world-renowned Mayo Clinic.",
+    requirements: [
+      "Bachelor's degree in health sciences or related field",
+      "1+ year clinical research experience preferred",
+      "Knowledge of FDA regulations and Good Clinical Practice",
+      "Strong organizational and communication skills",
+    ],
+    benefits: [
+      "World-class research environment",
+      "Comprehensive benefits package",
+      "Continuing education support",
+      "Relocation assistance",
+    ],
+    tags: ["Clinical Trials", "Research", "FDA", "Healthcare"],
+    postedDate: "2026-02-09",
+    coordinates: { lat: 44.0121, lng: -92.4802 },
+  },
+
+  // ─── FINANCE ──────────────────────────────────────────────────────
+  {
+    id: "18",
+    title: "Financial Analyst",
+    company: "Goldman Sachs",
+    location: "New York, NY",
+    type: "onsite",
+    level: "mid",
+    category: "finance",
+    salaryMin: 100000,
+    salaryMax: 150000,
+    description:
+      "Join the Investment Banking Division to analyze financial data, build complex models, and advise Fortune 500 clients on M&A and capital markets transactions. Work alongside industry leaders in global finance.",
+    requirements: [
+      "2-4 years of financial analysis experience",
+      "Expert-level Excel and financial modeling skills",
+      "Understanding of GAAP and financial statements",
+      "CFA Level I or II preferred",
+    ],
+    benefits: [
+      "Industry-leading compensation",
+      "Annual performance bonus",
+      "Health and wellness stipend",
+      "Professional development programs",
+    ],
+    tags: ["Financial Modeling", "Excel", "M&A", "Banking"],
+    postedDate: "2026-02-11",
+    coordinates: { lat: 40.7128, lng: -74.006 },
+  },
+  {
+    id: "19",
+    title: "Accounting Manager",
+    company: "Deloitte",
+    location: "Chicago, IL",
+    type: "hybrid",
+    level: "senior",
+    category: "finance",
+    salaryMin: 95000,
+    salaryMax: 135000,
+    description:
+      "Lead audit engagements for major corporate clients. Manage teams of 5-10 associates, ensure compliance with GAAP and IFRS standards, and build lasting client relationships at one of the Big Four.",
+    requirements: [
+      "5+ years of public accounting experience",
+      "CPA certification required",
+      "Experience managing audit teams",
+      "Strong knowledge of GAAP, IFRS, and SOX compliance",
+    ],
+    benefits: [
+      "Partnership track",
+      "Generous PTO and sabbatical",
+      "CPA exam reimbursement",
+      "Global mobility opportunities",
+    ],
+    tags: ["Accounting", "GAAP", "Audit", "CPA"],
+    postedDate: "2026-02-08",
+    coordinates: { lat: 41.8781, lng: -87.6298 },
+  },
+
+  // ─── MARKETING ────────────────────────────────────────────────────
+  {
+    id: "20",
+    title: "Brand Marketing Manager",
+    company: "Nike",
+    location: "Portland, OR",
+    type: "hybrid",
+    level: "senior",
+    category: "marketing",
+    salaryMin: 110000,
+    salaryMax: 160000,
+    description:
+      "Shape the storytelling for one of the world's most iconic brands. Lead integrated marketing campaigns across digital and traditional channels, driving brand awareness and consumer engagement for Nike's global audience.",
+    requirements: [
+      "5+ years of brand marketing experience",
+      "Track record of successful integrated campaigns",
+      "Experience with consumer insights and market research",
+      "Strong creative brief writing skills",
+    ],
+    benefits: [
+      "Product discounts and samples",
+      "On-campus fitness center",
+      "Generous parental leave",
+      "Stock purchase program",
+    ],
+    tags: ["Brand Strategy", "Campaigns", "Consumer Insights", "Storytelling"],
+    postedDate: "2026-02-10",
+    coordinates: { lat: 45.5152, lng: -122.6784 },
+  },
+  {
+    id: "21",
+    title: "Content Strategist",
+    company: "HubSpot",
+    location: "Remote",
+    type: "remote",
+    level: "mid",
+    category: "marketing",
+    salaryMin: 85000,
+    salaryMax: 120000,
+    description:
+      "Define and execute content strategy that drives millions of monthly visitors. Create thought leadership content, optimize for SEO, and collaborate with product marketing to tell compelling stories about HubSpot's platform.",
+    requirements: [
+      "3+ years of content marketing experience",
+      "Strong SEO and analytics skills",
+      "Excellent writing and editing abilities",
+      "Experience with content management systems and marketing automation",
+    ],
+    benefits: [
+      "Fully remote with flexible hours",
+      "Unlimited vacation policy",
+      "Education stipend",
+      "Stock options",
+    ],
+    tags: ["Content Marketing", "SEO", "Copywriting", "Analytics"],
+    postedDate: "2026-02-13",
+  },
+
+  // ─── EDUCATION ────────────────────────────────────────────────────
+  {
+    id: "22",
+    title: "Curriculum Designer",
+    company: "Coursera",
+    location: "Remote",
+    type: "remote",
+    level: "mid",
+    category: "education",
+    salaryMin: 80000,
+    salaryMax: 115000,
+    description:
+      "Design world-class learning experiences that reach millions of learners globally. Collaborate with university partners and industry experts to create engaging, effective online courses and professional certificates.",
+    requirements: [
+      "3+ years of instructional design experience",
+      "Master's degree in education, instructional design, or related field",
+      "Experience with LMS platforms and e-learning tools",
+      "Knowledge of adult learning theory and assessment design",
+    ],
+    benefits: [
+      "Free access to all Coursera courses",
+      "Remote-first culture",
+      "Annual learning budget",
+      "Health and wellness benefits",
+    ],
+    tags: ["Instructional Design", "E-Learning", "LMS", "Assessment"],
+    postedDate: "2026-02-07",
+  },
+
+  // ─── LEGAL ────────────────────────────────────────────────────────
+  {
+    id: "23",
+    title: "Corporate Paralegal",
+    company: "Latham & Watkins",
+    location: "New York, NY",
+    type: "onsite",
+    level: "mid",
+    category: "legal",
+    salaryMin: 75000,
+    salaryMax: 100000,
+    description:
+      "Support complex M&A and corporate governance matters at one of the world's premier law firms. Draft documents, manage due diligence processes, and coordinate with international teams on cross-border transactions.",
+    requirements: [
+      "3+ years of corporate paralegal experience",
+      "Paralegal certification or equivalent",
+      "Experience with M&A due diligence and corporate filings",
+      "Strong attention to detail and organizational skills",
+    ],
+    benefits: [
+      "Competitive salary for legal sector",
+      "Overtime compensation",
+      "Professional development programs",
+      "Comprehensive health benefits",
+    ],
+    tags: ["Legal", "M&A", "Compliance", "Corporate"],
+    postedDate: "2026-02-06",
+    coordinates: { lat: 40.7128, lng: -74.006 },
+  },
+
+  // ─── DESIGN (Non-Tech) ───────────────────────────────────────────
+  {
+    id: "24",
+    title: "Interior Designer",
+    company: "Gensler",
+    location: "San Francisco, CA",
+    type: "hybrid",
+    level: "mid",
+    category: "design",
+    salaryMin: 70000,
+    salaryMax: 100000,
+    description:
+      "Design innovative workplace environments for Fortune 500 clients. Transform spaces that inspire creativity, collaboration, and well-being at the world's largest architecture and design firm.",
+    requirements: [
+      "3+ years of commercial interior design experience",
+      "Proficiency in AutoCAD, Revit, and Adobe Creative Suite",
+      "NCIDQ certification preferred",
+      "Strong client presentation skills",
+    ],
+    benefits: [
+      "Design-forward culture",
+      "Professional licensing support",
+      "Studio exchange program",
+      "Health and wellness benefits",
+    ],
+    tags: ["Interior Design", "AutoCAD", "Revit", "Space Planning"],
+    postedDate: "2026-02-14",
+    coordinates: { lat: 37.7749, lng: -122.4194 },
+  },
+
+  // ─── OPERATIONS ───────────────────────────────────────────────────
+  {
+    id: "25",
+    title: "Supply Chain Manager",
+    company: "Amazon",
+    location: "Seattle, WA",
+    type: "onsite",
+    level: "senior",
+    category: "operations",
+    salaryMin: 120000,
+    salaryMax: 175000,
+    description:
+      "Optimize supply chain operations that deliver millions of packages daily. Lead inventory planning, vendor management, and logistics optimization at the world's largest e-commerce company.",
+    requirements: [
+      "5+ years of supply chain or operations management experience",
+      "Experience with ERP systems (SAP, Oracle)",
+      "Strong analytical and problem-solving skills",
+      "APICS or Six Sigma certification preferred",
+    ],
+    benefits: [
+      "RSU grants",
+      "Relocation assistance",
+      "Career development programs",
+      "Employee discount",
+    ],
+    tags: ["Supply Chain", "Logistics", "Operations", "ERP"],
+    postedDate: "2026-02-11",
+    coordinates: { lat: 47.6062, lng: -122.3321 },
+  },
+
+  // ─── SALES ────────────────────────────────────────────────────────
+  {
+    id: "26",
+    title: "Enterprise Account Executive",
+    company: "Salesforce",
+    location: "San Francisco, CA",
+    type: "hybrid",
+    level: "senior",
+    category: "sales",
+    salaryMin: 130000,
+    salaryMax: 200000,
+    description:
+      "Drive enterprise deals with Fortune 500 companies. Manage complex sales cycles, build C-suite relationships, and close multi-million dollar contracts for the world's #1 CRM platform.",
+    requirements: [
+      "5+ years of enterprise B2B sales experience",
+      "Track record of exceeding $1M+ quota",
+      "Experience selling SaaS to C-level executives",
+      "Strong negotiation and presentation skills",
+    ],
+    benefits: [
+      "Uncapped commission structure",
+      "President's Club eligibility",
+      "Stock purchase program",
+      "Wellness reimbursement",
+    ],
+    tags: ["Enterprise Sales", "B2B", "SaaS", "CRM"],
+    postedDate: "2026-02-12",
+    coordinates: { lat: 37.7749, lng: -122.4194 },
+  },
+
+  // ─── PRODUCT ──────────────────────────────────────────────────────
+  {
+    id: "27",
+    title: "Senior Product Manager",
+    company: "Notion",
+    location: "New York, NY",
+    type: "hybrid",
+    level: "senior",
+    category: "product",
+    salaryMin: 170000,
+    salaryMax: 240000,
+    description:
+      "Define the future of collaborative productivity. Lead product strategy for Notion's AI-powered workspace, driving features that help millions of teams organize their knowledge and work together seamlessly.",
+    requirements: [
+      "5+ years of product management experience",
+      "Experience shipping consumer or prosumer products",
+      "Strong analytical skills with data-driven decision making",
+      "Technical background preferred",
+    ],
+    benefits: [
+      "Competitive equity package",
+      "Flexible work arrangements",
+      "Learning and development budget",
+      "Team offsites",
+    ],
+    tags: ["Product Management", "AI", "Productivity", "Strategy"],
+    postedDate: "2026-02-09",
+    coordinates: { lat: 40.7128, lng: -74.006 },
+  },
+
+  // ─── BANGALORE, INDIA ────────────────────────────────────────────
+  {
+    id: "28",
+    title: "Senior Software Engineer",
+    company: "Flipkart",
+    location: "Bangalore, India",
+    type: "hybrid",
+    level: "senior",
+    category: "engineering",
+    salaryMin: 30000,
+    salaryMax: 54000,
+    description:
+      "Build scalable e-commerce systems serving 400M+ registered users across India. Work on high-traffic microservices, payment systems, and recommendation engines at India's largest online marketplace.",
+    requirements: [
+      "5+ years of software engineering experience",
+      "Proficiency in Java, Go, or Python",
+      "Experience with microservices architecture at scale",
+      "Strong understanding of distributed systems and databases",
+    ],
+    benefits: [
+      "Competitive salary (₹25-45 LPA)",
+      "Employee stock options",
+      "Health insurance for family",
+      "Flexible work policy",
+    ],
+    tags: ["Java", "Microservices", "E-commerce", "Scale"],
+    postedDate: "2026-02-10",
+    coordinates: { lat: 12.9716, lng: 77.5946 },
+  },
+  {
+    id: "29",
+    title: "Product Manager",
+    company: "Razorpay",
+    location: "Bangalore, India",
+    type: "hybrid",
+    level: "mid",
+    category: "product",
+    salaryMin: 24000,
+    salaryMax: 42000,
+    description:
+      "Shape the future of payments in India. Define product strategy for Razorpay's payment gateway used by 8M+ businesses, balancing user experience with regulatory compliance and security.",
+    requirements: [
+      "3+ years of product management experience",
+      "Experience with fintech or payment products",
+      "Strong analytical and SQL skills",
+      "Understanding of Indian financial regulations (RBI, UPI)",
+    ],
+    benefits: [
+      "Competitive salary (₹20-35 LPA)",
+      "ESOPs with accelerated vesting",
+      "Health and wellness benefits",
+      "Learning and development budget",
+    ],
+    tags: ["Product Management", "Fintech", "Payments", "UPI"],
+    postedDate: "2026-02-13",
+    coordinates: { lat: 12.9716, lng: 77.5946 },
+  },
+  {
+    id: "30",
+    title: "Data Scientist",
+    company: "Swiggy",
+    location: "Bangalore, India",
+    type: "onsite",
+    level: "mid",
+    category: "data",
+    salaryMin: 22000,
+    salaryMax: 36000,
+    description:
+      "Use data and ML to optimize food delivery across 500+ cities in India. Build demand forecasting models, route optimization algorithms, and recommendation systems that serve millions of daily orders.",
+    requirements: [
+      "3+ years of data science experience",
+      "Strong Python, SQL, and ML skills",
+      "Experience with recommendation systems or optimization",
+      "MS or PhD in a quantitative field preferred",
+    ],
+    benefits: [
+      "Competitive salary (₹18-30 LPA)",
+      "Stock options",
+      "Free Swiggy One membership",
+      "Health insurance",
+    ],
+    tags: ["Data Science", "ML", "Python", "Optimization"],
+    postedDate: "2026-02-08",
+    coordinates: { lat: 12.9716, lng: 77.5946 },
+  },
+  {
+    id: "31",
+    title: "UX Designer",
+    company: "Cisco Systems",
+    location: "Bangalore, India",
+    type: "hybrid",
+    level: "mid",
+    category: "design",
+    salaryMin: 20000,
+    salaryMax: 35000,
+    description:
+      "Design enterprise networking and collaboration products used by millions worldwide. Create intuitive interfaces for complex B2B software including Webex, Meraki, and network management tools.",
+    requirements: [
+      "3+ years of UX design experience",
+      "Strong portfolio with B2B/enterprise products",
+      "Proficiency in Figma and prototyping tools",
+      "Experience with design systems and accessibility",
+    ],
+    benefits: [
+      "Competitive salary (₹17-29 LPA)",
+      "Annual bonus and stock options",
+      "Global career opportunities",
+      "Health and life insurance",
+    ],
+    tags: ["UX Design", "Enterprise", "Figma", "B2B"],
+    postedDate: "2026-02-12",
+    coordinates: { lat: 12.9716, lng: 77.5946 },
+  },
+  {
+    id: "32",
+    title: "Business Analyst",
+    company: "Deloitte",
+    location: "Bangalore, India",
+    type: "onsite",
+    level: "junior",
+    category: "finance",
+    salaryMin: 18000,
+    salaryMax: 30000,
+    description:
+      "Join Deloitte Consulting's Bangalore office to work on digital transformation projects for global clients. Analyze business processes, gather requirements, and help design solutions across industries.",
+    requirements: [
+      "1-3 years of business analysis or consulting experience",
+      "Strong Excel, PowerPoint, and data analysis skills",
+      "MBA or equivalent preferred",
+      "Excellent communication and client-facing skills",
+    ],
+    benefits: [
+      "Competitive salary (₹15-25 LPA)",
+      "Global project exposure",
+      "Fast-track career growth",
+      "Comprehensive health benefits",
+    ],
+    tags: ["Business Analysis", "Consulting", "Data Analysis", "Strategy"],
+    postedDate: "2026-02-07",
+    coordinates: { lat: 12.9716, lng: 77.5946 },
+  },
+
+  // ─── MORE US CITIES ───────────────────────────────────────────────
+  {
+    id: "33",
+    title: "Cloud Solutions Architect",
+    company: "Microsoft",
+    location: "Seattle, WA",
+    type: "hybrid",
+    level: "senior",
+    category: "engineering",
+    salaryMin: 175000,
+    salaryMax: 265000,
+    description:
+      "Design cloud architecture solutions for enterprise customers on Azure. Lead technical pre-sales engagements, build proof-of-concepts, and help organizations modernize their infrastructure.",
+    requirements: [
+      "5+ years of cloud architecture experience",
+      "Azure certifications (Solutions Architect Expert preferred)",
+      "Experience with enterprise IT architecture",
+      "Strong presentation and consulting skills",
+    ],
+    benefits: [
+      "Competitive salary and stock awards",
+      "Comprehensive health coverage",
+      "Employee stock purchase plan",
+      "Generous parental leave",
+    ],
+    tags: ["Azure", "Cloud Architecture", "Enterprise", "Solutions"],
+    postedDate: "2026-02-14",
+    coordinates: { lat: 47.6062, lng: -122.3321 },
+  },
+  {
+    id: "34",
+    title: "Marketing Analytics Manager",
+    company: "Procter & Gamble",
+    location: "Cincinnati, OH",
+    type: "hybrid",
+    level: "senior",
+    category: "marketing",
+    salaryMin: 100000,
+    salaryMax: 145000,
+    description:
+      "Lead marketing analytics for billion-dollar consumer brands. Build data-driven marketing strategies, measure campaign effectiveness, and optimize media spend across digital and traditional channels.",
+    requirements: [
+      "5+ years of marketing analytics experience",
+      "Experience with marketing mix modeling and attribution",
+      "Proficiency in SQL, Python, and visualization tools",
+      "CPG or consumer goods industry experience preferred",
+    ],
+    benefits: [
+      "Profit sharing program",
+      "Day 1 benefits enrollment",
+      "On-site wellness center",
+      "Global career opportunities",
+    ],
+    tags: ["Marketing Analytics", "SQL", "Consumer Goods", "Media Planning"],
+    postedDate: "2026-02-10",
+    coordinates: { lat: 39.1031, lng: -84.512 },
+  },
+  {
+    id: "35",
+    title: "Nurse Practitioner",
+    company: "Cleveland Clinic",
+    location: "Cleveland, OH",
+    type: "onsite",
+    level: "senior",
+    category: "healthcare",
+    salaryMin: 95000,
+    salaryMax: 125000,
+    description:
+      "Provide advanced primary care at one of the nation's top-ranked hospitals. Diagnose conditions, prescribe treatments, and manage patient care independently in a collaborative clinical environment.",
+    requirements: [
+      "MSN with Nurse Practitioner certification",
+      "Active NP license in Ohio",
+      "3+ years of clinical NP experience",
+      "DEA license and prescriptive authority",
+    ],
+    benefits: [
+      "Sign-on bonus available",
+      "Malpractice insurance provided",
+      "Continuing education credits",
+      "Retirement plan with employer match",
+    ],
+    tags: ["Nurse Practitioner", "Primary Care", "Clinical", "Patient Care"],
+    postedDate: "2026-02-11",
+    coordinates: { lat: 41.4993, lng: -81.6944 },
+  },
+
+  // ─── LONDON ───────────────────────────────────────────────────────
+  {
+    id: "36",
+    title: "Quantitative Analyst",
+    company: "Citadel",
+    location: "London, UK",
+    type: "onsite",
+    level: "senior",
+    category: "finance",
+    salaryMin: 150000,
+    salaryMax: 250000,
+    description:
+      "Develop quantitative trading strategies at one of the world's leading hedge funds. Apply advanced mathematics, statistics, and programming to find alpha in global financial markets.",
+    requirements: [
+      "PhD in mathematics, physics, statistics, or related field",
+      "Strong programming skills in Python and C++",
+      "Experience with statistical modeling and time series analysis",
+      "Knowledge of financial markets and derivatives",
+    ],
+    benefits: [
+      "Exceptional compensation and bonus",
+      "Relocation support to London",
+      "Private healthcare",
+      "Professional development",
+    ],
+    tags: ["Quantitative Finance", "Python", "C++", "Trading"],
+    postedDate: "2026-02-09",
+    coordinates: { lat: 51.5074, lng: -0.1278 },
   },
 ];

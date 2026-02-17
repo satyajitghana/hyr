@@ -9,42 +9,48 @@ import {
   Briefcase,
   ClipboardList,
   ArrowLeft,
+  Zap,
 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuBadge,
   SidebarFooter,
+  SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Logo } from "@/components/shared/logo";
+import { useJobStore } from "@/lib/store/job-store";
 
 const navItems = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
   { label: "Resumes", href: "/app/resume", icon: FileText },
   { label: "Tailor", href: "/app/tailor", icon: Wand2 },
   { label: "Jobs", href: "/app/jobs", icon: Briefcase },
-  { label: "Applications", href: "/app/applications", icon: ClipboardList },
+  { label: "Applications", href: "/app/applications", icon: ClipboardList, showBadge: true },
+  { label: "Beast Mode", href: "/app/beast-mode", icon: Zap },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { state } = useSidebar();
+  const applicationCount = useJobStore((s) => s.applications.length);
+  const collapsed = state === "collapsed";
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader className="border-b px-4 py-4">
-        <Logo />
+        <Logo showText={!collapsed} size="sm" href="/app" />
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -54,12 +60,15 @@ export function AppSidebar() {
                     pathname.startsWith(item.href));
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive}>
+                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
                       <Link href={item.href}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {item.showBadge && applicationCount > 0 && (
+                      <SidebarMenuBadge>{applicationCount}</SidebarMenuBadge>
+                    )}
                   </SidebarMenuItem>
                 );
               })}
@@ -69,17 +78,19 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to site
-          </Link>
-          <ThemeToggle />
-        </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Back to site">
+              <Link href="/">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to site</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
+
+      <SidebarRail />
     </Sidebar>
   );
 }

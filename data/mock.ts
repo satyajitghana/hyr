@@ -2,7 +2,7 @@ import { Resume } from "@/lib/resume/types";
 import { Application } from "@/lib/jobs/types";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 
-export const MOCK_DATA_VERSION = 1;
+export const MOCK_DATA_VERSION = 2;
 
 export const SAMPLE_RESUMES: Resume[] = [
   {
@@ -246,6 +246,177 @@ export const SAMPLE_RESUMES: Resume[] = [
     createdAt: "2026-02-01T10:00:00Z",
     updatedAt: "2026-02-14T16:00:00Z",
   },
+  {
+    id: "sample-4",
+    name: "Marketing Resume",
+    contact: {
+      name: "Sarah Kim",
+      email: "sarah.kim@email.com",
+      phone: "(555) 234-5678",
+      location: "Portland, OR",
+      linkedin: "linkedin.com/in/sarahkim",
+    },
+    summary:
+      "Strategic brand marketing leader with 6+ years of experience driving integrated campaigns for Fortune 500 brands. Expert in consumer insights, digital marketing, and brand storytelling. Proven ability to increase brand awareness and engagement across channels.",
+    experience: [
+      {
+        id: "exp-s1",
+        title: "Senior Brand Manager",
+        company: "Nike",
+        location: "Portland, OR",
+        startDate: "2023-03",
+        endDate: "Present",
+        bullets: [
+          "Led global brand campaign for Nike Running that drove 22% increase in brand consideration among 18-34 demographic",
+          "Managed $15M annual marketing budget across digital, social, influencer, and retail channels",
+          "Spearheaded Nike's sustainability messaging initiative, resulting in 40% uplift in social engagement",
+          "Collaborated with creative agency partners to develop award-winning content for Nike app launch",
+        ],
+      },
+      {
+        id: "exp-s2",
+        title: "Content Marketing Manager",
+        company: "HubSpot",
+        location: "Remote",
+        startDate: "2020-06",
+        endDate: "2023-02",
+        bullets: [
+          "Grew organic blog traffic from 2M to 5M monthly visitors through SEO-driven content strategy",
+          "Built and managed a team of 4 content writers and 2 freelancers producing 60+ articles per month",
+          "Launched HubSpot Academy certification program that generated 100K+ enrollments in first year",
+        ],
+      },
+      {
+        id: "exp-s3",
+        title: "Marketing Coordinator",
+        company: "Coca-Cola",
+        location: "Atlanta, GA",
+        startDate: "2018-08",
+        endDate: "2020-05",
+        bullets: [
+          "Coordinated product launch events and experiential marketing activations across 12 US markets",
+          "Managed social media calendar and community engagement, growing followers by 35%",
+        ],
+      },
+    ],
+    education: [
+      {
+        id: "edu-s1",
+        degree: "B.A. Marketing & Communications",
+        school: "University of Michigan",
+        location: "Ann Arbor, MI",
+        graduationDate: "2018-05",
+        gpa: "3.6",
+      },
+    ],
+    skills: [
+      "Brand Strategy",
+      "Content Marketing",
+      "SEO/SEM",
+      "Social Media Marketing",
+      "Google Analytics",
+      "HubSpot",
+      "Adobe Creative Suite",
+      "Market Research",
+      "Campaign Management",
+      "Copywriting",
+    ],
+    certifications: [
+      "Google Analytics Certified",
+      "HubSpot Inbound Marketing Certified",
+    ],
+    createdAt: "2026-02-05T10:00:00Z",
+    updatedAt: "2026-02-15T11:00:00Z",
+  },
+  {
+    id: "sample-5",
+    name: "Finance Resume",
+    contact: {
+      name: "James Wright",
+      email: "james.wright@email.com",
+      phone: "(555) 876-5432",
+      location: "New York, NY",
+      linkedin: "linkedin.com/in/jameswright",
+    },
+    summary:
+      "CPA-certified financial analyst with 5+ years of experience in investment banking, financial modeling, and corporate finance. Expert in M&A deal analysis, financial due diligence, and client advisory. Strong track record of delivering actionable insights to C-suite executives.",
+    experience: [
+      {
+        id: "exp-j1",
+        title: "Senior Financial Analyst",
+        company: "Goldman Sachs",
+        location: "New York, NY",
+        startDate: "2023-01",
+        endDate: "Present",
+        bullets: [
+          "Led financial modeling and valuation analysis for $2B+ M&A transactions in the technology sector",
+          "Built comprehensive DCF, LBO, and comparable company models used in client pitch decks",
+          "Managed due diligence workstreams for 5 major deals, coordinating with legal and tax teams",
+          "Trained and mentored 3 junior analysts on financial modeling best practices",
+        ],
+      },
+      {
+        id: "exp-j2",
+        title: "Financial Analyst",
+        company: "J.P. Morgan",
+        location: "New York, NY",
+        startDate: "2021-06",
+        endDate: "2022-12",
+        bullets: [
+          "Prepared financial analyses and presentations for $500M+ debt and equity offerings",
+          "Developed automated reporting dashboards that reduced monthly close time by 30%",
+          "Supported senior bankers on client relationship management and pitch preparation",
+        ],
+      },
+      {
+        id: "exp-j3",
+        title: "Audit Associate",
+        company: "Deloitte",
+        location: "Chicago, IL",
+        startDate: "2019-09",
+        endDate: "2021-05",
+        bullets: [
+          "Performed financial audits for Fortune 500 clients across technology and manufacturing sectors",
+          "Identified and resolved material misstatements totaling $5M+ during audit engagements",
+        ],
+      },
+    ],
+    education: [
+      {
+        id: "edu-j1",
+        degree: "M.B.A. Finance",
+        school: "Columbia Business School",
+        location: "New York, NY",
+        graduationDate: "2023-05",
+      },
+      {
+        id: "edu-j2",
+        degree: "B.S. Accounting",
+        school: "University of Illinois",
+        location: "Champaign, IL",
+        graduationDate: "2019-05",
+        gpa: "3.8",
+      },
+    ],
+    skills: [
+      "Financial Modeling",
+      "Excel (Advanced)",
+      "Bloomberg Terminal",
+      "PowerPoint",
+      "SQL",
+      "GAAP/IFRS",
+      "M&A Analysis",
+      "Valuation",
+      "Due Diligence",
+      "Financial Reporting",
+    ],
+    certifications: [
+      "Certified Public Accountant (CPA)",
+      "CFA Level II Candidate",
+    ],
+    createdAt: "2026-02-03T10:00:00Z",
+    updatedAt: "2026-02-14T09:00:00Z",
+  },
 ];
 
 export const SAMPLE_APPLICATIONS: Application[] = [
@@ -325,6 +496,29 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     status: "applied",
     appliedDate: "2026-02-15T10:00:00Z",
     lastUpdated: "2026-02-15T10:00:00Z",
+    autoApplied: false,
+  },
+  // Non-tech applications
+  {
+    id: "app-seed-8",
+    jobId: "18",
+    job: MOCK_JOBS.find((j) => j.id === "18")!,
+    resumeId: "sample-5",
+    resumeName: "Finance Resume",
+    status: "screening",
+    appliedDate: "2026-02-12T10:00:00Z",
+    lastUpdated: "2026-02-15T10:00:00Z",
+    autoApplied: false,
+  },
+  {
+    id: "app-seed-9",
+    jobId: "20",
+    job: MOCK_JOBS.find((j) => j.id === "20")!,
+    resumeId: "sample-4",
+    resumeName: "Marketing Resume",
+    status: "interview",
+    appliedDate: "2026-02-08T10:00:00Z",
+    lastUpdated: "2026-02-14T10:00:00Z",
     autoApplied: false,
   },
 ];
