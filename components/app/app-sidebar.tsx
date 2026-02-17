@@ -3,54 +3,63 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  FileText,
-  Wand2,
-  Briefcase,
-  ClipboardList,
-  ArrowLeft,
-} from "lucide-react";
-import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarFooter,
-} from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
+  SidebarRail,
+  useSidebar,
+} from "@/components/animate-ui/components/radix/sidebar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/animate-ui/components/radix/dropdown-menu";
+import { Logo } from "@/components/shared/logo";
+import { useJobStore } from "@/lib/store/job-store";
+import { ChevronsUpDown, User, Settings, ArrowLeft, LogOut, Sparkles } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+
+import { HouseIcon } from "@/components/ui/house-icon";
+import { FolderIcon } from "@/components/ui/folder-icon";
+import { SparklesIcon } from "@/components/ui/sparkles-icon";
+import { CompassIcon } from "@/components/ui/compass-icon";
+import { ClipboardIcon } from "@/components/ui/clipboard-icon";
+import { ZapIcon } from "@/components/ui/zap-icon";
 
 const navItems = [
-  { label: "Dashboard", href: "/app", icon: LayoutDashboard },
-  { label: "Resumes", href: "/app/resume", icon: FileText },
-  { label: "Tailor", href: "/app/tailor", icon: Wand2 },
-  { label: "Jobs", href: "/app/jobs", icon: Briefcase },
-  { label: "Applications", href: "/app/applications", icon: ClipboardList },
+  { label: "Dashboard", href: "/app", Icon: HouseIcon },
+  { label: "Resumes", href: "/app/resume", Icon: FolderIcon },
+  { label: "Tailor", href: "/app/tailor", Icon: SparklesIcon },
+  { label: "Jobs", href: "/app/jobs", Icon: CompassIcon },
+  { label: "Applications", href: "/app/applications", Icon: ClipboardIcon, showBadge: true },
+  { label: "Beast Mode", href: "/app/beast-mode", Icon: ZapIcon },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { state } = useSidebar();
+  const isMobile = useIsMobile();
+  const applicationCount = useJobStore((s) => s.applications.length);
+  const collapsed = state === "collapsed";
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b px-4 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-sm">
-            H
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight">
-            Hyr
-          </span>
-        </Link>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="px-3 py-3 transition-[padding] duration-300 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
+        <Logo showText={!collapsed} size="sm" href="/app" />
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
@@ -60,10 +69,15 @@ export function AppSidebar() {
                     pathname.startsWith(item.href));
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive}>
+                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
                       <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
+                        <item.Icon size={16} className="shrink-0" />
                         <span>{item.label}</span>
+                        {item.showBadge && applicationCount > 0 && (
+                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-[10px] font-semibold tabular-nums text-primary">
+                            {applicationCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -74,18 +88,79 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to site
-          </Link>
-          <ThemeToggle />
-        </div>
+      <SidebarFooter className="p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  size="lg"
+                  tooltip="Alex Johnson"
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                      AJ
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">Alex Johnson</span>
+                    <span className="truncate text-xs text-muted-foreground">alex@email.com</span>
+                  </div>
+                  <ChevronsUpDown className="ml-auto size-4" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                side={isMobile ? "bottom" : "right"}
+                align="end"
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="p-0 font-normal">
+                  <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarFallback className="rounded-lg bg-primary/10 text-xs font-semibold text-primary">
+                        AJ
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="grid flex-1 text-left text-sm leading-tight">
+                      <span className="truncate font-semibold">Alex Johnson</span>
+                      <span className="truncate text-xs text-muted-foreground">alex@email.com</span>
+                    </div>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>
+                  <Sparkles />
+                  Upgrade to Pro
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>
+                  <User />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  <Settings />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <Link href="/">
+                  <DropdownMenuItem>
+                    <ArrowLeft />
+                    Back to Site
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuItem disabled>
+                  <LogOut />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
+
+      <SidebarRail />
     </Sidebar>
   );
 }

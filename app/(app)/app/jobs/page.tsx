@@ -7,18 +7,34 @@ import {
   Search,
   MapPin,
   DollarSign,
-  Briefcase,
   Building2,
   Clock,
+  Tag,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
+import { JobCategory } from "@/lib/jobs/types";
 
 const typeFilters = ["all", "remote", "hybrid", "onsite"] as const;
 const levelFilters = ["all", "junior", "mid", "senior", "lead"] as const;
+
+const categoryFilters: { value: "all" | JobCategory; label: string }[] = [
+  { value: "all", label: "All Categories" },
+  { value: "engineering", label: "Engineering" },
+  { value: "design", label: "Design" },
+  { value: "marketing", label: "Marketing" },
+  { value: "finance", label: "Finance" },
+  { value: "healthcare", label: "Healthcare" },
+  { value: "legal", label: "Legal" },
+  { value: "education", label: "Education" },
+  { value: "operations", label: "Operations" },
+  { value: "sales", label: "Sales" },
+  { value: "data", label: "Data" },
+  { value: "product", label: "Product" },
+];
 
 function formatSalary(n: number) {
   return `$${(n / 1000).toFixed(0)}K`;
@@ -28,6 +44,7 @@ export default function JobsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [levelFilter, setLevelFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
   const filteredJobs = useMemo(() => {
     return MOCK_JOBS.filter((job) => {
@@ -38,9 +55,10 @@ export default function JobsPage() {
         job.location.toLowerCase().includes(search.toLowerCase());
       const matchesType = typeFilter === "all" || job.type === typeFilter;
       const matchesLevel = levelFilter === "all" || job.level === levelFilter;
-      return matchesSearch && matchesType && matchesLevel;
+      const matchesCategory = categoryFilter === "all" || job.category === categoryFilter;
+      return matchesSearch && matchesType && matchesLevel && matchesCategory;
     });
-  }, [search, typeFilter, levelFilter]);
+  }, [search, typeFilter, levelFilter, categoryFilter]);
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -52,12 +70,12 @@ export default function JobsPage() {
           Jobs
         </h1>
         <p className="mt-1 text-muted-foreground">
-          Find and apply to jobs that match your skills.
+          Find and apply to jobs that match your skills across all industries.
         </p>
       </motion.div>
 
       {/* Search & Filters */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -67,7 +85,25 @@ export default function JobsPage() {
             className="pl-10"
           />
         </div>
-        <div className="flex flex-wrap gap-2">
+
+        {/* Category Filter */}
+        <div className="flex flex-wrap gap-1.5">
+          <Tag className="mr-1 h-4 w-4 text-muted-foreground self-center" />
+          {categoryFilters.map((cat) => (
+            <Button
+              key={cat.value}
+              variant={categoryFilter === cat.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => setCategoryFilter(cat.value)}
+              className="text-xs h-7"
+            >
+              {cat.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Type & Level Filters */}
+        <div className="flex flex-wrap gap-4">
           <div className="flex gap-1">
             {typeFilters.map((t) => (
               <Button
@@ -144,7 +180,10 @@ export default function JobsPage() {
                           <Badge variant="outline" className="text-xs capitalize">
                             {job.level}
                           </Badge>
-                          {job.tags.slice(0, 3).map((tag) => (
+                          <Badge variant="secondary" className="text-xs capitalize">
+                            {job.category}
+                          </Badge>
+                          {job.tags.slice(0, 2).map((tag) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
                               {tag}
                             </Badge>

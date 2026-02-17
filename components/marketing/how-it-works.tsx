@@ -1,13 +1,15 @@
 "use client";
 
-import { Upload, FileSearch, Download, Sparkles } from "lucide-react";
+import { FileSearch, Sparkles } from "lucide-react";
+import { UploadIcon } from "@/components/ui/upload";
+import { DownloadIcon } from "@/components/ui/download";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { BorderBeam } from "@/components/ui/border-beam";
 
 const steps = [
   {
-    icon: Upload,
+    icon: "upload" as const,
     title: "Upload Your Resume",
     description:
       "Drag and drop your PDF resume. Our AI parses it into a structured format you can edit anytime.",
@@ -16,7 +18,7 @@ const steps = [
     borderColor: "border-blue-500/20",
   },
   {
-    icon: FileSearch,
+    icon: "file-search" as const,
     title: "Paste the Job Description",
     description:
       "Copy and paste the job listing you're applying for. Our AI analyzes requirements, keywords, and culture.",
@@ -25,7 +27,7 @@ const steps = [
     borderColor: "border-purple-500/20",
   },
   {
-    icon: Sparkles,
+    icon: "sparkles" as const,
     title: "AI Tailors Your Resume",
     description:
       "Watch as AI rewrites sections, adds keywords, and optimizes formatting. Review every change before saving.",
@@ -34,7 +36,7 @@ const steps = [
     borderColor: "border-amber-500/20",
   },
   {
-    icon: Download,
+    icon: "download" as const,
     title: "Download & Apply",
     description:
       "Export your tailored resume as a clean PDF. Or let Hyr auto-apply to matching jobs for you.",
@@ -43,6 +45,21 @@ const steps = [
     borderColor: "border-green-500/20",
   },
 ];
+
+function StepIcon({ type, className }: { type: string; className?: string }) {
+  switch (type) {
+    case "upload":
+      return <UploadIcon size={24} className={className} />;
+    case "download":
+      return <DownloadIcon size={24} className={className} />;
+    case "file-search":
+      return <FileSearch className={`h-6 w-6 ${className}`} />;
+    case "sparkles":
+      return <Sparkles className={`h-6 w-6 ${className}`} />;
+    default:
+      return null;
+  }
+}
 
 export function HowItWorks() {
   return (
@@ -85,18 +102,18 @@ export function HowItWorks() {
               inView
             >
               <div
-                className={`group relative overflow-hidden rounded-2xl border ${step.borderColor} bg-card/50 p-6 backdrop-blur-sm transition-all hover:shadow-lg hover:shadow-primary/5`}
+                className={`group relative overflow-hidden rounded-lg border ${step.borderColor} bg-card/50 p-6 backdrop-blur-sm transition-all hover:shadow-lg hover:shadow-primary/5`}
               >
                 {idx === 2 && <BorderBeam duration={6} size={100} />}
                 <div className="flex items-start gap-4">
                   <div className="flex flex-col items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-muted-foreground">
+                    <span className="font-pixel text-xs font-bold text-muted-foreground">
                       0{idx + 1}
                     </span>
                     <div
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${step.bgColor} ${step.color} transition-transform group-hover:scale-110`}
                     >
-                      <step.icon className="h-6 w-6" />
+                      <StepIcon type={step.icon} />
                     </div>
                   </div>
                   <div>

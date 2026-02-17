@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { Logo } from "@/components/shared/logo";
 
 export function Footer() {
   return (
@@ -7,15 +8,10 @@ export function Footer() {
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-sm">
-              H
-            </div>
-            <div>
-              <span className="font-display text-lg font-bold">Hyr</span>
-              <p className="text-xs text-muted-foreground">
-                AI-Powered Resume Optimization
-              </p>
-            </div>
+            <Logo />
+            <p className="text-xs text-muted-foreground">
+              AI-Powered Resume Optimization
+            </p>
           </div>
 
           <div className="flex items-center gap-6 text-sm text-muted-foreground">

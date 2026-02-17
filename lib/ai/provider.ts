@@ -1,4 +1,4 @@
-import { Resume, TailoredResume, ATSScore } from "@/lib/resume/types";
+import { Resume, TailoredResume, TailoredChange, ATSScore } from "@/lib/resume/types";
 import { Job } from "@/lib/jobs/types";
 
 export interface AIProvider {
@@ -14,6 +14,12 @@ export interface AIProvider {
     company: string;
     keywords: string[];
   }>;
+  generateCoverLetter(resume: Resume, job: Job): Promise<string>;
+  generateRecruiterEmail(resume: Resume, job: Job): Promise<string>;
+  refineChanges(
+    prompt: string,
+    currentChanges: TailoredChange[]
+  ): Promise<TailoredChange[]>;
 }
 
 export function getAIProvider(): AIProvider {

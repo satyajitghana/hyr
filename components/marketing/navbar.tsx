@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Logo } from "@/components/shared/logo";
 import { MARKETING_NAV_ITEMS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -25,21 +26,14 @@ export function MarketingNavbar() {
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
-        "fixed top-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 rounded-2xl border transition-all duration-300",
+        "fixed top-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 rounded-lg border transition-all duration-300",
         scrolled
           ? "border-border/50 bg-background/70 shadow-lg shadow-primary/5 backdrop-blur-xl"
           : "border-transparent bg-background/30 backdrop-blur-md"
       )}
     >
       <nav className="flex items-center justify-between px-6 py-3">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-sm">
-            H
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight">
-            Hyr
-          </span>
-        </Link>
+        <Logo />
 
         <div className="hidden items-center gap-1 md:flex">
           {MARKETING_NAV_ITEMS.map((item) => (
@@ -56,7 +50,7 @@ export function MarketingNavbar() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link href="/app" className="hidden md:block">
-            <Button size="sm" className="rounded-full px-6 shadow-md shadow-primary/20">
+            <Button size="sm" className="rounded-md px-6 shadow-md shadow-primary/20">
               Get Started
             </Button>
           </Link>
@@ -96,7 +90,7 @@ export function MarketingNavbar() {
                 </Link>
               ))}
               <Link href="/app" onClick={() => setMobileOpen(false)}>
-                <Button className="mt-2 w-full rounded-full">
+                <Button className="mt-2 w-full rounded-md">
                   Get Started
                 </Button>
               </Link>

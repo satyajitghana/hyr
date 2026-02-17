@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import {
+  SiGoogle,
+  SiStripe,
+  SiApple,
+  SiNike,
+  SiFlipkart,
+  SiSalesforce,
+} from "react-icons/si";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Spotlight } from "@/components/ui/spotlight";
@@ -11,8 +19,18 @@ import { Button } from "@/components/ui/button";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { SparklesText } from "@/components/ui/sparkles-text";
 import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
+import { SparklesIcon } from "@/components/ui/sparkles";
 
-const COMPANIES = ["Google", "Meta", "Stripe", "OpenAI", "Apple", "Netflix"];
+const COMPANIES = [
+  { name: "Google", icon: SiGoogle, color: "#4285F4" },
+  { name: "Stripe", icon: SiStripe, color: "#635BFF" },
+  { name: "Apple", icon: SiApple, color: "#A2AAAD" },
+  { name: "Nike", icon: SiNike, color: "#FF6B00" },
+  { name: "Salesforce", icon: SiSalesforce, color: "#00A1E0" },
+  { name: "Flipkart", icon: SiFlipkart, color: "#F7D03E" },
+];
+
+const COMPANY_NAMES = COMPANIES.map((c) => c.name);
 
 export function Hero() {
   return (
@@ -28,7 +46,7 @@ export function Hero() {
       {/* Layer 2: Ethereal shadow blobs */}
       <EtherealShadows
         blur={140}
-        opacity={0.4}
+        opacity={0.3}
         speed={0.8}
       />
 
@@ -41,10 +59,16 @@ export function Hero() {
       {/* Content */}
       <div className="relative z-20 mx-auto max-w-5xl text-center">
         <BlurFade delay={0.1} inView>
-          <AnimatedGradientText className="mb-8 inline-flex">
-            <Sparkles className="mr-2 h-4 w-4" />
-            AI-Powered Resume Optimization
-          </AnimatedGradientText>
+          <div className="mb-8 inline-flex items-center justify-center rounded-full border border-border/50 bg-white/10 dark:bg-white/5 px-4 py-1.5 backdrop-blur-sm shadow-[inset_0_-8px_10px_#7c3aed1f] transition-shadow duration-500 hover:shadow-[inset_0_-5px_10px_#7c3aed3f]">
+            <SparklesIcon size={16} className="mr-2 text-primary" />
+            <AnimatedGradientText
+              className="font-pixel text-sm"
+              colorFrom="#7c3aed"
+              colorTo="#a78bfa"
+            >
+              AI-Powered Resume Optimization
+            </AnimatedGradientText>
+          </div>
         </BlurFade>
 
         <BlurFade delay={0.2} inView>
@@ -59,7 +83,7 @@ export function Hero() {
             -ed at
             <br />
             <FlipWords
-              words={COMPANIES}
+              words={COMPANY_NAMES}
               duration={2500}
               className="text-primary"
             />
@@ -68,8 +92,9 @@ export function Hero() {
 
         <BlurFade delay={0.3} inView>
           <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
-            Upload your resume, paste any job description, and let AI tailor your
-            resume perfectly. Beat ATS systems. Auto-apply to dream jobs.
+            Whether you&apos;re in tech, finance, healthcare, or marketing — upload
+            your resume, paste any job description, and let AI tailor it
+            perfectly. Beat ATS systems. Auto-apply to dream jobs.
           </p>
         </BlurFade>
 
@@ -87,7 +112,7 @@ export function Hero() {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-12 rounded-full px-8 backdrop-blur-sm"
+                className="h-12 rounded-md px-8 backdrop-blur-sm"
               >
                 See How It Works
               </Button>
@@ -95,8 +120,22 @@ export function Hero() {
           </div>
         </BlurFade>
 
+        <BlurFade delay={0.5} inView>
+          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-8">
+            {COMPANIES.map((company) => (
+              <div
+                key={company.name}
+                className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <company.icon className="h-4 w-4" style={{ color: company.color }} />
+                <span className="font-medium">{company.name}</span>
+              </div>
+            ))}
+          </div>
+        </BlurFade>
+
         <BlurFade delay={0.6} inView>
-          <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+          <div className="mt-8 flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               10,000+ resumes optimized
