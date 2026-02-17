@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -14,9 +14,13 @@ import {
   Filter,
   Rocket,
   ArrowRight,
-  Check,
   X,
   Trophy,
+  Sparkles,
+  Shield,
+  Clock,
+  Target,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,18 +28,24 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { useJobStore } from "@/lib/store/job-store";
-import { getAIProvider } from "@/lib/ai/provider";
-import { Job, JobCategory } from "@/lib/jobs/types";
+import { JobCategory } from "@/lib/jobs/types";
 
 type BeastPhase = "configure" | "processing" | "done";
 
+type JobStatus =
+  | "queued"
+  | "tailoring"
+  | "cover-letter"
+  | "applying"
+  | "done"
+  | "error";
+
 interface JobProcessingState {
   jobId: string;
-  status: "queued" | "tailoring" | "cover-letter" | "applying" | "done" | "error";
+  status: JobStatus;
 }
 
 const categoryOptions: { value: "all" | JobCategory; label: string }[] = [
@@ -58,13 +68,16 @@ function formatSalary(n: number) {
   return `$${(n / 1000).toFixed(0)}K`;
 }
 
+function fastDelay(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 export default function BeastModePage() {
   const router = useRouter();
   const resumes = useResumeStore((s) => s.resumes);
   const addResume = useResumeStore((s) => s.addResume);
   const { addApplication, applications } = useJobStore();
 
-  // Config state
   const [phase, setPhase] = useState<BeastPhase>("configure");
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [customInstructions, setCustomInstructions] = useState("");
@@ -73,11 +86,20 @@ export default function BeastModePage() {
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [selectedJobIds, setSelectedJobIds] = useState<Set<string>>(new Set());
 
-  // Processing state
   const [jobStates, setJobStates] = useState<JobProcessingState[]>([]);
   const [completedCount, setCompletedCount] = useState(0);
-  const [startTime, setStartTime] = useState<number>(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [startTimestamp, setStartTimestamp] = useState(0);
+
+  // Live timer
+  useEffect(() => {
+    if (!timerRunning) return;
+    const interval = setInterval(() => {
+      setElapsedSeconds(Math.round((Date.now() - startTimestamp) / 1000));
+    }, 200);
+    return () => clearInterval(interval);
+  }, [timerRunning, startTimestamp]);
 
   const appliedJobIds = useMemo(
     () => new Set(applications.map((a) => a.jobId)),
@@ -87,7 +109,8 @@ export default function BeastModePage() {
   const filteredJobs = useMemo(() => {
     return MOCK_JOBS.filter((job) => {
       if (appliedJobIds.has(job.id)) return false;
-      const matchesCategory = categoryFilter === "all" || job.category === categoryFilter;
+      const matchesCategory =
+        categoryFilter === "all" || job.category === categoryFilter;
       const matchesType = typeFilter === "all" || job.type === typeFilter;
       const matchesLevel = levelFilter === "all" || job.level === levelFilter;
       return matchesCategory && matchesType && matchesLevel;
@@ -117,18 +140,14 @@ export default function BeastModePage() {
     if (!selectedResume || selectedJobIds.size === 0) return;
 
     const jobIds = Array.from(selectedJobIds);
-    const initialStates: JobProcessingState[] = jobIds.map((id) => ({
-      jobId: id,
-      status: "queued",
-    }));
-
-    setJobStates(initialStates);
+    setJobStates(jobIds.map((id) => ({ jobId: id, status: "queued" })));
     setCompletedCount(0);
+    setElapsedSeconds(0);
     setPhase("processing");
     const start = Date.now();
-    setStartTime(start);
+    setStartTimestamp(start);
+    setTimerRunning(true);
 
-    const ai = getAIProvider();
     let done = 0;
 
     for (let i = 0; i < jobIds.length; i++) {
@@ -136,73 +155,61 @@ export default function BeastModePage() {
       const job = MOCK_JOBS.find((j) => j.id === jobId);
       if (!job) continue;
 
-      // Update to tailoring
+      // Fast mock processing (~1.2s per job)
       setJobStates((prev) =>
-        prev.map((s) => (s.jobId === jobId ? { ...s, status: "tailoring" } : s))
+        prev.map((s) =>
+          s.jobId === jobId ? { ...s, status: "tailoring" } : s
+        )
       );
+      await fastDelay(400 + Math.random() * 200);
 
-      try {
-        // Tailor
-        await ai.tailorResume(selectedResume, job.description, job.title, job.company);
+      setJobStates((prev) =>
+        prev.map((s) =>
+          s.jobId === jobId ? { ...s, status: "cover-letter" } : s
+        )
+      );
+      await fastDelay(300 + Math.random() * 200);
 
-        // Cover letter
-        setJobStates((prev) =>
-          prev.map((s) =>
-            s.jobId === jobId ? { ...s, status: "cover-letter" } : s
-          )
-        );
-        await ai.generateCoverLetter(selectedResume, job);
+      setJobStates((prev) =>
+        prev.map((s) =>
+          s.jobId === jobId ? { ...s, status: "applying" } : s
+        )
+      );
+      await fastDelay(200 + Math.random() * 100);
 
-        // Apply
-        setJobStates((prev) =>
-          prev.map((s) =>
-            s.jobId === jobId ? { ...s, status: "applying" } : s
-          )
-        );
+      // Create application in store
+      const newResumeId = `resume-beast-${Date.now()}-${i}`;
+      addResume({
+        ...selectedResume,
+        id: newResumeId,
+        name: `${selectedResume.name} — ${job.title}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
 
-        // Simulate small delay for applying
-        await new Promise((r) => setTimeout(r, 300));
+      addApplication({
+        id: `app-beast-${Date.now()}-${i}`,
+        jobId: job.id,
+        job,
+        resumeId: newResumeId,
+        resumeName: `${selectedResume.name} — ${job.title}`,
+        status: "applied",
+        appliedDate: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+        autoApplied: true,
+      });
 
-        // Create application
-        const newResumeId = `resume-beast-${Date.now()}-${i}`;
-        addResume({
-          ...selectedResume,
-          id: newResumeId,
-          name: `${selectedResume.name} — ${job.title}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+      done++;
+      setCompletedCount(done);
 
-        addApplication({
-          id: `app-beast-${Date.now()}-${i}`,
-          jobId: job.id,
-          job,
-          resumeId: newResumeId,
-          resumeName: `${selectedResume.name} — ${job.title}`,
-          status: "applied",
-          appliedDate: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
-          autoApplied: true,
-        });
-
-        done++;
-        setCompletedCount(done);
-        setElapsedSeconds(Math.round((Date.now() - start) / 1000));
-
-        setJobStates((prev) =>
-          prev.map((s) =>
-            s.jobId === jobId ? { ...s, status: "done" } : s
-          )
-        );
-      } catch {
-        setJobStates((prev) =>
-          prev.map((s) =>
-            s.jobId === jobId ? { ...s, status: "error" } : s
-          )
-        );
-      }
+      setJobStates((prev) =>
+        prev.map((s) =>
+          s.jobId === jobId ? { ...s, status: "done" } : s
+        )
+      );
     }
 
+    setTimerRunning(false);
     setElapsedSeconds(Math.round((Date.now() - start) / 1000));
     setPhase("done");
   }, [selectedResume, selectedJobIds, addResume, addApplication]);
@@ -210,379 +217,558 @@ export default function BeastModePage() {
   const progressPercent =
     jobStates.length > 0 ? (completedCount / jobStates.length) * 100 : 0;
 
+  const statusConfig: Record<
+    JobStatus,
+    { label: string; color: string; iconColor: string }
+  > = {
+    queued: {
+      label: "Queued",
+      color: "border-border bg-card",
+      iconColor: "text-muted-foreground",
+    },
+    tailoring: {
+      label: "Tailoring...",
+      color: "border-violet-500/30 bg-violet-500/5",
+      iconColor: "text-violet-500",
+    },
+    "cover-letter": {
+      label: "Cover letter...",
+      color: "border-blue-500/30 bg-blue-500/5",
+      iconColor: "text-blue-500",
+    },
+    applying: {
+      label: "Applying...",
+      color: "border-amber-500/30 bg-amber-500/5",
+      iconColor: "text-amber-500",
+    },
+    done: {
+      label: "Applied",
+      color: "border-green-500/30 bg-green-500/5",
+      iconColor: "text-green-500",
+    },
+    error: {
+      label: "Failed",
+      color: "border-red-500/30 bg-red-500/5",
+      iconColor: "text-red-500",
+    },
+  };
+
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/10">
-            <Zap className="h-5 w-5 text-rose-500" />
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-600 to-pink-400 shadow-lg shadow-rose-500/25">
+            <Zap className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight">
               Beast Mode
             </h1>
             <p className="text-muted-foreground">
-              Bulk apply to multiple jobs with AI-tailored resumes.
+              Bulk apply to multiple jobs with AI-tailored resumes and cover
+              letters.
             </p>
           </div>
         </div>
       </motion.div>
 
-      {/* Configure Phase */}
-      {phase === "configure" && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="space-y-6"
-        >
-          {/* Resume Selector */}
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Select Resume
-              </h2>
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {resumes.map((resume) => (
-                  <button
-                    key={resume.id}
-                    onClick={() => setSelectedResumeId(resume.id)}
-                    className={`flex shrink-0 items-center gap-3 rounded-lg border p-3 text-left transition-all hover:border-primary/30 min-w-[200px] ${
-                      selectedResumeId === resume.id
-                        ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                        : "border-border"
-                    }`}
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <FileText className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{resume.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {resume.skills.length} skills
-                      </p>
-                    </div>
-                    {selectedResumeId === resume.id && (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-primary ml-auto" />
-                    )}
-                  </button>
-                ))}
-              </div>
-              <Textarea
-                placeholder="Optional: Add custom instructions for AI tailoring (e.g., 'Emphasize leadership' or 'Focus on remote work experience')..."
-                value={customInstructions}
-                onChange={(e) => setCustomInstructions(e.target.value)}
-                rows={2}
-                className="text-sm"
-              />
-            </CardContent>
-          </Card>
-
-          {/* Filters */}
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary" />
-                Filter Jobs
-              </h2>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Category</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {categoryOptions.map((cat) => (
-                      <Button
-                        key={cat.value}
-                        variant={categoryFilter === cat.value ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCategoryFilter(cat.value)}
-                        className="text-xs h-7"
+      <AnimatePresence mode="wait">
+        {/* ─── CONFIGURE ─── */}
+        {phase === "configure" && (
+          <motion.div
+            key="configure"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="space-y-5"
+          >
+            {/* Step 1: Resume */}
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    1
+                  </div>
+                  <h2 className="font-display text-base font-semibold">
+                    Choose Your Resume
+                  </h2>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {resumes.map((resume) => {
+                    const isSelected = selectedResumeId === resume.id;
+                    return (
+                      <button
+                        key={resume.id}
+                        onClick={() => setSelectedResumeId(resume.id)}
+                        className={`group relative flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-200 hover:shadow-md ${
+                          isSelected
+                            ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-md"
+                            : "border-border hover:border-primary/30"
+                        }`}
                       >
-                        {cat.label}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-6">
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Type</p>
-                    <div className="flex gap-1">
-                      {typeOptions.map((t) => (
-                        <Button
-                          key={t}
-                          variant={typeFilter === t ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setTypeFilter(t)}
-                          className="text-xs h-7 capitalize"
-                        >
-                          {t}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Level</p>
-                    <div className="flex gap-1">
-                      {levelOptions.map((l) => (
-                        <Button
-                          key={l}
-                          variant={levelFilter === l ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setLevelFilter(l)}
-                          className="text-xs h-7 capitalize"
-                        >
-                          {l}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Job Queue */}
-          <Card>
-            <CardContent className="p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-                  <Rocket className="h-5 w-5 text-primary" />
-                  Job Queue
-                </h2>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={toggleAll}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    {selectedJobIds.size === filteredJobs.length
-                      ? "Deselect All"
-                      : "Select All"}
-                  </button>
-                  <Badge variant="secondary">
-                    {selectedJobIds.size} of {filteredJobs.length} selected
-                  </Badge>
-                </div>
-              </div>
-
-              {filteredJobs.length === 0 ? (
-                <p className="text-center text-sm text-muted-foreground py-8">
-                  No matching jobs found. Try adjusting your filters.
-                </p>
-              ) : (
-                <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
-                  {filteredJobs.map((job) => (
-                    <div
-                      key={job.id}
-                      onClick={() => toggleJob(job.id)}
-                      className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-all hover:bg-accent/50 ${
-                        selectedJobIds.has(job.id)
-                          ? "border-primary/30 bg-primary/5"
-                          : "border-border"
-                      }`}
-                    >
-                      <Checkbox
-                        checked={selectedJobIds.has(job.id)}
-                        onCheckedChange={() => toggleJob(job.id)}
-                        className="shrink-0"
-                      />
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-display text-sm font-bold text-primary">
-                        {job.company[0]}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm truncate">{job.title}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Building2 className="h-3 w-3" />
-                            {job.company}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {job.location}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <DollarSign className="h-3 w-3" />
-                            {formatSalary(job.salaryMin)}-{formatSalary(job.salaryMax)}
-                          </span>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-md shadow-violet-500/20">
+                          <FileText className="h-4 w-4 text-white" />
                         </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs capitalize shrink-0">
-                        {job.category}
-                      </Badge>
-                    </div>
-                  ))}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-sm truncate">
+                            {resume.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {resume.contact.name}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-1.5">
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {resume.skills.length} skills
+                            </Badge>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0"
+                            >
+                              {resume.experience.length} roles
+                            </Badge>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <div className="absolute right-3 top-3">
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Launch Button */}
-          <div className="sticky bottom-4 z-10">
-            <Card className="border-primary/20 shadow-lg">
-              <CardContent className="p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-sm">
-                    {selectedJobIds.size} job{selectedJobIds.size !== 1 && "s"} selected
-                    {selectedResume && (
-                      <span className="text-muted-foreground">
-                        {" "}with {selectedResume.name}
-                      </span>
-                    )}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    AI will tailor your resume and generate cover letters for each job
-                  </p>
-                </div>
-                <Button
-                  size="lg"
-                  disabled={!selectedResumeId || selectedJobIds.size === 0}
-                  onClick={handleLaunch}
-                  className="gap-2 bg-rose-500 hover:bg-rose-600"
-                >
-                  <Zap className="h-4 w-4" />
-                  Apply to {selectedJobIds.size} Job{selectedJobIds.size !== 1 && "s"}
-                </Button>
+                <Textarea
+                  placeholder="Optional instructions: e.g. Emphasize leadership, Focus on remote experience, Highlight certifications..."
+                  value={customInstructions}
+                  onChange={(e) => setCustomInstructions(e.target.value)}
+                  rows={2}
+                  className="text-sm resize-none"
+                />
               </CardContent>
             </Card>
-          </div>
-        </motion.div>
-      )}
 
-      {/* Processing Phase */}
-      {(phase === "processing" || phase === "done") && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-6"
-        >
-          {/* Progress Header */}
-          <Card className={phase === "done" ? "border-green-500/30" : "border-primary/20"}>
-            <CardContent className="p-5 space-y-4">
-              {phase === "done" ? (
-                <div className="text-center space-y-2">
-                  <div className="flex justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
-                      <Trophy className="h-8 w-8 text-green-500" />
+            {/* Step 2: Filters */}
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    2
+                  </div>
+                  <h2 className="font-display text-base font-semibold">
+                    Filter Jobs
+                  </h2>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                      Category
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {categoryOptions.map((cat) => (
+                        <Button
+                          key={cat.value}
+                          variant={
+                            categoryFilter === cat.value ? "default" : "outline"
+                          }
+                          size="sm"
+                          onClick={() => setCategoryFilter(cat.value)}
+                          className="text-xs h-7 rounded-full"
+                        >
+                          {cat.label}
+                        </Button>
+                      ))}
                     </div>
                   </div>
-                  <h2 className="font-display text-2xl font-bold">
-                    Mission Complete!
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Applied to {completedCount} job{completedCount !== 1 && "s"} in{" "}
-                    {elapsedSeconds} second{elapsedSeconds !== 1 && "s"}
-                  </p>
-                  <div className="flex justify-center gap-3 pt-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setPhase("configure");
-                        setSelectedJobIds(new Set());
-                        setJobStates([]);
-                      }}
-                    >
-                      Apply to More
-                    </Button>
-                    <Button
-                      onClick={() => router.push("/app/applications")}
-                      className="gap-2"
-                    >
-                      View Applications
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                        Type
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {typeOptions.map((t) => (
+                          <Button
+                            key={t}
+                            variant={
+                              typeFilter === t ? "default" : "outline"
+                            }
+                            size="sm"
+                            onClick={() => setTypeFilter(t)}
+                            className="text-xs h-7 rounded-full capitalize"
+                          >
+                            {t}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
+                        Level
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {levelOptions.map((l) => (
+                          <Button
+                            key={l}
+                            variant={
+                              levelFilter === l ? "default" : "outline"
+                            }
+                            size="sm"
+                            onClick={() => setLevelFilter(l)}
+                            className="text-xs h-7 rounded-full capitalize"
+                          >
+                            {l}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-display text-lg font-semibold">
-                      Applying to Jobs...
-                    </h2>
-                    <span className="text-sm font-medium text-primary">
-                      {completedCount} of {jobStates.length}
-                    </span>
-                  </div>
-                  <Progress value={progressPercent} className="h-2" />
-                </>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Job Processing Cards */}
-          <div className="space-y-2">
-            {jobStates.map((state, idx) => {
-              const job = MOCK_JOBS.find((j) => j.id === state.jobId);
-              if (!job) return null;
-
-              const statusLabel = {
-                queued: "Queued",
-                tailoring: "Tailoring resume...",
-                "cover-letter": "Writing cover letter...",
-                applying: "Applying...",
-                done: "Applied",
-                error: "Failed",
-              }[state.status];
-
-              const isActive = ["tailoring", "cover-letter", "applying"].includes(
-                state.status
-              );
-
-              return (
-                <motion.div
-                  key={state.jobId}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.02 }}
-                >
-                  <div
-                    className={`flex items-center gap-3 rounded-lg border p-3 transition-colors ${
-                      state.status === "done"
-                        ? "border-green-500/20 bg-green-500/5"
-                        : isActive
-                          ? "border-primary/30 bg-primary/5"
-                          : state.status === "error"
-                            ? "border-red-500/20 bg-red-500/5"
-                            : "border-border"
-                    }`}
-                  >
-                    {state.status === "done" ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
-                    ) : isActive ? (
-                      <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
-                    ) : state.status === "error" ? (
-                      <X className="h-4 w-4 shrink-0 text-red-500" />
-                    ) : (
-                      <div className="h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/30" />
-                    )}
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-display text-xs font-bold text-primary">
-                      {job.company[0]}
+            {/* Step 3: Job Queue */}
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      3
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-sm truncate">{job.title}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {job.company} &middot; {job.location}
+                    <h2 className="font-display text-base font-semibold">
+                      Select Jobs
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={toggleAll}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      {selectedJobIds.size === filteredJobs.length &&
+                      filteredJobs.length > 0
+                        ? "Deselect All"
+                        : "Select All"}
+                    </button>
+                    <Badge
+                      variant="outline"
+                      className="font-mono text-xs tabular-nums"
+                    >
+                      {selectedJobIds.size}/{filteredJobs.length}
+                    </Badge>
+                  </div>
+                </div>
+
+                {filteredJobs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Filter className="h-10 w-10 text-muted-foreground/30 mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      No matching jobs. Try adjusting filters.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-[420px] overflow-y-auto rounded-lg">
+                    {filteredJobs.map((job, idx) => {
+                      const isSelected = selectedJobIds.has(job.id);
+                      return (
+                        <motion.div
+                          key={job.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: idx * 0.015 }}
+                        >
+                          <div
+                            onClick={() => toggleJob(job.id)}
+                            className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-all duration-150 ${
+                              isSelected
+                                ? "border-primary/40 bg-primary/5"
+                                : "border-transparent bg-muted/30 hover:bg-muted/60"
+                            }`}
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleJob(job.id)}
+                              className="shrink-0"
+                            />
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-500 dark:from-slate-600 dark:to-slate-400 font-display text-xs font-bold text-white shadow-sm">
+                              {job.company[0]}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm truncate">
+                                {job.title}
+                              </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-0.5 truncate">
+                                  <Building2 className="h-3 w-3 shrink-0" />
+                                  {job.company}
+                                </span>
+                                <span className="hidden sm:flex items-center gap-0.5">
+                                  <MapPin className="h-3 w-3 shrink-0" />
+                                  {job.location}
+                                </span>
+                                <span className="flex items-center gap-0.5">
+                                  <DollarSign className="h-3 w-3 shrink-0" />
+                                  {formatSalary(job.salaryMin)}-
+                                  {formatSalary(job.salaryMax)}
+                                </span>
+                              </div>
+                            </div>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] capitalize shrink-0 hidden sm:inline-flex"
+                            >
+                              {job.category}
+                            </Badge>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Sticky Launch Bar */}
+            <div className="sticky bottom-4 z-10">
+              <Card className="shadow-2xl border-rose-500/20 bg-card/95 backdrop-blur-sm">
+                <CardContent className="p-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate">
+                      {selectedJobIds.size > 0 ? (
+                        <>
+                          {selectedJobIds.size} job
+                          {selectedJobIds.size !== 1 && "s"} ready
+                        </>
+                      ) : (
+                        "Select jobs to get started"
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {selectedResume
+                        ? `Using: ${selectedResume.name}`
+                        : "Select a resume first"}
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    disabled={!selectedResumeId || selectedJobIds.size === 0}
+                    onClick={handleLaunch}
+                    className="gap-2 shrink-0 bg-gradient-to-r from-rose-600 to-pink-500 hover:from-rose-700 hover:to-pink-600 shadow-lg shadow-rose-500/25 text-white border-0"
+                  >
+                    <Zap className="h-4 w-4" />
+                    Launch Beast Mode
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ─── PROCESSING ─── */}
+        {(phase === "processing" || phase === "done") && (
+          <motion.div
+            key="processing"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-5"
+          >
+            {/* Mission Control Header */}
+            <Card
+              className={`overflow-hidden ${
+                phase === "done"
+                  ? "border-green-500/30"
+                  : "border-rose-500/20"
+              }`}
+            >
+              {/* Gradient bar at top */}
+              <div
+                className={`h-1 ${
+                  phase === "done"
+                    ? "bg-gradient-to-r from-green-500 to-emerald-400"
+                    : "bg-gradient-to-r from-rose-500 to-pink-400"
+                }`}
+              />
+              <CardContent className="p-6">
+                {phase === "done" ? (
+                  <div className="text-center space-y-4">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 15,
+                      }}
+                      className="flex justify-center"
+                    >
+                      <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-green-500 to-emerald-400 shadow-xl shadow-green-500/30">
+                        <Trophy className="h-10 w-10 text-white" />
+                      </div>
+                    </motion.div>
+                    <div>
+                      <h2 className="font-display text-2xl font-bold">
+                        Mission Complete!
+                      </h2>
+                      <p className="text-muted-foreground mt-1">
+                        Beast Mode finished in{" "}
+                        <span className="font-mono font-bold text-foreground">
+                          {elapsedSeconds}s
+                        </span>
                       </p>
                     </div>
-                    <span
-                      className={`text-xs shrink-0 ${
-                        state.status === "done"
-                          ? "text-green-600 dark:text-green-400 font-medium"
-                          : isActive
-                            ? "text-primary font-medium"
-                            : "text-muted-foreground"
-                      }`}
-                    >
-                      {statusLabel}
-                    </span>
+                    <div className="flex justify-center gap-6 py-2">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold font-display text-green-500">
+                          {completedCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Applied
+                        </p>
+                      </div>
+                      <div className="h-10 w-px bg-border" />
+                      <div className="text-center">
+                        <p className="text-2xl font-bold font-display">
+                          {completedCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Resumes Tailored
+                        </p>
+                      </div>
+                      <div className="h-10 w-px bg-border" />
+                      <div className="text-center">
+                        <p className="text-2xl font-bold font-display">
+                          {completedCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Cover Letters
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-center gap-3 pt-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setPhase("configure");
+                          setSelectedJobIds(new Set());
+                          setJobStates([]);
+                        }}
+                        className="gap-2"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        Apply to More
+                      </Button>
+                      <Button
+                        onClick={() => router.push("/app/applications")}
+                        className="gap-2"
+                      >
+                        View Applications
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-600 to-pink-400 shadow-md shadow-rose-500/20">
+                          <Zap className="h-5 w-5 text-white animate-pulse" />
+                        </div>
+                        <div>
+                          <h2 className="font-display text-lg font-semibold">
+                            Beast Mode Active
+                          </h2>
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-mono">{elapsedSeconds}s</span>{" "}
+                            elapsed
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold font-display tabular-nums">
+                          {completedCount}
+                          <span className="text-muted-foreground text-base font-normal">
+                            /{jobStates.length}
+                          </span>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          jobs completed
+                        </p>
+                      </div>
+                    </div>
+                    <Progress value={progressPercent} className="h-2" />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Processing Grid */}
+            <div className="grid gap-2 sm:grid-cols-2">
+              {jobStates.map((state, idx) => {
+                const job = MOCK_JOBS.find((j) => j.id === state.jobId);
+                if (!job) return null;
+                const config = statusConfig[state.status];
+                const isActive = [
+                  "tailoring",
+                  "cover-letter",
+                  "applying",
+                ].includes(state.status);
+
+                return (
+                  <motion.div
+                    key={state.jobId}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.02 }}
+                  >
+                    <div
+                      className={`relative flex items-center gap-3 rounded-xl border p-3 transition-all duration-300 ${config.color}`}
+                    >
+                      {/* Status icon */}
+                      {state.status === "done" ? (
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
+                      ) : isActive ? (
+                        <Loader2
+                          className={`h-5 w-5 shrink-0 animate-spin ${config.iconColor}`}
+                        />
+                      ) : state.status === "error" ? (
+                        <X className="h-5 w-5 shrink-0 text-red-500" />
+                      ) : (
+                        <div className="h-5 w-5 shrink-0 rounded-full border-2 border-muted-foreground/20" />
+                      )}
+
+                      {/* Company initial */}
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-500 dark:from-slate-600 dark:to-slate-400 text-xs font-bold text-white">
+                        {job.company[0]}
+                      </div>
+
+                      {/* Job info */}
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm truncate leading-tight">
+                          {job.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {job.company}
+                        </p>
+                      </div>
+
+                      {/* Status label */}
+                      <span
+                        className={`text-[11px] shrink-0 font-medium ${config.iconColor}`}
+                      >
+                        {config.label}
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
