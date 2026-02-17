@@ -1,98 +1,133 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { FlipWords } from "@/components/ui/flip-words";
 import { Spotlight } from "@/components/ui/spotlight";
+import { DotPattern } from "@/components/ui/dot-pattern";
+import { RetroGrid } from "@/components/ui/retro-grid";
 import { Button } from "@/components/ui/button";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { SparklesText } from "@/components/ui/sparkles-text";
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text";
 
 const COMPANIES = ["Google", "Meta", "Stripe", "OpenAI", "Apple", "Netflix"];
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 pt-24">
-      <Spotlight className="absolute -top-40 left-0 md:-top-20 md:left-60" />
+    <section className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 pt-24 pb-16">
+      {/* Layer 1: Dot pattern background */}
+      <DotPattern
+        width={24}
+        height={24}
+        cr={1}
+        className="opacity-30 dark:opacity-20 [mask-image:radial-gradient(ellipse_at_center,white_30%,transparent_70%)]"
+      />
 
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgxMDAsMTAwLDEwMCwwLjA4KSIvPjwvc3ZnPg==')] [mask-image:radial-gradient(ellipse_at_center,black_50%,transparent_80%)]" />
+      {/* Layer 2: Retro grid at the bottom for depth */}
+      <div className="absolute inset-0 overflow-hidden">
+        <RetroGrid
+          angle={65}
+          cellSize={60}
+          opacity={0.3}
+          lightLineColor="oklch(0.511 0.262 276.966 / 0.3)"
+          darkLineColor="oklch(0.623 0.262 276.966 / 0.2)"
+        />
       </div>
 
-      <div className="mx-auto max-w-5xl text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary"
-        >
-          <Sparkles className="h-4 w-4" />
-          AI-Powered Resume Optimization
-        </motion.div>
+      {/* Layer 3: Spotlight effects */}
+      <Spotlight className="absolute -top-40 left-0 md:-top-20 md:left-60" />
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="font-display text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
-        >
-          Get{" "}
-          <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-            Hyr
-          </span>
-          -ed at
-          <br />
-          <FlipWords
-            words={COMPANIES}
-            duration={2500}
-            className="text-primary"
-          />
-        </motion.h1>
+      {/* Layer 4: Radial gradient overlay */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/15 via-background/80 to-background" />
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl"
-        >
-          Upload your resume, paste any job description, and let AI tailor your
-          resume perfectly. Beat ATS systems. Auto-apply to dream jobs.
-        </motion.p>
+      {/* Layer 5: Grain texture */}
+      <div className="pointer-events-none absolute inset-0 z-10 opacity-[0.015] dark:opacity-[0.03]">
+        <svg className="h-full w-full">
+          <filter id="hero-grain">
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.80"
+              numOctaves="4"
+              stitchTiles="stitch"
+            />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+          <rect width="100%" height="100%" filter="url(#hero-grain)" />
+        </svg>
+      </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-        >
-          <Link href="/app">
-            <ShimmerButton className="h-12 px-8 text-base font-semibold">
-              <span className="flex items-center gap-2">
-                Get Started Free
-                <ArrowRight className="h-4 w-4" />
-              </span>
-            </ShimmerButton>
-          </Link>
-          <Link href="#how-it-works">
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-12 rounded-full px-8"
+      {/* Content */}
+      <div className="relative z-20 mx-auto max-w-5xl text-center">
+        <BlurFade delay={0.1} inView>
+          <AnimatedGradientText className="mb-8 inline-flex">
+            <Sparkles className="mr-2 h-4 w-4" />
+            AI-Powered Resume Optimization
+          </AnimatedGradientText>
+        </BlurFade>
+
+        <BlurFade delay={0.2} inView>
+          <h1 className="font-display text-5xl font-extrabold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl">
+            Get{" "}
+            <SparklesText
+              className="inline text-5xl sm:text-6xl md:text-7xl lg:text-8xl"
+              colors={{ first: "#7c3aed", second: "#a78bfa" }}
             >
-              See How It Works
-            </Button>
-          </Link>
-        </motion.div>
+              Hyr
+            </SparklesText>
+            -ed at
+            <br />
+            <FlipWords
+              words={COMPANIES}
+              duration={2500}
+              className="text-primary"
+            />
+          </h1>
+        </BlurFade>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="mt-16 text-sm text-muted-foreground"
-        >
-          Trusted by 10,000+ job seekers worldwide
-        </motion.div>
+        <BlurFade delay={0.3} inView>
+          <p className="mx-auto mt-8 max-w-2xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
+            Upload your resume, paste any job description, and let AI tailor your
+            resume perfectly. Beat ATS systems. Auto-apply to dream jobs.
+          </p>
+        </BlurFade>
+
+        <BlurFade delay={0.4} inView>
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Link href="/app">
+              <ShimmerButton className="h-12 px-8 text-base font-semibold">
+                <span className="flex items-center gap-2">
+                  Get Started Free
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </ShimmerButton>
+            </Link>
+            <Link href="#how-it-works">
+              <Button
+                variant="outline"
+                size="lg"
+                className="h-12 rounded-full px-8 backdrop-blur-sm"
+              >
+                See How It Works
+              </Button>
+            </Link>
+          </div>
+        </BlurFade>
+
+        <BlurFade delay={0.6} inView>
+          <div className="mt-16 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              10,000+ resumes optimized
+            </div>
+            <div className="hidden h-4 w-px bg-border sm:block" />
+            <div className="hidden items-center gap-2 sm:flex">
+              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              95% ATS pass rate
+            </div>
+          </div>
+        </BlurFade>
       </div>
     </section>
   );

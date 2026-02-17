@@ -1,7 +1,9 @@
 "use client";
 
-import { motion } from "motion/react";
-import { Upload, FileSearch, Download } from "lucide-react";
+import { Upload, FileSearch, Download, Sparkles } from "lucide-react";
+import { GridPattern } from "@/components/ui/grid-pattern";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { BorderBeam } from "@/components/ui/border-beam";
 
 const steps = [
   {
@@ -9,84 +11,106 @@ const steps = [
     title: "Upload Your Resume",
     description:
       "Drag and drop your PDF resume. Our AI parses it into a structured format you can edit anytime.",
+    color: "text-blue-500",
+    bgColor: "bg-blue-500/10",
+    borderColor: "border-blue-500/20",
   },
   {
     icon: FileSearch,
     title: "Paste the Job Description",
     description:
-      "Copy and paste the job listing you're applying for. Our AI analyzes the requirements, keywords, and company culture.",
+      "Copy and paste the job listing you're applying for. Our AI analyzes requirements, keywords, and culture.",
+    color: "text-purple-500",
+    bgColor: "bg-purple-500/10",
+    borderColor: "border-purple-500/20",
+  },
+  {
+    icon: Sparkles,
+    title: "AI Tailors Your Resume",
+    description:
+      "Watch as AI rewrites sections, adds keywords, and optimizes formatting. Review every change before saving.",
+    color: "text-amber-500",
+    bgColor: "bg-amber-500/10",
+    borderColor: "border-amber-500/20",
   },
   {
     icon: Download,
-    title: "Get Your Tailored Resume",
+    title: "Download & Apply",
     description:
-      "Download a perfectly tailored resume that matches the job description. Review changes, accept or reject, and export as PDF.",
+      "Export your tailored resume as a clean PDF. Or let Hyr auto-apply to matching jobs for you.",
+    color: "text-green-500",
+    bgColor: "bg-green-500/10",
+    borderColor: "border-green-500/20",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-muted/30 px-4 py-24 md:py-32">
-      <div className="mx-auto max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
-        >
-          <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
-            How It Works
-          </p>
-          <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-            Three steps to your
-            <br />
-            <span className="text-primary">perfect resume</span>
-          </h2>
-        </motion.div>
+    <section
+      id="how-it-works"
+      className="relative overflow-hidden px-4 py-24 md:py-32"
+    >
+      {/* Grid pattern background */}
+      <GridPattern
+        width={48}
+        height={48}
+        strokeDasharray="4 4"
+        className="opacity-30 dark:opacity-15 [mask-image:radial-gradient(ellipse_at_center,white_30%,transparent_80%)]"
+      />
 
-        <div className="relative">
-          {/* Connection line */}
-          <div className="absolute left-1/2 top-0 hidden h-full w-px -translate-x-1/2 bg-gradient-to-b from-primary/50 via-primary/20 to-transparent md:block" />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-muted/50 via-transparent to-muted/50" />
 
-          <div className="grid gap-12 md:gap-16">
-            {steps.map((step, idx) => (
-              <motion.div
-                key={step.title}
-                initial={{ opacity: 0, x: idx % 2 === 0 ? -30 : 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className={`flex flex-col items-center gap-6 md:flex-row ${
-                  idx % 2 === 1 ? "md:flex-row-reverse" : ""
-                }`}
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <BlurFade inView>
+          <div className="mb-16 text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
+              How It Works
+            </p>
+            <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+              Four steps to your
+              <br />
+              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                perfect resume
+              </span>
+            </h2>
+          </div>
+        </BlurFade>
+
+        <div className="grid gap-6 sm:grid-cols-2">
+          {steps.map((step, idx) => (
+            <BlurFade
+              key={step.title}
+              delay={0.1 + idx * 0.1}
+              inView
+            >
+              <div
+                className={`group relative overflow-hidden rounded-2xl border ${step.borderColor} bg-card/50 p-6 backdrop-blur-sm transition-all hover:shadow-lg hover:shadow-primary/5`}
               >
-                <div className="flex-1 text-center md:text-left">
-                  <div
-                    className={`${
-                      idx % 2 === 1 ? "md:text-right" : ""
-                    }`}
-                  >
-                    <span className="mb-2 inline-block font-mono text-sm font-semibold text-primary">
-                      Step {idx + 1}
+                {idx === 2 && <BorderBeam duration={6} size={100} />}
+                <div className="flex items-start gap-4">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-muted-foreground">
+                      0{idx + 1}
                     </span>
-                    <h3 className="font-display text-2xl font-bold">
+                    <div
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${step.bgColor} ${step.color} transition-transform group-hover:scale-110`}
+                    >
+                      <step.icon className="h-6 w-6" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-bold">
                       {step.title}
                     </h3>
-                    <p className="mt-2 text-muted-foreground">
+                    <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                       {step.description}
                     </p>
                   </div>
                 </div>
-
-                <div className="relative z-10 flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border bg-background shadow-lg">
-                  <step.icon className="h-7 w-7 text-primary" />
-                </div>
-
-                <div className="flex-1" />
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </BlurFade>
+          ))}
         </div>
       </div>
     </section>

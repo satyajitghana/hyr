@@ -1,51 +1,52 @@
 "use client";
 
-import { motion } from "motion/react";
 import { NumberTicker } from "@/components/ui/number-ticker";
+import { Ripple } from "@/components/ui/ripple";
+import { BlurFade } from "@/components/ui/blur-fade";
 
 const stats = [
-  { value: 10000, suffix: "+", label: "Resumes Optimized" },
-  { value: 95, suffix: "%", label: "ATS Pass Rate" },
-  { value: 3, suffix: "x", label: "More Interviews" },
-  { value: 50, suffix: "%", label: "Time Saved" },
+  { value: 10000, suffix: "+", label: "Resumes Optimized", color: "text-primary" },
+  { value: 95, suffix: "%", label: "ATS Pass Rate", color: "text-emerald-500" },
+  { value: 3, suffix: "x", label: "More Interviews", color: "text-amber-500" },
+  { value: 50, suffix: "%", label: "Time Saved", color: "text-blue-500" },
 ];
 
 export function Stats() {
   return (
-    <section className="px-4 py-24 md:py-32">
-      <div className="mx-auto max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-16 text-center"
-        >
-          <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+    <section className="relative overflow-hidden px-4 py-24 md:py-32">
+      {/* Ripple background effect */}
+      <Ripple
+        mainCircleSize={210}
+        mainCircleOpacity={0.08}
+        numCircles={6}
+      />
+
+      <div className="relative z-10 mx-auto max-w-5xl">
+        <BlurFade inView>
+          <h2 className="mb-16 text-center font-display text-4xl font-bold tracking-tight sm:text-5xl">
             Numbers that speak
             <br />
-            <span className="text-primary">for themselves</span>
+            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              for themselves
+            </span>
           </h2>
-        </motion.div>
+        </BlurFade>
 
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {stats.map((stat, idx) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              className="text-center"
-            >
-              <div className="font-display text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">
-                <NumberTicker value={stat.value} />
-                {stat.suffix}
+            <BlurFade key={stat.label} delay={0.1 + idx * 0.1} inView>
+              <div className="group text-center">
+                <div
+                  className={`font-display text-4xl font-extrabold tracking-tight sm:text-5xl ${stat.color} transition-transform group-hover:scale-105`}
+                >
+                  <NumberTicker value={stat.value} />
+                  {stat.suffix}
+                </div>
+                <p className="mt-3 text-sm font-medium text-muted-foreground">
+                  {stat.label}
+                </p>
               </div>
-              <p className="mt-2 text-sm font-medium text-muted-foreground">
-                {stat.label}
-              </p>
-            </motion.div>
+            </BlurFade>
           ))}
         </div>
       </div>

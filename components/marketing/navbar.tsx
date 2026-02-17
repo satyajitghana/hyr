@@ -27,8 +27,8 @@ export function MarketingNavbar() {
       className={cn(
         "fixed top-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl -translate-x-1/2 rounded-2xl border transition-all duration-300",
         scrolled
-          ? "border-border/50 bg-background/80 shadow-lg backdrop-blur-xl"
-          : "border-transparent bg-background/40 backdrop-blur-md"
+          ? "border-border/50 bg-background/70 shadow-lg shadow-primary/5 backdrop-blur-xl"
+          : "border-transparent bg-background/30 backdrop-blur-md"
       )}
     >
       <nav className="flex items-center justify-between px-6 py-3">
@@ -46,7 +46,7 @@ export function MarketingNavbar() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50"
             >
               {item.label}
             </Link>
@@ -56,7 +56,7 @@ export function MarketingNavbar() {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <Link href="/app" className="hidden md:block">
-            <Button size="sm" className="rounded-full px-6">
+            <Button size="sm" className="rounded-full px-6 shadow-md shadow-primary/20">
               Get Started
             </Button>
           </Link>
