@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -22,6 +22,11 @@ import {
   Sparkles,
   X,
   Check,
+  Copy,
+  Pencil,
+  User,
+  AtSign,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +57,20 @@ interface ProcessingStatus {
   recruiterEmail: "pending" | "active" | "done";
 }
 
+/** Parse "Subject: ..." from first line of email text */
+function parseEmail(raw: string) {
+  const lines = raw.split("\n");
+  let subject = "";
+  let bodyStart = 0;
+  if (lines[0]?.startsWith("Subject:")) {
+    subject = lines[0].replace("Subject:", "").trim();
+    // skip blank line after subject
+    bodyStart = lines[1]?.trim() === "" ? 2 : 1;
+  }
+  const body = lines.slice(bodyStart).join("\n").trim();
+  return { subject, body };
+}
+
 export default function JobDetailPage({
   params,
 }: {
@@ -78,10 +97,22 @@ export default function JobDetailPage({
   const [recruiterEmail, setRecruiterEmail] = useState("");
   const [tailoredChanges, setTailoredChanges] = useState<string[]>([]);
   const [showChanges, setShowChanges] = useState(false);
-  const [showCoverLetter, setShowCoverLetter] = useState(false);
-  const [showEmail, setShowEmail] = useState(false);
+  const [editingCover, setEditingCover] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const selectedResume = resumes.find((r) => r.id === selectedResumeId);
+
+  const parsedEmail = useMemo(() => parseEmail(recruiterEmail), [recruiterEmail]);
+
+  const handleCopy = useCallback(
+    async (text: string, field: string) => {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    },
+    []
+  );
 
   const resetSheet = useCallback(() => {
     setStep("select-resume");
@@ -96,8 +127,8 @@ export default function JobDetailPage({
     setRecruiterEmail("");
     setTailoredChanges([]);
     setShowChanges(false);
-    setShowCoverLetter(false);
-    setShowEmail(false);
+    setEditingCover(false);
+    setEditingEmail(false);
   }, []);
 
   const handleStartProcessing = useCallback(async () => {
@@ -106,7 +137,6 @@ export default function JobDetailPage({
 
     const ai = getAIProvider();
 
-    // Step 1: Tailor resume
     setProcessingStatus((s) => ({ ...s, tailoring: "active" }));
     const tailored = await ai.tailorResume(
       selectedResume,
@@ -116,12 +146,16 @@ export default function JobDetailPage({
     );
     setTailoredChanges(
       tailored.changes.map(
-        (c) => `${c.section}: ${c.field} — ${c.type === "addition" ? "Added" : "Modified"}`
+        (c) =>
+          `${c.section}: ${c.field} — ${c.type === "addition" ? "Added" : "Modified"}`
       )
     );
-    setProcessingStatus((s) => ({ ...s, tailoring: "done", coverLetter: "active" }));
+    setProcessingStatus((s) => ({
+      ...s,
+      tailoring: "done",
+      coverLetter: "active",
+    }));
 
-    // Step 2: Cover letter
     const cl = await ai.generateCoverLetter(selectedResume, job);
     setCoverLetter(cl);
     setProcessingStatus((s) => ({
@@ -130,19 +164,16 @@ export default function JobDetailPage({
       recruiterEmail: "active",
     }));
 
-    // Step 3: Recruiter email
     const email = await ai.generateRecruiterEmail(selectedResume, job);
     setRecruiterEmail(email);
     setProcessingStatus((s) => ({ ...s, recruiterEmail: "done" }));
 
-    // Move to review
     setTimeout(() => setStep("review"), 500);
   }, [selectedResume, job]);
 
   const handleApply = useCallback(() => {
     if (!selectedResume || !job) return;
 
-    // Create tailored resume in store
     const newResumeId = `resume-tailored-${Date.now()}`;
     addResume({
       ...selectedResume,
@@ -152,7 +183,6 @@ export default function JobDetailPage({
       updatedAt: new Date().toISOString(),
     });
 
-    // Create application
     addApplication({
       id: `app-${Date.now()}`,
       jobId: job.id,
@@ -183,6 +213,7 @@ export default function JobDetailPage({
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      {/* Back nav */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -198,6 +229,7 @@ export default function JobDetailPage({
         <span className="text-sm text-muted-foreground">Back to Jobs</span>
       </motion.div>
 
+      {/* Job Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -207,7 +239,7 @@ export default function JobDetailPage({
           <CardContent className="p-6">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 font-display text-2xl font-bold text-primary">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-700 to-slate-500 dark:from-slate-600 dark:to-slate-400 font-display text-xl font-bold text-white shadow-lg">
                   {job.company[0]}
                 </div>
                 <div>
@@ -230,7 +262,7 @@ export default function JobDetailPage({
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      Posted {new Date(job.postedDate).toLocaleDateString()}
+                      {new Date(job.postedDate).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -259,7 +291,7 @@ export default function JobDetailPage({
                   </Button>
                 ) : (
                   <Button
-                    className="gap-2"
+                    className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white border-0 shadow-lg shadow-blue-500/25"
                     onClick={() => {
                       resetSheet();
                       setSheetOpen(true);
@@ -275,6 +307,7 @@ export default function JobDetailPage({
         </Card>
       </motion.div>
 
+      {/* Content Grid */}
       <div className="grid gap-6 md:grid-cols-3">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -293,9 +326,7 @@ export default function JobDetailPage({
               <p className="text-sm leading-relaxed text-muted-foreground">
                 {job.description}
               </p>
-
               <Separator className="my-6" />
-
               <h4 className="font-semibold mb-3">Requirements</h4>
               <ul className="space-y-2">
                 {job.requirements.map((req, idx) => (
@@ -341,7 +372,7 @@ export default function JobDetailPage({
         </motion.div>
       </div>
 
-      {/* Easy Apply Sheet */}
+      {/* ─── Easy Apply Sheet ─── */}
       <Sheet
         open={sheetOpen}
         onOpenChange={(open) => {
@@ -349,17 +380,19 @@ export default function JobDetailPage({
           if (!open) resetSheet();
         }}
       >
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="font-display flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400">
+                <Sparkles className="h-3.5 w-3.5 text-white" />
+              </div>
               Easy Apply — {job.title}
             </SheetTitle>
           </SheetHeader>
 
           <div className="mt-6 space-y-6">
             {/* Step indicator */}
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-1 text-xs">
               {(
                 [
                   { key: "select-resume", label: "Resume" },
@@ -378,33 +411,29 @@ export default function JobDetailPage({
                 const isActive = step === s.key;
                 const isDone = currentIdx > idx;
                 return (
-                  <div key={s.key} className="flex items-center gap-2">
+                  <div key={s.key} className="flex items-center gap-1">
                     {idx > 0 && (
                       <div
-                        className={`h-px w-6 ${isDone ? "bg-primary" : "bg-border"}`}
+                        className={`h-px w-4 sm:w-6 transition-colors ${isDone ? "bg-primary" : "bg-border"}`}
                       />
                     )}
                     <div
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold transition-all ${
                         isActive
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground shadow-sm"
                           : isDone
                             ? "bg-primary/20 text-primary"
                             : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {isDone ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        idx + 1
-                      )}
+                      {isDone ? <Check className="h-3 w-3" /> : idx + 1}
                     </div>
                     <span
-                      className={
+                      className={`hidden sm:inline ${
                         isActive
                           ? "font-medium text-foreground"
                           : "text-muted-foreground"
-                      }
+                      }`}
                     >
                       {s.label}
                     </span>
@@ -423,25 +452,25 @@ export default function JobDetailPage({
                 className="space-y-4"
               >
                 <p className="text-sm text-muted-foreground">
-                  Select the resume to use for this application.
+                  Choose the resume for this application.
                 </p>
                 <div className="grid gap-3">
                   {resumes.map((resume) => (
                     <button
                       key={resume.id}
                       onClick={() => setSelectedResumeId(resume.id)}
-                      className={`relative flex items-start gap-3 rounded-lg border p-4 text-left transition-all hover:border-primary/30 hover:bg-accent/50 ${
+                      className={`relative flex items-start gap-3 rounded-xl border p-4 text-left transition-all duration-200 hover:shadow-md ${
                         selectedResumeId === resume.id
-                          ? "border-primary bg-primary/5 ring-1 ring-primary/20"
-                          : "border-border"
+                          ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-md"
+                          : "border-border hover:border-primary/30"
                       }`}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <FileText className="h-5 w-5 text-primary" />
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-400 shadow-md shadow-blue-500/20">
+                        <FileText className="h-4 w-4 text-white" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">{resume.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">
+                        <p className="font-semibold text-sm">{resume.name}</p>
+                        <p className="text-xs text-muted-foreground">
                           {resume.contact.name} &middot;{" "}
                           {resume.skills.length} skills
                         </p>
@@ -523,36 +552,43 @@ export default function JobDetailPage({
                       key: "tailoring" as const,
                       label: "Tailoring resume",
                       icon: FileText,
+                      gradient: "from-violet-500 to-purple-400",
                     },
                     {
                       key: "coverLetter" as const,
                       label: "Writing cover letter",
                       icon: Mail,
+                      gradient: "from-blue-500 to-cyan-400",
                     },
                     {
                       key: "recruiterEmail" as const,
                       label: "Drafting recruiter email",
-                      icon: MessageSquare,
+                      icon: Send,
+                      gradient: "from-emerald-500 to-green-400",
                     },
                   ].map((item) => {
                     const status = processingStatus[item.key];
                     return (
                       <div
                         key={item.key}
-                        className={`flex items-center gap-3 rounded-lg border p-3 transition-colors ${
+                        className={`flex items-center gap-3 rounded-xl border p-3.5 transition-all duration-300 ${
                           status === "active"
-                            ? "border-primary/30 bg-primary/5"
+                            ? "border-primary/30 bg-primary/5 shadow-sm"
                             : status === "done"
                               ? "border-green-500/20 bg-green-500/5"
                               : "border-border"
                         }`}
                       >
                         {status === "active" ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          <Loader2 className="h-5 w-5 animate-spin text-primary" />
                         ) : status === "done" ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
                         ) : (
-                          <item.icon className="h-4 w-4 text-muted-foreground" />
+                          <div
+                            className={`flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br ${item.gradient} opacity-30`}
+                          >
+                            <item.icon className="h-3 w-3 text-white" />
+                          </div>
                         )}
                         <span
                           className={`text-sm ${
@@ -578,26 +614,27 @@ export default function JobDetailPage({
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-4"
+                className="space-y-5"
               >
-                <p className="text-sm text-muted-foreground">
-                  Review your application materials before applying.
-                </p>
-
-                {/* Tailored Changes */}
-                <div className="rounded-lg border">
+                {/* ── Resume Changes (collapsible) ── */}
+                <div className="rounded-xl border overflow-hidden">
                   <button
                     onClick={() => setShowChanges(!showChanges)}
-                    className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-accent/50 transition-colors"
+                    className="flex w-full items-center justify-between p-3.5 text-sm font-medium hover:bg-accent/50 transition-colors"
                   >
                     <span className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-primary" />
-                      Resume Changes ({tailoredChanges.length})
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-purple-400">
+                        <FileText className="h-3 w-3 text-white" />
+                      </div>
+                      Resume Changes
+                      <Badge variant="secondary" className="text-[10px] px-1.5">
+                        {tailoredChanges.length}
+                      </Badge>
                     </span>
                     {showChanges ? (
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     )}
                   </button>
                   <AnimatePresence>
@@ -608,13 +645,13 @@ export default function JobDetailPage({
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="border-t px-3 py-2 space-y-1">
+                        <div className="border-t bg-muted/30 px-3.5 py-3 space-y-1.5">
                           {tailoredChanges.map((change, i) => (
                             <p
                               key={i}
                               className="text-xs text-muted-foreground flex items-center gap-2"
                             >
-                              <Check className="h-3 w-3 text-green-500 shrink-0" />
+                              <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
                               {change}
                             </p>
                           ))}
@@ -624,80 +661,201 @@ export default function JobDetailPage({
                   </AnimatePresence>
                 </div>
 
-                {/* Cover Letter */}
-                <div className="rounded-lg border">
-                  <button
-                    onClick={() => setShowCoverLetter(!showCoverLetter)}
-                    className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-accent/50 transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-primary" />
-                      Cover Letter
-                    </span>
-                    {showCoverLetter ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </button>
-                  <AnimatePresence>
-                    {showCoverLetter && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
+                {/* ── Cover Letter (document UI) ── */}
+                <div className="rounded-xl border overflow-hidden">
+                  {/* Header bar */}
+                  <div className="flex items-center justify-between bg-muted/50 border-b px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400">
+                        <Mail className="h-3 w-3 text-white" />
+                      </div>
+                      <span className="text-sm font-medium">Cover Letter</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => handleCopy(coverLetter, "cover")}
                       >
-                        <div className="border-t p-3">
-                          <Textarea
-                            value={coverLetter}
-                            onChange={(e) => setCoverLetter(e.target.value)}
-                            rows={10}
-                            className="text-xs"
-                          />
-                        </div>
-                      </motion.div>
+                        {copiedField === "cover" ? (
+                          <Check className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`h-7 w-7 ${editingCover ? "bg-primary/10 text-primary" : ""}`}
+                        onClick={() => setEditingCover(!editingCover)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Body */}
+                  <div className="p-4">
+                    {editingCover ? (
+                      <Textarea
+                        value={coverLetter}
+                        onChange={(e) => setCoverLetter(e.target.value)}
+                        rows={12}
+                        className="text-xs font-mono"
+                      />
+                    ) : (
+                      <div className="space-y-3">
+                        {coverLetter.split("\n\n").map((paragraph, i) => (
+                          <p
+                            key={i}
+                            className="text-xs leading-relaxed text-foreground/80"
+                          >
+                            {paragraph}
+                          </p>
+                        ))}
+                      </div>
                     )}
-                  </AnimatePresence>
+                  </div>
                 </div>
 
-                {/* Recruiter Email */}
-                <div className="rounded-lg border">
-                  <button
-                    onClick={() => setShowEmail(!showEmail)}
-                    className="flex w-full items-center justify-between p-3 text-sm font-medium hover:bg-accent/50 transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-primary" />
-                      Recruiter Email
-                    </span>
-                    {showEmail ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </button>
-                  <AnimatePresence>
-                    {showEmail && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
+                {/* ── Recruiter Email (email client UI) ── */}
+                <div className="rounded-xl border overflow-hidden shadow-sm">
+                  {/* Email toolbar */}
+                  <div className="flex items-center justify-between bg-muted/50 border-b px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 to-green-400">
+                        <Send className="h-3 w-3 text-white" />
+                      </div>
+                      <span className="text-sm font-medium">
+                        Recruiter Email
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() =>
+                          handleCopy(recruiterEmail, "email")
+                        }
                       >
-                        <div className="border-t p-3">
-                          <Textarea
-                            value={recruiterEmail}
-                            onChange={(e) => setRecruiterEmail(e.target.value)}
-                            rows={10}
-                            className="text-xs"
-                          />
+                        {copiedField === "email" ? (
+                          <Check className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={`h-7 w-7 ${editingEmail ? "bg-primary/10 text-primary" : ""}`}
+                        onClick={() => setEditingEmail(!editingEmail)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {editingEmail ? (
+                    <div className="p-4">
+                      <Textarea
+                        value={recruiterEmail}
+                        onChange={(e) => setRecruiterEmail(e.target.value)}
+                        rows={12}
+                        className="text-xs font-mono"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      {/* Email metadata fields */}
+                      <div className="border-b bg-background px-4 py-3 space-y-2">
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-muted-foreground w-12 shrink-0 font-medium">
+                            From
+                          </span>
+                          <div className="flex items-center gap-1.5 text-foreground">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                              <User className="h-3 w-3 text-primary" />
+                            </div>
+                            {selectedResume?.contact.name ?? "You"}{" "}
+                            <span className="text-muted-foreground">
+                              &lt;{selectedResume?.contact.email ?? "you@email.com"}&gt;
+                            </span>
+                          </div>
                         </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-muted-foreground w-12 shrink-0 font-medium">
+                            To
+                          </span>
+                          <div className="flex items-center gap-1.5 text-foreground">
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/10">
+                              <AtSign className="h-3 w-3 text-emerald-500" />
+                            </div>
+                            Recruiter{" "}
+                            <span className="text-muted-foreground">
+                              &lt;recruiting@{job.company.toLowerCase().replace(/\s+/g, "")}.com&gt;
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-muted-foreground w-12 shrink-0 font-medium">
+                            Subject
+                          </span>
+                          <span className="font-medium text-foreground">
+                            {parsedEmail.subject ||
+                              `${job.title} Application`}
+                          </span>
+                        </div>
+                        {/* Attachments */}
+                        <div className="flex items-center gap-3 text-xs">
+                          <span className="text-muted-foreground w-12 shrink-0 font-medium">
+                            Attach
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1">
+                              <Paperclip className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-muted-foreground">
+                                resume_tailored.pdf
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 rounded-md border bg-muted/50 px-2 py-1">
+                              <Paperclip className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-muted-foreground">
+                                cover_letter.pdf
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Email body */}
+                      <div className="p-4">
+                        <div className="space-y-3">
+                          {parsedEmail.body
+                            .split("\n\n")
+                            .map((paragraph, i) => (
+                              <p
+                                key={i}
+                                className="text-xs leading-relaxed text-foreground/80"
+                              >
+                                {paragraph.split("\n").map((line, j) => (
+                                  <span key={j}>
+                                    {line}
+                                    {j <
+                                      paragraph.split("\n").length - 1 && (
+                                      <br />
+                                    )}
+                                  </span>
+                                ))}
+                              </p>
+                            ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
+                {/* Action buttons */}
                 <div className="flex justify-between pt-2">
                   <Button
                     variant="outline"
@@ -708,7 +866,10 @@ export default function JobDetailPage({
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleApply} className="gap-2">
+                  <Button
+                    onClick={handleApply}
+                    className="gap-2 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white border-0 shadow-lg shadow-green-500/25"
+                  >
                     <Send className="h-4 w-4" />
                     Apply Now
                   </Button>

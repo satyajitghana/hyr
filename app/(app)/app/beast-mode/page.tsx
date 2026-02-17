@@ -578,20 +578,12 @@ export default function BeastModePage() {
           >
             {/* Mission Control Header */}
             <Card
-              className={`overflow-hidden ${
+              className={
                 phase === "done"
                   ? "border-green-500/30"
                   : "border-rose-500/20"
-              }`}
+              }
             >
-              {/* Gradient bar at top */}
-              <div
-                className={`h-1 ${
-                  phase === "done"
-                    ? "bg-gradient-to-r from-green-500 to-emerald-400"
-                    : "bg-gradient-to-r from-rose-500 to-pink-400"
-                }`}
-              />
               <CardContent className="p-6">
                 {phase === "done" ? (
                   <div className="text-center space-y-4">

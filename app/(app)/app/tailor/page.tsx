@@ -389,8 +389,7 @@ export default function TailorPage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
           >
-            <Card className="border-violet-500/20 overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-violet-500 to-purple-400" />
+            <Card className="border-violet-500/20">
               <CardContent className="py-16 px-6">
                 <div className="mx-auto max-w-md space-y-8">
                   {/* Animated icon */}
@@ -473,8 +472,7 @@ export default function TailorPage() {
             className="space-y-5"
           >
             {/* Score & Actions Header */}
-            <Card className="overflow-hidden border-green-500/20">
-              <div className="h-1 bg-gradient-to-r from-green-500 to-emerald-400" />
+            <Card className="border-green-500/20">
               <CardContent className="p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
