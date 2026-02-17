@@ -62,7 +62,7 @@ export function Hero() {
       <div className="relative z-20 mx-auto max-w-5xl text-center">
         <BlurFade delay={0.1} inView>
           <div className="mb-8 inline-flex items-center justify-center rounded-full border border-border/50 bg-white/10 dark:bg-white/5 px-4 py-1.5 backdrop-blur-sm shadow-[inset_0_-8px_10px_#7c3aed1f] transition-shadow duration-500 hover:shadow-[inset_0_-5px_10px_#7c3aed3f]">
-            <SparklesIcon className="mr-2 h-4 w-4 text-primary" />
+            <SparklesIcon size={16} className="mr-2 text-primary" />
             <AnimatedGradientText
               className="font-pixel text-sm"
               colorFrom="#7c3aed"

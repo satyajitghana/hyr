@@ -162,35 +162,37 @@ export default function ApplicationsPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         layout
                       >
-                        <Card className="transition-all hover:shadow-md">
-                          <CardContent className="p-3">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-display text-xs font-bold text-primary">
-                                {app.job.company[0]}
+                        <Link href={`/app/jobs/${app.jobId}`}>
+                          <Card className="cursor-pointer transition-all hover:shadow-md hover:border-primary/20">
+                            <CardContent className="p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-display text-xs font-bold text-primary">
+                                  {app.job.company[0]}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-semibold truncate">
+                                    {app.job.title}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {app.job.company}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold truncate">
-                                  {app.job.title}
-                                </p>
-                                <p className="text-xs text-muted-foreground truncate">
-                                  {app.job.company}
-                                </p>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(app.appliedDate).toLocaleDateString()}
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(app.appliedDate).toLocaleDateString()}
-                            </div>
-                            {app.autoApplied && (
-                              <Badge
-                                variant="secondary"
-                                className="mt-2 text-xs gap-1"
-                              >
-                                Auto-applied
-                              </Badge>
-                            )}
-                          </CardContent>
-                        </Card>
+                              {app.autoApplied && (
+                                <Badge
+                                  variant="secondary"
+                                  className="mt-2 text-xs gap-1"
+                                >
+                                  Auto-applied
+                                </Badge>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </Link>
                       </motion.div>
                     ))}
                     {apps.length === 0 && (

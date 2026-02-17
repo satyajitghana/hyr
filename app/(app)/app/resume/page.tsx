@@ -142,81 +142,87 @@ export default function ResumePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
             >
-              <Card className="group transition-all hover:shadow-md hover:border-primary/20">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-xl bg-primary/10 p-2.5">
-                        <FileText className="h-5 w-5 text-primary" />
+              <Link href={`/app/resume/${resume.id}`} className="block">
+                <Card className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/20">
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-primary/10 p-2.5">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold group-hover:text-primary transition-colors">
+                            {resume.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            {resume.contact.name} &middot; Updated{" "}
+                            {new Date(resume.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <Link
-                          href={`/app/resume/${resume.id}`}
-                          className="font-semibold hover:text-primary transition-colors"
-                        >
-                          {resume.name}
-                        </Link>
-                        <p className="text-xs text-muted-foreground">
-                          Updated{" "}
-                          {new Date(resume.updatedAt).toLocaleDateString()}
-                        </p>
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/app/resume/${resume.id}`}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                View / Edit
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href={`/app/resume/${resume.id}/optimize`}>
+                                <Shield className="mr-2 h-4 w-4" />
+                                ATS Optimize
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link href="/app/tailor">
+                                <Wand2 className="mr-2 h-4 w-4" />
+                                Tailor for Job
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => deleteResume(resume.id)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/app/resume/${resume.id}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            View / Edit
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/app/resume/${resume.id}/optimize`}>
-                            <Shield className="mr-2 h-4 w-4" />
-                            ATS Optimize
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/app/tailor">
-                            <Wand2 className="mr-2 h-4 w-4" />
-                            Tailor for Job
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => deleteResume(resume.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
 
-                  <div className="mt-4 space-y-2">
-                    <p className="line-clamp-2 text-sm text-muted-foreground">
-                      {resume.summary}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {resume.skills.slice(0, 4).map((skill) => (
-                        <Badge key={skill} variant="secondary" className="text-xs">
-                          {skill}
-                        </Badge>
-                      ))}
-                      {resume.skills.length > 4 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{resume.skills.length - 4}
-                        </Badge>
-                      )}
+                    <div className="mt-4 space-y-2">
+                      <p className="line-clamp-2 text-sm text-muted-foreground">
+                        {resume.summary}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {resume.skills.slice(0, 4).map((skill) => (
+                          <Badge key={skill} variant="secondary" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {resume.skills.length > 4 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{resume.skills.length - 4}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             </motion.div>
           ))}
         </div>

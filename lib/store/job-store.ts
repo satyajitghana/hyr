@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Application, AutoApplyConfig } from "@/lib/jobs/types";
+import { SAMPLE_APPLICATIONS, MOCK_DATA_VERSION } from "@/data/mock";
 
 interface JobState {
   applications: Application[];
@@ -15,10 +16,12 @@ interface JobState {
   setAutoApplyConfig: (config: Partial<AutoApplyConfig>) => void;
 }
 
+const SAMPLE_APP_IDS = new Set(SAMPLE_APPLICATIONS.map((a) => a.id));
+
 export const useJobStore = create<JobState>()(
   persist(
     (set) => ({
-      applications: [],
+      applications: SAMPLE_APPLICATIONS,
       autoApplyConfig: {
         enabled: false,
         targetRoles: [],
@@ -43,6 +46,22 @@ export const useJobStore = create<JobState>()(
           autoApplyConfig: { ...state.autoApplyConfig, ...config },
         })),
     }),
-    { name: "hyr-jobs" }
+    {
+      name: "hyr-jobs",
+      version: MOCK_DATA_VERSION,
+      migrate: (persistedState: unknown, version: number) => {
+        const state = persistedState as JobState;
+        if (version < MOCK_DATA_VERSION) {
+          const userApps = (state.applications || []).filter(
+            (a) => !SAMPLE_APP_IDS.has(a.id)
+          );
+          return {
+            ...state,
+            applications: [...SAMPLE_APPLICATIONS, ...userApps],
+          };
+        }
+        return state;
+      },
+    }
   )
 );
