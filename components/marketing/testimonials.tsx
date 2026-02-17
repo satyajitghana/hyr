@@ -124,21 +124,21 @@ export function Testimonials() {
             </p>
           </div>
         </BlurFade>
+      </div>
 
-        <div className="relative">
-          <Marquee pauseOnHover className="[--duration:40s]">
-            {testimonials.slice(0, 4).map((t) => (
-              <TestimonialCard key={t.name} {...t} />
-            ))}
-          </Marquee>
-          <Marquee reverse pauseOnHover className="mt-3 [--duration:45s]">
-            {testimonials.slice(4).map((t) => (
-              <TestimonialCard key={t.name} {...t} />
-            ))}
-          </Marquee>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent" />
-        </div>
+      <div className="relative">
+        <Marquee pauseOnHover className="[--duration:40s]">
+          {testimonials.slice(0, 4).map((t) => (
+            <TestimonialCard key={t.name} {...t} />
+          ))}
+        </Marquee>
+        <Marquee reverse pauseOnHover className="mt-3 [--duration:45s]">
+          {testimonials.slice(4).map((t) => (
+            <TestimonialCard key={t.name} {...t} />
+          ))}
+        </Marquee>
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent" />
       </div>
     </section>
   );
