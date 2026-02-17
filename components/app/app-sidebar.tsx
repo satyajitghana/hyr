@@ -3,15 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  FileText,
-  Wand2,
-  Briefcase,
-  ClipboardList,
-  ArrowLeft,
-  Zap,
-} from "lucide-react";
-import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -24,17 +15,25 @@ import {
   SidebarFooter,
   SidebarRail,
   useSidebar,
-} from "@/components/ui/sidebar";
+} from "@/components/animate-ui/components/radix/sidebar";
 import { Logo } from "@/components/shared/logo";
 import { useJobStore } from "@/lib/store/job-store";
 
+import { HouseIcon } from "@/components/ui/house-icon";
+import { FolderIcon } from "@/components/ui/folder-icon";
+import { SparklesIcon } from "@/components/ui/sparkles-icon";
+import { CompassIcon } from "@/components/ui/compass-icon";
+import { ClipboardIcon } from "@/components/ui/clipboard-icon";
+import { ZapIcon } from "@/components/ui/zap-icon";
+import { MoveLeftIcon } from "@/components/ui/move-left-icon";
+
 const navItems = [
-  { label: "Dashboard", href: "/app", icon: LayoutDashboard },
-  { label: "Resumes", href: "/app/resume", icon: FileText },
-  { label: "Tailor", href: "/app/tailor", icon: Wand2 },
-  { label: "Jobs", href: "/app/jobs", icon: Briefcase },
-  { label: "Applications", href: "/app/applications", icon: ClipboardList, showBadge: true },
-  { label: "Beast Mode", href: "/app/beast-mode", icon: Zap },
+  { label: "Dashboard", href: "/app", Icon: HouseIcon },
+  { label: "Resumes", href: "/app/resume", Icon: FolderIcon },
+  { label: "Tailor", href: "/app/tailor", Icon: SparklesIcon },
+  { label: "Jobs", href: "/app/jobs", Icon: CompassIcon },
+  { label: "Applications", href: "/app/applications", Icon: ClipboardIcon, showBadge: true },
+  { label: "Beast Mode", href: "/app/beast-mode", Icon: ZapIcon },
 ];
 
 export function AppSidebar() {
@@ -45,7 +44,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b px-4 py-4">
+      <SidebarHeader className="border-b px-3 py-3 transition-[padding] duration-300 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
         <Logo showText={!collapsed} size="sm" href="/app" />
       </SidebarHeader>
 
@@ -62,7 +61,7 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
                       <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
+                        <item.Icon size={16} className="shrink-0" />
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
@@ -77,12 +76,12 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
+      <SidebarFooter className="border-t p-3 transition-[padding] duration-300 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Back to site">
               <Link href="/">
-                <ArrowLeft className="h-4 w-4" />
+                <MoveLeftIcon size={16} className="shrink-0" />
                 <span>Back to site</span>
               </Link>
             </SidebarMenuButton>

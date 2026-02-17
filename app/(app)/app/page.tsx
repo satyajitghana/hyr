@@ -14,7 +14,6 @@ import {
   BarChart3,
   Target,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { useJobStore } from "@/lib/store/job-store";
@@ -22,7 +21,6 @@ import { useJobStore } from "@/lib/store/job-store";
 const quickActions = [
   {
     title: "Upload Resume",
-    description: "Add a new resume",
     icon: Upload,
     href: "/app/resume",
     gradient: "from-blue-600 to-blue-400",
@@ -30,7 +28,6 @@ const quickActions = [
   },
   {
     title: "Tailor Resume",
-    description: "AI-powered optimization",
     icon: Wand2,
     href: "/app/tailor",
     gradient: "from-violet-600 to-purple-400",
@@ -38,7 +35,6 @@ const quickActions = [
   },
   {
     title: "Browse Jobs",
-    description: "Explore opportunities",
     icon: Briefcase,
     href: "/app/jobs",
     gradient: "from-emerald-600 to-green-400",
@@ -46,7 +42,6 @@ const quickActions = [
   },
   {
     title: "Applications",
-    description: "Track your progress",
     icon: ClipboardList,
     href: "/app/applications",
     gradient: "from-amber-600 to-yellow-400",
@@ -54,7 +49,6 @@ const quickActions = [
   },
   {
     title: "Easy Apply",
-    description: "One-click applications",
     icon: Send,
     href: "/app/jobs",
     gradient: "from-cyan-600 to-sky-400",
@@ -62,7 +56,6 @@ const quickActions = [
   },
   {
     title: "Beast Mode",
-    description: "Bulk auto-apply",
     icon: Zap,
     href: "/app/beast-mode",
     gradient: "from-rose-600 to-pink-400",
@@ -76,28 +69,24 @@ export default function DashboardPage() {
   const interviews = applications.filter(
     (a) => a.status === "interview"
   ).length;
-  const offers = applications.filter((a) => a.status === "offer").length;
 
   const stats = [
     {
       label: "Resumes",
       value: resumes.length,
       icon: FileText,
-      accent: "bg-blue-500",
       iconColor: "text-blue-500",
     },
     {
       label: "Applications",
       value: applications.length,
       icon: BarChart3,
-      accent: "bg-emerald-500",
       iconColor: "text-emerald-500",
     },
     {
       label: "Interviews",
       value: interviews,
       icon: Target,
-      accent: "bg-violet-500",
       iconColor: "text-violet-500",
     },
     {
@@ -107,7 +96,6 @@ export default function DashboardPage() {
           ? Math.round((interviews / applications.length) * 100)
           : 0,
       icon: TrendingUp,
-      accent: "bg-amber-500",
       iconColor: "text-amber-500",
       suffix: "%",
     },
@@ -129,7 +117,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, idx) => (
           <motion.div
             key={stat.label}
@@ -137,35 +125,28 @@ export default function DashboardPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: idx * 0.05 }}
           >
-            <Card className="relative overflow-hidden">
-              <div className={`absolute left-0 top-0 h-full w-1 ${stat.accent}`} />
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      {stat.label}
-                    </p>
-                    <p className="mt-1 text-3xl font-bold font-display tracking-tight">
-                      <NumberTicker value={stat.value} />
-                      {stat.suffix || ""}
-                    </p>
-                  </div>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
-                    <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="rounded-xl border bg-card p-4 transition-colors hover:bg-accent/30">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  {stat.label}
+                </p>
+                <stat.icon className={`h-4 w-4 ${stat.iconColor}`} />
+              </div>
+              <p className="mt-2 font-display text-3xl font-bold tracking-tight">
+                <NumberTicker value={stat.value} />
+                {stat.suffix || ""}
+              </p>
+            </div>
           </motion.div>
         ))}
       </div>
 
       {/* Quick Actions */}
       <div>
-        <h2 className="mb-5 font-display text-xl font-semibold">
+        <h2 className="mb-4 font-display text-lg font-semibold">
           Quick Actions
         </h2>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {quickActions.map((action, idx) => (
             <motion.div
               key={action.title}
@@ -174,23 +155,16 @@ export default function DashboardPage() {
               transition={{ duration: 0.3, delay: 0.2 + idx * 0.04 }}
             >
               <Link href={action.href}>
-                <Card className="group h-full cursor-pointer border-border/60 transition-all duration-200 hover:shadow-lg hover:border-border hover:-translate-y-0.5">
-                  <CardContent className="flex flex-col items-center gap-3 p-5">
-                    <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${action.gradient} shadow-lg ${action.shadow} transition-transform duration-200 group-hover:scale-110`}
-                    >
-                      <action.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm font-semibold leading-tight">
-                        {action.title}
-                      </p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground leading-tight">
-                        {action.description}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="group flex flex-col items-center gap-2.5 rounded-xl border border-transparent p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-border/50 hover:bg-accent/50">
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${action.gradient} shadow-lg ${action.shadow} transition-transform duration-200 group-hover:scale-110`}
+                  >
+                    <action.icon className="h-5 w-5 text-white" />
+                  </div>
+                  <p className="text-center text-xs font-medium leading-tight">
+                    {action.title}
+                  </p>
+                </div>
               </Link>
             </motion.div>
           ))}

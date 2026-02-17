@@ -380,19 +380,18 @@ export default function JobDetailPage({
           if (!open) resetSheet();
         }}
       >
-        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="font-display flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-cyan-400">
-                <Sparkles className="h-3.5 w-3.5 text-white" />
-              </div>
-              Easy Apply — {job.title}
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader className="pb-0">
+            <SheetTitle className="font-display flex items-center gap-2 text-base">
+              <Send className="h-4 w-4 text-primary" />
+              Easy Apply
             </SheetTitle>
+            <p className="text-xs text-muted-foreground truncate">{job.title} at {job.company}</p>
           </SheetHeader>
 
-          <div className="mt-6 space-y-6">
+          <div className="mt-5 space-y-5">
             {/* Step indicator */}
-            <div className="flex items-center gap-1 text-xs">
+            <div className="flex items-center text-xs">
               {(
                 [
                   { key: "select-resume", label: "Resume" },
@@ -411,32 +410,34 @@ export default function JobDetailPage({
                 const isActive = step === s.key;
                 const isDone = currentIdx > idx;
                 return (
-                  <div key={s.key} className="flex items-center gap-1">
-                    {idx > 0 && (
+                  <div key={s.key} className="flex items-center flex-1 last:flex-none">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <div
-                        className={`h-px w-4 sm:w-6 transition-colors ${isDone ? "bg-primary" : "bg-border"}`}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                          isActive
+                            ? "bg-primary text-primary-foreground ring-4 ring-primary/10"
+                            : isDone
+                              ? "bg-primary/15 text-primary"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {isDone ? <Check className="h-3.5 w-3.5" /> : idx + 1}
+                      </div>
+                      <span
+                        className={`hidden sm:inline ${
+                          isActive
+                            ? "font-medium text-foreground"
+                            : "text-muted-foreground"
+                        }`}
+                      >
+                        {s.label}
+                      </span>
+                    </div>
+                    {idx < 3 && (
+                      <div
+                        className={`mx-2 h-px flex-1 transition-colors ${isDone ? "bg-primary/40" : "bg-border"}`}
                       />
                     )}
-                    <div
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold transition-all ${
-                        isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : isDone
-                            ? "bg-primary/20 text-primary"
-                            : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {isDone ? <Check className="h-3 w-3" /> : idx + 1}
-                    </div>
-                    <span
-                      className={`hidden sm:inline ${
-                        isActive
-                          ? "font-medium text-foreground"
-                          : "text-muted-foreground"
-                      }`}
-                    >
-                      {s.label}
-                    </span>
                   </div>
                 );
               })}

@@ -1,6 +1,6 @@
 "use client";
 
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/animate-ui/components/radix/sidebar";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppBreadcrumb } from "@/components/app/app-breadcrumb";
 import { Separator } from "@/components/ui/separator";
