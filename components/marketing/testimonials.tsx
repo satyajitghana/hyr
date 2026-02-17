@@ -1,11 +1,8 @@
 "use client";
 
 import { Marquee } from "@/components/ui/marquee";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DotPattern } from "@/components/ui/dot-pattern";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
@@ -79,34 +76,31 @@ function TestimonialCard({
     .join("");
 
   return (
-    <Card className="w-80 shrink-0 mx-3 border-border/40 bg-card/60 backdrop-blur-sm transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
-      <CardContent className="p-6">
-        <div className="mb-3 flex gap-0.5">
-          {Array.from({ length: stars }).map((_, i) => (
-            <Star
-              key={i}
-              className="h-4 w-4 fill-amber-400 text-amber-400"
-            />
-          ))}
+    <figure className="relative w-72 shrink-0 mx-2 rounded-2xl border border-border/40 bg-card p-5 transition-all duration-300 hover:border-border hover:shadow-md">
+      <Quote className="absolute top-4 right-4 h-5 w-5 text-primary/10" />
+      <div className="mb-3 flex gap-0.5">
+        {Array.from({ length: stars }).map((_, i) => (
+          <Star
+            key={i}
+            className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+          />
+        ))}
+      </div>
+      <blockquote className="mb-4 text-sm leading-relaxed text-muted-foreground">
+        {text}
+      </blockquote>
+      <figcaption className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+          {initials}
         </div>
-        <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-          &ldquo;{text}&rdquo;
-        </p>
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="text-sm font-semibold">{name}</p>
-            <p className="text-xs text-muted-foreground">
-              {role} at {company}
-            </p>
-          </div>
+        <div>
+          <p className="text-sm font-semibold leading-none">{name}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {role}, {company}
+          </p>
         </div>
-      </CardContent>
-    </Card>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -114,32 +108,20 @@ export function Testimonials() {
   return (
     <section
       id="testimonials"
-      className="relative overflow-hidden px-4 py-24 md:py-32"
+      className="relative overflow-hidden py-24 md:py-32"
     >
-      {/* Dot pattern */}
-      <DotPattern
-        width={28}
-        height={28}
-        cr={0.6}
-        className="opacity-15 dark:opacity-10 [mask-image:radial-gradient(ellipse_at_center,white_20%,transparent_70%)]"
-      />
-
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-transparent to-muted/30" />
-
-      <div className="relative z-10 mx-auto max-w-6xl">
+      <div className="relative z-10 mx-auto max-w-6xl px-4">
         <BlurFade inView>
-          <div className="mb-16 text-center">
+          <div className="mb-14 text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">
               Testimonials
             </p>
             <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
               Loved by job seekers
-              <br />
-              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                everywhere
-              </span>
             </h2>
+            <p className="mx-auto mt-4 max-w-md text-muted-foreground">
+              Join thousands of professionals who landed their dream roles with Hyr.
+            </p>
           </div>
         </BlurFade>
 
@@ -149,13 +131,13 @@ export function Testimonials() {
               <TestimonialCard key={t.name} {...t} />
             ))}
           </Marquee>
-          <Marquee reverse pauseOnHover className="mt-4 [--duration:45s]">
+          <Marquee reverse pauseOnHover className="mt-3 [--duration:45s]">
             {testimonials.slice(4).map((t) => (
               <TestimonialCard key={t.name} {...t} />
             ))}
           </Marquee>
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-background to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-background to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent" />
         </div>
       </div>
     </section>
