@@ -11,7 +11,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuBadge,
   SidebarFooter,
   SidebarRail,
   useSidebar,
@@ -74,11 +73,13 @@ export function AppSidebar() {
                       <Link href={item.href}>
                         <item.Icon size={16} className="shrink-0" />
                         <span>{item.label}</span>
+                        {item.showBadge && applicationCount > 0 && (
+                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary/15 px-1.5 text-[10px] font-semibold tabular-nums text-primary">
+                            {applicationCount}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
-                    {item.showBadge && applicationCount > 0 && (
-                      <SidebarMenuBadge>{applicationCount}</SidebarMenuBadge>
-                    )}
                   </SidebarMenuItem>
                 );
               })}
