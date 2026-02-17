@@ -121,7 +121,7 @@ export default function ApplicationsPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16"
+          className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16"
         >
           <ClipboardList className="mb-4 h-12 w-12 text-muted-foreground/50" />
           <h3 className="font-display text-lg font-semibold">

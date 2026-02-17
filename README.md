@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/logo.svg" alt="Hyr Logo" width="120" />
+</p>
 
-## Getting Started
+<h1 align="center">Hyr</h1>
 
-First, run the development server:
+<p align="center">
+  AI-Powered Resume Optimization
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+<p align="center">
+  Upload your resume, paste any job description, and let AI tailor your resume perfectly. Beat ATS systems. Auto-apply to dream jobs.
+</p>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Resume Tailoring** — AI rewrites your resume for every job description, matching keywords, tone, and requirements automatically
+- **ATS Optimizer** — Get a detailed ATS compatibility score and actionable fixes to pass every screening
+- **Auto Apply** — Set your preferences and let Hyr automatically apply to matching jobs
+- **Application Tracker** — Track every application from submitted to offer with a Kanban-style board
+- **Smart Resume Builder** — Upload any PDF and get a structured, editable format with clean PDF export
+- **Instant Optimization** — One-click AI optimizations for formatting, keywords, and readability
 
-## Learn More
+## Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4, shadcn/ui
+- **AI:** Google Gemini
+- **Animations:** Motion (Framer Motion), MagicUI, lucide-animated
+- **Fonts:** Geist Sans, Geist Mono, Geist Pixel, Bricolage Grotesque

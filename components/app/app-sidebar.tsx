@@ -23,6 +23,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Logo } from "@/components/shared/logo";
 
 const navItems = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
@@ -38,14 +39,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b px-4 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-sm">
-            H
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight">
-            Hyr
-          </span>
-        </Link>
+        <Logo />
       </SidebarHeader>
 
       <SidebarContent>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { EtherealShadows } from "@/components/ui/ethereal-shadows";
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -43,7 +43,7 @@ export function CTA() {
                 <ShimmerButton className="mx-auto h-14 px-10 text-lg font-semibold">
                   <span className="flex items-center gap-2">
                     Start for Free
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRightIcon size={20} />
                   </span>
                 </ShimmerButton>
               </Link>
