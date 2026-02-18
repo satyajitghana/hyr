@@ -277,13 +277,16 @@ export function ResumePDF({
             painter.moveTo(x1, y1).lineTo(x1 - MARK_LEN, y1).stroke();
             painter.moveTo(x1, y1).lineTo(x1, y1 - MARK_LEN).stroke();
 
-            // ── 3. Filled corner squares (darkest, centered on corner) ──
-            const hs = SQUARE_SIZE / 2;
+            // ── 3. Filled corner squares (darkest, inner edge flush with border) ──
             painter.fillColor(c.dark).fillOpacity(0.8);
-            painter.rect(x0 - hs, y0 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
-            painter.rect(x1 - hs, y0 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
-            painter.rect(x0 - hs, y1 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
-            painter.rect(x1 - hs, y1 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Top-left: square sits outside, inner edge at (x0, y0)
+            painter.rect(x0 - SQUARE_SIZE, y0 - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Top-right: square sits outside, inner edge at (x1, y0)
+            painter.rect(x1, y0 - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Bottom-left: square sits outside, inner edge at (x0, y1)
+            painter.rect(x0 - SQUARE_SIZE, y1, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Bottom-right: square sits outside, inner edge at (x1, y1)
+            painter.rect(x1, y1, SQUARE_SIZE, SQUARE_SIZE).fill();
 
             // ── Top-right decoration: grid + crosses (Vercel-style) ──
             const trX = PAGE_W - DECO_W;
