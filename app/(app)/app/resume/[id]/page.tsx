@@ -31,6 +31,7 @@ import { Separator } from "@/components/ui/separator";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { processImageToDither } from "@/lib/resume/dither";
 import Link from "next/link";
+import { ResumePdfViewer } from "@/components/resume/pdf-viewer";
 
 export default function ResumeDetailPage({
   params,
@@ -247,12 +248,12 @@ export default function ResumeDetailPage({
               Close
             </Button>
           </div>
-          <iframe
-            src={previewUrl}
+          <div
             className="w-full rounded-lg border bg-white"
             style={{ height: "80vh" }}
-            title="Resume PDF Preview"
-          />
+          >
+            <ResumePdfViewer url={previewUrl} />
+          </div>
         </motion.div>
       )}
 
