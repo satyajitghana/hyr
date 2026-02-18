@@ -7,7 +7,7 @@ import { ResumePDF } from "@/components/resume/resume-pdf";
 import { resumeInputSchema } from "@/lib/ai/schemas";
 import React from "react";
 
-// Register Geist fonts for PDF rendering using Buffer reads for reliability
+// Register Geist fonts for PDF rendering using direct file paths
 const fontsDir = path.join(
   process.cwd(),
   "node_modules",
@@ -18,60 +18,48 @@ const fontsDir = path.join(
 
 let usingGeist = false;
 
-try {
-  const geistRegular = fs.readFileSync(
-    path.join(fontsDir, "geist-sans", "Geist-Regular.ttf")
-  );
-  const geistMedium = fs.readFileSync(
-    path.join(fontsDir, "geist-sans", "Geist-Medium.ttf")
-  );
-  const geistSemiBold = fs.readFileSync(
-    path.join(fontsDir, "geist-sans", "Geist-SemiBold.ttf")
-  );
-  const geistBold = fs.readFileSync(
-    path.join(fontsDir, "geist-sans", "Geist-Bold.ttf")
-  );
+const geistRegularPath = path.join(fontsDir, "geist-sans", "Geist-Regular.ttf");
 
+if (fs.existsSync(geistRegularPath)) {
   Font.register({
     family: "Geist",
     fonts: [
       {
-        src: `data:font/truetype;base64,${geistRegular.toString("base64")}`,
+        src: path.join(fontsDir, "geist-sans", "Geist-Regular.ttf"),
         fontWeight: 400,
       },
       {
-        src: `data:font/truetype;base64,${geistMedium.toString("base64")}`,
+        src: path.join(fontsDir, "geist-sans", "Geist-Medium.ttf"),
         fontWeight: 500,
       },
       {
-        src: `data:font/truetype;base64,${geistSemiBold.toString("base64")}`,
+        src: path.join(fontsDir, "geist-sans", "Geist-SemiBold.ttf"),
         fontWeight: 600,
       },
       {
-        src: `data:font/truetype;base64,${geistBold.toString("base64")}`,
+        src: path.join(fontsDir, "geist-sans", "Geist-Bold.ttf"),
         fontWeight: 700,
       },
     ],
   });
 
-  const geistMonoRegular = fs.readFileSync(
-    path.join(fontsDir, "geist-mono", "GeistMono-Regular.ttf")
-  );
-
   Font.register({
     family: "GeistMono",
     fonts: [
       {
-        src: `data:font/truetype;base64,${geistMonoRegular.toString("base64")}`,
+        src: path.join(fontsDir, "geist-mono", "GeistMono-Regular.ttf"),
         fontWeight: 400,
       },
     ],
   });
 
   usingGeist = true;
-} catch (e) {
-  console.warn("Failed to load Geist fonts, falling back to Helvetica:", e);
+} else {
+  console.warn("Geist font files not found at", fontsDir, "— falling back to Helvetica");
 }
+
+// Disable hyphenation to prevent unwanted word breaks
+Font.registerHyphenationCallback((word) => [word]);
 
 export async function POST(req: Request) {
   try {
