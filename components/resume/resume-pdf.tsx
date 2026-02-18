@@ -257,11 +257,24 @@ export function ResumePDF({
 
             // ── Full-page dithered dot background ──
             const bgRng = seededRng(ditherSeed || "default-seed");
-            for (let i = 0; i < 800; i++) {
+            // Small scattered dots across the page
+            for (let i = 0; i < 500; i++) {
               const x = bgRng() * PAGE_W;
               const y = bgRng() * PAGE_H;
-              const r = 0.3 + bgRng() * 0.6;
-              const opacity = 0.02 + bgRng() * 0.035;
+              const r = 0.4 + bgRng() * 0.8;
+              const opacity = 0.04 + bgRng() * 0.06;
+              painter
+                .circle(x, y, r)
+                .fillColor(c.accent)
+                .fillOpacity(opacity)
+                .fill();
+            }
+            // Larger accent dots (fewer, more visible)
+            for (let i = 0; i < 60; i++) {
+              const x = bgRng() * PAGE_W;
+              const y = bgRng() * PAGE_H;
+              const r = 1.0 + bgRng() * 1.5;
+              const opacity = 0.03 + bgRng() * 0.04;
               painter
                 .circle(x, y, r)
                 .fillColor(c.accent)
@@ -280,11 +293,11 @@ export function ResumePDF({
             };
 
             // Vertical grid lines
-            painter.lineWidth(0.35);
+            painter.lineWidth(0.5);
             for (let lx = 0; lx <= DECO_W; lx += STEP) {
               for (let ly = 0; ly < DECO_H; ly += STEP) {
                 const ax = trX + lx;
-                const op = fadeTR(ax, ly + STEP / 2) * 0.09;
+                const op = fadeTR(ax, ly + STEP / 2) * 0.18;
                 if (op > 0.001) {
                   painter.moveTo(ax, ly).lineTo(ax, Math.min(ly + STEP, DECO_H))
                     .strokeColor(c.accent).strokeOpacity(op).stroke();
@@ -295,7 +308,7 @@ export function ResumePDF({
             for (let ly = 0; ly <= DECO_H; ly += STEP) {
               for (let lx = 0; lx < DECO_W; lx += STEP) {
                 const ax = trX + lx;
-                const op = fadeTR(ax + STEP / 2, ly) * 0.09;
+                const op = fadeTR(ax + STEP / 2, ly) * 0.18;
                 if (op > 0.001) {
                   painter.moveTo(ax, ly).lineTo(Math.min(ax + STEP, PAGE_W), ly)
                     .strokeColor(c.accent).strokeOpacity(op).stroke();
@@ -306,16 +319,17 @@ export function ResumePDF({
             // Cross markers
             const crosses = [
               [2, 2], [5, 1], [8, 3], [10, 1], [4, 5], [7, 6], [12, 2],
+              [3, 3], [9, 5], [11, 4], [6, 2],
             ];
-            painter.lineWidth(0.6);
+            painter.lineWidth(0.8);
             for (const [cx, cy] of crosses) {
               const ax = trX + cx * STEP;
               const ay = cy * STEP;
-              const op = fadeTR(ax, ay) * 0.25;
+              const op = fadeTR(ax, ay) * 0.4;
               if (op > 0.005) {
-                painter.moveTo(ax - 3, ay).lineTo(ax + 3, ay)
+                painter.moveTo(ax - 3.5, ay).lineTo(ax + 3.5, ay)
                   .strokeColor(c.accent).strokeOpacity(op).stroke();
-                painter.moveTo(ax, ay - 3).lineTo(ax, ay + 3)
+                painter.moveTo(ax, ay - 3.5).lineTo(ax, ay + 3.5)
                   .strokeColor(c.accent).strokeOpacity(op).stroke();
               }
             }
@@ -323,11 +337,11 @@ export function ResumePDF({
             // Seeded accent dots (top-right)
             if (ditherSeed) {
               const trRng = seededRng(ditherSeed);
-              for (let i = 0; i < 28; i++) {
+              for (let i = 0; i < 40; i++) {
                 const x = trX + trRng() * DECO_W;
                 const y = trRng() * DECO_H;
-                const r = 0.6 + trRng() * 1.2;
-                const op = fadeTR(x, y) * 0.2;
+                const r = 0.8 + trRng() * 1.8;
+                const op = fadeTR(x, y) * 0.35;
                 if (op > 0.005) {
                   painter.circle(x, y, r)
                     .fillColor(c.accent).fillOpacity(op).fill();
@@ -341,14 +355,14 @@ export function ResumePDF({
             const fadeBL = (x: number, y: number) => {
               const dx = x / DECO_BL_W;
               const dy = (PAGE_H - y) / DECO_BL_H;
-              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.2) * 0.5;
+              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.2) * 0.6;
             };
 
-            painter.lineWidth(0.3);
+            painter.lineWidth(0.4);
             for (let lx = 0; lx <= DECO_BL_W; lx += STEP) {
               for (let ly = 0; ly < DECO_BL_H; ly += STEP) {
                 const ay = blY + ly;
-                const op = fadeBL(lx, ay + STEP / 2) * 0.08;
+                const op = fadeBL(lx, ay + STEP / 2) * 0.15;
                 if (op > 0.001) {
                   painter.moveTo(lx, ay).lineTo(lx, Math.min(ay + STEP, PAGE_H))
                     .strokeColor(c.accent).strokeOpacity(op).stroke();
@@ -358,7 +372,7 @@ export function ResumePDF({
             for (let ly = 0; ly <= DECO_BL_H; ly += STEP) {
               for (let lx = 0; lx < DECO_BL_W; lx += STEP) {
                 const ay = blY + ly;
-                const op = fadeBL(lx + STEP / 2, ay) * 0.08;
+                const op = fadeBL(lx + STEP / 2, ay) * 0.15;
                 if (op > 0.001) {
                   painter.moveTo(lx, ay).lineTo(Math.min(lx + STEP, DECO_BL_W), ay)
                     .strokeColor(c.accent).strokeOpacity(op).stroke();
@@ -369,11 +383,11 @@ export function ResumePDF({
             // Bottom-left seeded dots
             if (ditherSeed) {
               const blRng = seededRng(ditherSeed + "-bl");
-              for (let i = 0; i < 14; i++) {
+              for (let i = 0; i < 20; i++) {
                 const x = blRng() * DECO_BL_W;
                 const y = blY + blRng() * DECO_BL_H;
-                const r = 0.5 + blRng() * 0.9;
-                const op = fadeBL(x, y) * 0.15;
+                const r = 0.6 + blRng() * 1.2;
+                const op = fadeBL(x, y) * 0.28;
                 if (op > 0.003) {
                   painter.circle(x, y, r)
                     .fillColor(c.accent).fillOpacity(op).fill();
