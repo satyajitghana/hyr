@@ -88,6 +88,7 @@ export async function POST(req: Request) {
       React.createElement(ResumePDF, {
         resume: fullResume,
         fontFamily: usingGeist ? "Geist" : "Helvetica",
+        ditherImage: body.ditherImage || undefined,
       }) as any
     );
 

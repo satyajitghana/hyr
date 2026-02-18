@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
@@ -17,6 +17,8 @@ import {
   Linkedin,
   Download,
   Loader2,
+  ImagePlus,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useResumeStore } from "@/lib/store/resume-store";
+import { processImageToDither } from "@/lib/resume/dither";
 import Link from "next/link";
 
 export default function ResumeDetailPage({
@@ -39,6 +42,8 @@ export default function ResumeDetailPage({
   const [editing, setEditing] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [processingImage, setProcessingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!resume) {
     return (
@@ -67,6 +72,25 @@ export default function ResumeDetailPage({
     updateResume(id, { skills: resume.skills.filter((s) => s !== skill) });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProcessingImage(true);
+    try {
+      const ditherImage = await processImageToDither(file);
+      updateResume(id, { ditherImage });
+    } catch (err) {
+      console.error("Failed to process image:", err);
+    } finally {
+      setProcessingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveImage = () => {
+    updateResume(id, { ditherImage: undefined });
+  };
+
   const handleDownloadPDF = async () => {
     if (!resume) return;
     setDownloading(true);
@@ -74,7 +98,10 @@ export default function ResumeDetailPage({
       const res = await fetch("/api/resume/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resume }),
+        body: JSON.stringify({
+          resume,
+          ditherImage: resume.ditherImage,
+        }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Unknown error" }));
@@ -145,6 +172,84 @@ export default function ResumeDetailPage({
           </Link>
         </div>
       </motion.div>
+
+      {/* Profile Photo for PDF */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-display text-lg">
+            Profile Photo
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            {resume.ditherImage ? (
+              <div className="relative group">
+                <img
+                  src={resume.ditherImage}
+                  alt="Dithered profile"
+                  className="h-20 w-20 rounded-lg border object-cover"
+                  style={{ imageRendering: "pixelated" }}
+                />
+                <button
+                  onClick={handleRemoveImage}
+                  className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/20">
+                <ImagePlus className="h-6 w-6 text-muted-foreground/30" />
+              </div>
+            )}
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {resume.ditherImage
+                  ? "Dithered photo applied"
+                  : "Add a photo for your PDF"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Your photo will be converted to a halftone dither pattern and
+                used as a subtle watermark in the PDF header.
+              </p>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={processingImage}
+                >
+                  {processingImage ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ImagePlus className="h-3.5 w-3.5" />
+                  )}
+                  {resume.ditherImage ? "Replace" : "Upload"}
+                </Button>
+                {resume.ditherImage && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-destructive"
+                    onClick={handleRemoveImage}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Remove
+                  </Button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Contact Info */}
       <Card>
