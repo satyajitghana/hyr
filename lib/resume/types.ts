@@ -37,6 +37,8 @@ export interface Resume {
   certifications: string[];
   createdAt: string;
   updatedAt: string;
+  /** Base64 data URI of a dithered profile image for PDF background */
+  ditherImage?: string;
 }
 
 export interface TailoredChange {

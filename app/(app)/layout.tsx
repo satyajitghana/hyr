@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppBreadcrumb } from "@/components/app/app-breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { PdfWorkerProvider } from "@/components/providers/pdf-worker-provider";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +23,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children}
+          <PdfWorkerProvider>
+            {children}
+          </PdfWorkerProvider>
         </div>
       </SidebarInset>
     </SidebarProvider>

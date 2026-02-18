@@ -25,7 +25,7 @@ import {
 } from "@/components/animate-ui/components/radix/dropdown-menu";
 import { Logo } from "@/components/shared/logo";
 import { useJobStore } from "@/lib/store/job-store";
-import { ChevronsUpDown, User, Settings, ArrowLeft, LogOut, Sparkles } from "lucide-react";
+import { ChevronsUpDown, User, Settings, ArrowLeft, LogOut, Sparkles, PenLine } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -40,6 +40,7 @@ const navItems = [
   { label: "Dashboard", href: "/app", Icon: HouseIcon },
   { label: "Resumes", href: "/app/resume", Icon: FolderIcon },
   { label: "Tailor", href: "/app/tailor", Icon: SparklesIcon },
+  { label: "Compose", href: "/app/compose", Icon: PenLine },
   { label: "Jobs", href: "/app/jobs", Icon: CompassIcon },
   { label: "Applications", href: "/app/applications", Icon: ClipboardIcon, showBadge: true },
   { label: "Beast Mode", href: "/app/beast-mode", Icon: ZapIcon },

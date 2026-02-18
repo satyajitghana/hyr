@@ -32,6 +32,7 @@ import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { useJobStore } from "@/lib/store/job-store";
 import { JobCategory } from "@/lib/jobs/types";
+import type { EasyApplyEvent } from "@/lib/ai/schemas";
 
 type BeastPhase = "configure" | "processing" | "done";
 
@@ -66,10 +67,6 @@ const levelOptions = ["all", "junior", "mid", "senior", "lead"] as const;
 
 function formatSalary(n: number) {
   return `$${(n / 1000).toFixed(0)}K`;
-}
-
-function fastDelay(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
 }
 
 export default function BeastModePage() {
@@ -155,58 +152,110 @@ export default function BeastModePage() {
       const job = MOCK_JOBS.find((j) => j.id === jobId);
       if (!job) continue;
 
-      // Fast mock processing (~1.2s per job)
-      setJobStates((prev) =>
-        prev.map((s) =>
-          s.jobId === jobId ? { ...s, status: "tailoring" } : s
-        )
-      );
-      await fastDelay(400 + Math.random() * 200);
+      try {
+        // Call easy-apply SSE endpoint for each job
+        const res = await fetch("/api/ai/easy-apply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            resume: selectedResume,
+            job: {
+              title: job.title,
+              company: job.company,
+              description: job.description,
+              tags: job.tags,
+              requirements: job.requirements,
+            },
+          }),
+        });
 
-      setJobStates((prev) =>
-        prev.map((s) =>
-          s.jobId === jobId ? { ...s, status: "cover-letter" } : s
-        )
-      );
-      await fastDelay(300 + Math.random() * 200);
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-      setJobStates((prev) =>
-        prev.map((s) =>
-          s.jobId === jobId ? { ...s, status: "applying" } : s
-        )
-      );
-      await fastDelay(200 + Math.random() * 100);
+        while (true) {
+          const { done: streamDone, value } = await reader.read();
+          if (streamDone) break;
 
-      // Create application in store
-      const newResumeId = `resume-beast-${Date.now()}-${i}`;
-      addResume({
-        ...selectedResume,
-        id: newResumeId,
-        name: `${selectedResume.name} — ${job.title}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n\n");
+          buffer = lines.pop() ?? "";
 
-      addApplication({
-        id: `app-beast-${Date.now()}-${i}`,
-        jobId: job.id,
-        job,
-        resumeId: newResumeId,
-        resumeName: `${selectedResume.name} — ${job.title}`,
-        status: "applied",
-        appliedDate: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
-        autoApplied: true,
-      });
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data: EasyApplyEvent = JSON.parse(line.slice(6));
 
-      done++;
-      setCompletedCount(done);
+            switch (data.step) {
+              case "extracting":
+              case "tailoring":
+                setJobStates((prev) =>
+                  prev.map((s) =>
+                    s.jobId === jobId ? { ...s, status: "tailoring" } : s
+                  )
+                );
+                break;
+              case "cover-letter":
+                setJobStates((prev) =>
+                  prev.map((s) =>
+                    s.jobId === jobId ? { ...s, status: "cover-letter" } : s
+                  )
+                );
+                break;
+              case "email":
+                setJobStates((prev) =>
+                  prev.map((s) =>
+                    s.jobId === jobId ? { ...s, status: "applying" } : s
+                  )
+                );
+                break;
+              case "done":
+                // Create application in store
+                const newResumeId = `resume-beast-${Date.now()}-${i}`;
+                addResume({
+                  ...selectedResume,
+                  id: newResumeId,
+                  name: `${selectedResume.name} — ${job.title}`,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                });
 
-      setJobStates((prev) =>
-        prev.map((s) =>
-          s.jobId === jobId ? { ...s, status: "done" } : s
-        )
-      );
+                addApplication({
+                  id: `app-beast-${Date.now()}-${i}`,
+                  jobId: job.id,
+                  job,
+                  resumeId: newResumeId,
+                  resumeName: `${selectedResume.name} — ${job.title}`,
+                  status: "applied",
+                  appliedDate: new Date().toISOString(),
+                  lastUpdated: new Date().toISOString(),
+                  autoApplied: true,
+                });
+
+                done++;
+                setCompletedCount(done);
+                setJobStates((prev) =>
+                  prev.map((s) =>
+                    s.jobId === jobId ? { ...s, status: "done" } : s
+                  )
+                );
+                break;
+              case "error":
+                setJobStates((prev) =>
+                  prev.map((s) =>
+                    s.jobId === jobId ? { ...s, status: "error" } : s
+                  )
+                );
+                break;
+            }
+          }
+        }
+      } catch {
+        setJobStates((prev) =>
+          prev.map((s) =>
+            s.jobId === jobId ? { ...s, status: "error" } : s
+          )
+        );
+      }
     }
 
     setTimerRunning(false);

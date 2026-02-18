@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Wand2,
   ArrowRight,
   CheckCircle2,
-  X,
   Loader2,
   FileText,
   Sparkles,
@@ -16,8 +16,12 @@ import {
   Send,
   RotateCcw,
   ArrowLeft,
-  Target,
-  Check,
+  CheckCheck,
+  XCircle,
+  ChevronDown,
+  Search,
+  Briefcase,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,22 +29,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { useResumeStore } from "@/lib/store/resume-store";
-import { TailoredResume, TailoredChange, Resume } from "@/lib/resume/types";
-import { MockAIProvider } from "@/lib/ai/mock-provider";
+import { Resume } from "@/lib/resume/types";
+import {
+  tailoredResumeSchema,
+  type TailoredResumeOutput,
+  type TailoredChangeOutput,
+} from "@/lib/ai/schemas";
+import { StreamingChanges } from "@/components/ai/streaming-changes";
 
 type Step = "input" | "processing" | "result";
-
-const processingSteps = [
-  { label: "Analyzing job requirements", icon: Target },
-  { label: "Extracting key skills & keywords", icon: Sparkles },
-  { label: "Matching resume to job description", icon: FileText },
-  { label: "Rewriting summary section", icon: Wand2 },
-  { label: "Optimizing experience bullets", icon: CheckCircle2 },
-  { label: "Adding relevant skills", icon: Check },
-  { label: "Finalizing tailored resume", icon: Target },
-];
 
 const aiSuggestions = [
   { label: "More concise", prompt: "Make it more concise" },
@@ -48,6 +46,16 @@ const aiSuggestions = [
   { label: "Emphasize leadership", prompt: "Emphasize leadership" },
   { label: "Less jargon", prompt: "Tone down technical jargon" },
 ];
+
+const sectionLabels: Record<string, string> = {
+  summary: "Summary",
+  experience: "Experience",
+  skills: "Skills",
+  education: "Education",
+  certifications: "Certifications",
+};
+
+const sectionOrder = ["summary", "experience", "skills", "education", "certifications"];
 
 export default function TailorPage() {
   const router = useRouter();
@@ -57,16 +65,29 @@ export default function TailorPage() {
   const [jobUrl, setJobUrl] = useState("");
   const [inputTab, setInputTab] = useState("description");
   const [step, setStep] = useState<Step>("input");
-  const [processingStep, setProcessingStep] = useState(0);
-  const [result, setResult] = useState<TailoredResume | null>(null);
+  const [result, setResult] = useState<TailoredResumeOutput | null>(null);
   const [aiPrompt, setAiPrompt] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [fetchingUrl, setFetchingUrl] = useState(false);
+  const [extractionDone, setExtractionDone] = useState(false);
 
   const selectedResume = resumes.find((r) => r.id === selectedId);
-  const progressPercent = Math.round(
-    ((processingStep + 1) / processingSteps.length) * 100
-  );
+
+  // AI SDK streaming hook for tailoring
+  const {
+    object: streamingObject,
+    submit: submitTailor,
+    isLoading: isTailoring,
+  } = useObject({
+    api: "/api/ai/tailor",
+    schema: tailoredResumeSchema,
+    onFinish({ object }) {
+      if (object) {
+        setResult(object);
+        setStep("result");
+      }
+    },
+  });
 
   const handleFetchUrl = async () => {
     if (!jobUrl.trim()) return;
@@ -84,25 +105,25 @@ export default function TailorPage() {
     if (!resume || !jobDescription.trim()) return;
 
     setStep("processing");
-    setProcessingStep(0);
+    setResult(null);
+    setExtractionDone(false);
 
-    // Realistic pacing: ~700ms per step
-    for (let i = 0; i < processingSteps.length; i++) {
-      await new Promise((r) => setTimeout(r, 600 + Math.random() * 300));
-      setProcessingStep(i);
-    }
+    // First extract job details
+    const detailsRes = await fetch("/api/ai/extract-job", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: jobDescription }),
+    });
+    const { output: details } = await detailsRes.json();
+    setExtractionDone(true);
 
-    const provider = new MockAIProvider();
-    const details = await provider.extractJobDetails(jobDescription);
-    const tailored = await provider.tailorResume(
+    // Then stream the tailoring via AI SDK
+    submitTailor({
       resume,
       jobDescription,
-      details.title,
-      details.company
-    );
-
-    setResult(tailored);
-    setStep("result");
+      jobTitle: details?.title ?? "Software Engineer",
+      company: details?.company ?? "Company",
+    });
   };
 
   const toggleChange = (changeId: string) => {
@@ -115,12 +136,40 @@ export default function TailorPage() {
     });
   };
 
+  const toggleSection = (section: string) => {
+    if (!result) return;
+    const sectionChanges = result.changes.filter((c) => c.section === section);
+    const allAccepted = sectionChanges.every((c) => c.accepted);
+    setResult({
+      ...result,
+      changes: result.changes.map((c) =>
+        c.section === section ? { ...c, accepted: !allAccepted } : c
+      ),
+    });
+  };
+
+  const toggleAll = (accept: boolean) => {
+    if (!result) return;
+    setResult({
+      ...result,
+      changes: result.changes.map((c) => ({ ...c, accepted: accept })),
+    });
+  };
+
   const handleRefine = async (prompt: string) => {
     if (!result || isRefining) return;
     setIsRefining(true);
-    const provider = new MockAIProvider();
-    const refined = await provider.refineChanges(prompt, result.changes);
-    setResult({ ...result, changes: refined });
+
+    const res = await fetch("/api/ai/refine", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt, currentChanges: result.changes }),
+    });
+    const { output: refined } = await res.json();
+
+    if (refined) {
+      setResult({ ...result, changes: refined });
+    }
     setIsRefining(false);
     setAiPrompt("");
   };
@@ -128,10 +177,8 @@ export default function TailorPage() {
   const handleAcceptAndSave = () => {
     if (!result || !selectedResume) return;
 
-    // Apply accepted changes to build the new resume
     const acceptedChanges = result.changes.filter((c) => c.accepted);
 
-    // Start with the tailored resume from AI, then apply acceptance decisions
     let newSkills = [...selectedResume.skills];
     let newSummary = selectedResume.summary;
     const newExperience = selectedResume.experience.map((exp) => ({
@@ -149,7 +196,6 @@ export default function TailorPage() {
         }
       }
       if (change.section === "experience" && change.type === "modification") {
-        // Find the matching experience entry and update the bullet
         for (const exp of newExperience) {
           const bulletIdx = exp.bullets.findIndex(
             (b) => b === change.original
@@ -160,7 +206,6 @@ export default function TailorPage() {
         }
       }
       if (change.section === "experience" && change.type === "addition") {
-        // Add as a bullet to the first experience entry
         if (newExperience.length > 0) {
           newExperience[0].bullets.push(change.tailored);
         }
@@ -187,26 +232,63 @@ export default function TailorPage() {
 
   const acceptedCount = result?.changes.filter((c) => c.accepted).length ?? 0;
 
-  const changeTypeConfig: Record<
-    TailoredChange["type"],
-    { color: string; label: string; dot: string }
-  > = {
-    addition: {
-      color: "bg-green-500/10 text-green-600 dark:text-green-400",
-      label: "Added",
-      dot: "bg-green-500",
-    },
-    modification: {
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-      label: "Modified",
-      dot: "bg-amber-500",
-    },
-    removal: {
-      color: "bg-red-500/10 text-red-600 dark:text-red-400",
-      label: "Removed",
-      dot: "bg-red-500",
-    },
-  };
+  // During streaming, show the partial data
+  const displayChanges: TailoredChangeOutput[] | undefined =
+    step === "processing"
+      ? (streamingObject?.changes as TailoredChangeOutput[] | undefined)
+      : result?.changes;
+  const displayScore =
+    step === "processing"
+      ? streamingObject?.matchScore
+      : result?.matchScore;
+  const displayJobTitle =
+    step === "processing"
+      ? streamingObject?.jobTitle
+      : result?.jobTitle;
+  const displayCompany =
+    step === "processing"
+      ? streamingObject?.company
+      : result?.company;
+
+  // Group changes by section for the result step
+  const groupedChanges = useMemo(() => {
+    if (!result?.changes) return [];
+    const groups: { section: string; label: string; changes: TailoredChangeOutput[] }[] = [];
+    const changesBySection = new Map<string, TailoredChangeOutput[]>();
+
+    for (const change of result.changes) {
+      const existing = changesBySection.get(change.section);
+      if (existing) {
+        existing.push(change);
+      } else {
+        changesBySection.set(change.section, [change]);
+      }
+    }
+
+    // Sort by predefined order
+    for (const section of sectionOrder) {
+      const changes = changesBySection.get(section);
+      if (changes) {
+        groups.push({
+          section,
+          label: sectionLabels[section] ?? section,
+          changes,
+        });
+        changesBySection.delete(section);
+      }
+    }
+
+    // Any remaining sections
+    for (const [section, changes] of changesBySection) {
+      groups.push({
+        section,
+        label: sectionLabels[section] ?? section,
+        changes,
+      });
+    }
+
+    return groups;
+  }, [result?.changes]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -381,85 +463,141 @@ export default function TailorPage() {
           </motion.div>
         )}
 
-        {/* ─── PROCESSING STEP ─── */}
+        {/* ─── PROCESSING STEP (streaming) ─── */}
         {step === "processing" && (
           <motion.div
             key="processing"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
+            className="space-y-5"
           >
+            {/* Pipeline stages */}
             <Card className="border-violet-500/20">
-              <CardContent className="py-16 px-6">
-                <div className="mx-auto max-w-md space-y-8">
-                  {/* Animated icon */}
-                  <div className="flex justify-center">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                      className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-xl shadow-violet-500/30"
-                    >
-                      <Sparkles className="h-8 w-8 text-white" />
-                    </motion.div>
-                  </div>
-
-                  {selectedResume && (
-                    <p className="text-center text-sm text-muted-foreground">
-                      Tailoring{" "}
-                      <span className="font-semibold text-foreground">
-                        {selectedResume.name}
-                      </span>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-4 mb-2">
+                  <motion.div
+                    animate={isTailoring ? { rotate: 360 } : {}}
+                    transition={{
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-lg shadow-violet-500/25"
+                  >
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </motion.div>
+                  <div className="flex-1">
+                    <h2 className="font-display text-lg font-bold">
+                      {displayScore
+                        ? "Tailoring Complete"
+                        : "Tailoring Your Resume..."}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {displayJobTitle && displayCompany
+                        ? (
+                          <>
+                            Optimizing for{" "}
+                            <span className="font-medium text-foreground">
+                              {displayJobTitle}
+                            </span>{" "}
+                            at{" "}
+                            <span className="font-medium text-foreground">
+                              {displayCompany}
+                            </span>
+                          </>
+                        )
+                        : "AI is analyzing the job and optimizing your resume"}
                     </p>
+                  </div>
+                  {displayScore && (
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-emerald-400 shadow-lg shadow-green-500/25">
+                      <span className="font-display text-xl font-bold text-white">
+                        {displayScore}
+                      </span>
+                    </div>
                   )}
+                </div>
 
-                  <Progress value={progressPercent} className="h-1.5" />
-
-                  <div className="space-y-2">
-                    {processingSteps.map((s, idx) => {
-                      const isActive = idx === processingStep;
-                      const isDone = idx < processingStep;
-                      return (
-                        <motion.div
-                          key={s.label}
-                          initial={{ opacity: 0.3 }}
-                          animate={{ opacity: isDone || isActive ? 1 : 0.3 }}
-                          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                            isActive
-                              ? "bg-violet-500/10"
-                              : isDone
-                                ? "bg-green-500/5"
-                                : ""
-                          }`}
-                        >
-                          {isDone ? (
-                            <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
-                          ) : isActive ? (
-                            <Loader2 className="h-4 w-4 shrink-0 animate-spin text-violet-500" />
-                          ) : (
-                            <div className="h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/20" />
-                          )}
-                          <span
-                            className={`text-sm ${
-                              isActive
-                                ? "font-medium text-foreground"
-                                : isDone
-                                  ? "text-muted-foreground"
-                                  : "text-muted-foreground/60"
-                            }`}
-                          >
-                            {s.label}
-                          </span>
-                        </motion.div>
-                      );
-                    })}
+                {/* Stage indicators */}
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    {extractionDone ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Search className="h-4 w-4 text-violet-500" />
+                      </motion.div>
+                    )}
+                    <span className={extractionDone ? "text-green-600 dark:text-green-400" : "text-violet-600 dark:text-violet-400"}>
+                      Extract job details
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground rotate-[-90deg]" />
+                  <div className="flex items-center gap-2">
+                    {displayChanges && displayChanges.length > 0 ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : extractionDone ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Briefcase className="h-4 w-4 text-violet-500" />
+                      </motion.div>
+                    ) : (
+                      <Briefcase className="h-4 w-4 text-muted-foreground/40" />
+                    )}
+                    <span className={
+                      displayChanges && displayChanges.length > 0
+                        ? "text-green-600 dark:text-green-400"
+                        : extractionDone
+                        ? "text-violet-600 dark:text-violet-400"
+                        : "text-muted-foreground/40"
+                    }>
+                      Analyze resume
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground rotate-[-90deg]" />
+                  <div className="flex items-center gap-2">
+                    {displayScore ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : displayChanges && displayChanges.length > 0 ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Cpu className="h-4 w-4 text-violet-500" />
+                      </motion.div>
+                    ) : (
+                      <Cpu className="h-4 w-4 text-muted-foreground/40" />
+                    )}
+                    <span className={
+                      displayScore
+                        ? "text-green-600 dark:text-green-400"
+                        : displayChanges && displayChanges.length > 0
+                        ? "text-violet-600 dark:text-violet-400"
+                        : "text-muted-foreground/40"
+                    }>
+                      Generate changes
+                    </span>
+                    {displayChanges && displayChanges.length > 0 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {displayChanges.length}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Streaming changes */}
+            <StreamingChanges
+              changes={displayChanges}
+              isStreaming={isTailoring}
+            />
           </motion.div>
         )}
 
@@ -502,14 +640,20 @@ export default function TailorPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setStep("input");
-                        setResult(null);
-                      }}
+                      onClick={() => toggleAll(true)}
                       className="gap-1.5"
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Start Over
+                      <CheckCheck className="h-3.5 w-3.5" />
+                      Accept All
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleAll(false)}
+                      className="gap-1.5"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Reject All
                     </Button>
                     <Button
                       size="sm"
@@ -524,87 +668,44 @@ export default function TailorPage() {
               </CardContent>
             </Card>
 
-            {/* Changes */}
-            <div className="space-y-3">
-              <h3 className="font-display text-base font-semibold px-1">
-                Proposed Changes
-              </h3>
-              {result.changes.map((change, idx) => {
-                const config = changeTypeConfig[change.type];
+            {/* Grouped Changes */}
+            <div className="space-y-4">
+              {groupedChanges.map((group) => {
+                const groupAccepted = group.changes.filter((c) => c.accepted).length;
+                const allAccepted = groupAccepted === group.changes.length;
                 return (
-                  <motion.div
-                    key={change.id}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04 }}
-                  >
-                    <Card
-                      className={`transition-all duration-200 ${
-                        !change.accepted
-                          ? "opacity-40 hover:opacity-70"
-                          : "hover:shadow-md"
-                      }`}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-3">
-                          {/* Accept/Reject toggle */}
-                          <button
-                            onClick={() => toggleChange(change.id)}
-                            className="mt-0.5 shrink-0 transition-transform hover:scale-110"
-                          >
-                            {change.accepted ? (
-                              <CheckCircle2 className="h-5 w-5 text-green-500" />
-                            ) : (
-                              <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-muted-foreground/30">
-                                <X className="h-3 w-3 text-muted-foreground/50" />
-                              </div>
-                            )}
-                          </button>
-
-                          <div className="flex-1 min-w-0 space-y-2">
-                            {/* Labels */}
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] capitalize font-normal"
-                              >
-                                {change.section}
-                              </Badge>
-                              <div className="flex items-center gap-1">
-                                <div
-                                  className={`h-1.5 w-1.5 rounded-full ${config.dot}`}
-                                />
-                                <span
-                                  className={`text-[10px] font-medium ${config.color}`}
-                                >
-                                  {config.label}
-                                </span>
-                              </div>
-                              {change.field && (
-                                <span className="text-[10px] text-muted-foreground truncate">
-                                  {change.field}
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Diff view */}
-                            {change.original && (
-                              <div className="rounded-lg bg-red-500/5 border border-red-500/10 px-3 py-2">
-                                <p className="text-xs text-muted-foreground line-through leading-relaxed">
-                                  {change.original}
-                                </p>
-                              </div>
-                            )}
-                            <div className="rounded-lg bg-green-500/5 border border-green-500/10 px-3 py-2">
-                              <p className="text-xs leading-relaxed">
-                                {change.tailored}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                  <div key={group.section} className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-display text-sm font-semibold capitalize">
+                          {group.label}
+                        </h3>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {groupAccepted}/{group.changes.length}
+                        </Badge>
+                      </div>
+                      <button
+                        onClick={() => toggleSection(group.section)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                      >
+                        {allAccepted ? (
+                          <>
+                            <XCircle className="h-3 w-3" />
+                            Reject section
+                          </>
+                        ) : (
+                          <>
+                            <CheckCheck className="h-3 w-3" />
+                            Accept section
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <StreamingChanges
+                      changes={group.changes}
+                      onToggle={toggleChange}
+                    />
+                  </div>
                 );
               })}
             </div>

@@ -10,6 +10,7 @@ import {
   Trash2,
   MoreVertical,
   Plus,
+  Download,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -190,6 +191,30 @@ export default function ResumePage() {
                                 <Wand2 className="mr-2 h-4 w-4" />
                                 Tailor for Job
                               </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                const res = await fetch("/api/resume/pdf", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ resume }),
+                                });
+                                if (!res.ok) {
+                                  const err = await res.json().catch(() => ({ error: "Unknown error" }));
+                                  console.error("PDF generation failed:", err);
+                                  return;
+                                }
+                                const blob = await res.blob();
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement("a");
+                                a.href = url;
+                                a.download = `${resume.contact.name.replace(/\s+/g, "_")}_Resume.pdf`;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                            >
+                              <Download className="mr-2 h-4 w-4" />
+                              Download PDF
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => deleteResume(resume.id)}

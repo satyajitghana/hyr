@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <radialGradient id="bb1" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#606060"/>
+      <stop offset="40%" stop-color="#404040"/>
+      <stop offset="70%" stop-color="#252525"/>
+      <stop offset="100%" stop-color="#101010"/>
+    </radialGradient>
+    <radialGradient id="bh1" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#555"/>
+      <stop offset="50%" stop-color="#333"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </radialGradient>
+    <radialGradient id="bbr1" cx="50%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#999"/>
+      <stop offset="40%" stop-color="#777"/>
+      <stop offset="80%" stop-color="#555"/>
+      <stop offset="100%" stop-color="#404040"/>
+    </radialGradient>
+    <linearGradient id="bw1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#404040"/>
+      <stop offset="30%" stop-color="#252525"/>
+      <stop offset="60%" stop-color="#151515"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </linearGradient>
+    <linearGradient id="bt1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#333"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </linearGradient>
+    <radialGradient id="bbl1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e8e8e8"/>
+      <stop offset="50%" stop-color="#ccc"/>
+      <stop offset="100%" stop-color="#aaa"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="white"/>
+  <ellipse cx="200" cy="340" rx="130" ry="8" fill="#888" opacity="0.4"/>
+  <rect x="60" y="328" width="280" height="10" rx="5" fill="url(#bt1)" opacity="0.6"/>
+  <path d="M110,260 Q80,290 60,330 Q90,310 105,275Z" fill="url(#bt1)"/>
+  <path d="M115,265 Q90,300 75,335 Q100,315 112,280Z" fill="url(#bt1)" opacity="0.8"/>
+  <path d="M120,268 Q100,305 90,338 Q110,318 118,283Z" fill="url(#bt1)" opacity="0.6"/>
+  <ellipse cx="195" cy="250" rx="65" ry="55" fill="url(#bb1)"/>
+  <ellipse cx="215" cy="265" rx="40" ry="42" fill="url(#bbr1)"/>
+  <ellipse cx="220" cy="280" rx="28" ry="30" fill="url(#bbl1)"/>
+  <path d="M140,220 Q120,240 115,280 Q130,270 145,260 Q155,250 165,235 Q170,225 165,215Z" fill="url(#bw1)"/>
+  <path d="M135,235 Q128,250 125,268" stroke="#444" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <path d="M142,230 Q136,248 132,265" stroke="#444" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <path d="M150,227 Q145,243 140,260" stroke="#444" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <path d="M157,224 Q153,238 148,255" stroke="#444" stroke-width="0.8" fill="none" opacity="0.5"/>
+  <circle cx="245" cy="195" r="35" fill="url(#bh1)"/>
+  <circle cx="258" cy="188" r="7" fill="#222"/>
+  <circle cx="258" cy="188" r="5" fill="#111"/>
+  <circle cx="260" cy="186" r="2" fill="#666"/>
+  <path d="M278,192 L305,188 L278,198Z" fill="#333"/>
+  <line x1="278" y1="195" x2="303" y2="190" stroke="#555" stroke-width="0.5"/>
+  <line x1="195" y1="300" x2="188" y2="332" stroke="#555" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="188" y1="332" x2="175" y2="336" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+  <line x1="188" y1="332" x2="198" y2="338" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+  <line x1="188" y1="332" x2="185" y2="340" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+  <line x1="220" y1="300" x2="225" y2="332" stroke="#555" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="225" y1="332" x2="212" y2="336" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+  <line x1="225" y1="332" x2="235" y2="338" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+  <line x1="225" y1="332" x2="222" y2="340" stroke="#555" stroke-width="2" stroke-linecap="round"/>
+  <path d="M175,235 Q180,240 178,248" stroke="#555" stroke-width="0.6" fill="none" opacity="0.4"/>
+  <path d="M185,230 Q190,236 188,244" stroke="#555" stroke-width="0.6" fill="none" opacity="0.4"/>
+  <path d="M195,228 Q200,234 198,242" stroke="#555" stroke-width="0.6" fill="none" opacity="0.4"/>
+  <path d="M170,248 Q176,254 174,262" stroke="#555" stroke-width="0.6" fill="none" opacity="0.4"/>
+  <path d="M180,245 Q186,251 184,259" stroke="#555" stroke-width="0.6" fill="none" opacity="0.4"/>
+</svg>
