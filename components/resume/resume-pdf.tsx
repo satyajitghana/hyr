@@ -57,6 +57,12 @@ const PAGE_H = 792;
 // Corner mark constants
 const INSET = 16;
 const MARK_LEN = 20;
+const SQUARE_SIZE = 3; // filled corner square size
+
+// Top-right decoration grid
+const DECO_W = 200;
+const DECO_H = 180;
+const GRID_STEP = 14;
 
 // ── Section heading with accent bar ──
 function SectionHeading({
@@ -245,6 +251,8 @@ export function ResumePDF({
           }}
           paint={(painter: any): null => {
             painter.save();
+
+            // ── Corner border marks (L-shaped + filled square) ──
             painter.lineWidth(0.4).strokeColor(c.border).strokeOpacity(0.5);
 
             // Top-left corner
@@ -262,6 +270,69 @@ export function ResumePDF({
             // Bottom-right corner
             painter.moveTo(PAGE_W - INSET, PAGE_H - INSET).lineTo(PAGE_W - INSET - MARK_LEN, PAGE_H - INSET).stroke();
             painter.moveTo(PAGE_W - INSET, PAGE_H - INSET).lineTo(PAGE_W - INSET, PAGE_H - INSET - MARK_LEN).stroke();
+
+            // ── Filled corner squares ──
+            const hs = SQUARE_SIZE / 2;
+            painter.fillColor(c.dark).fillOpacity(0.35);
+            // Top-left
+            painter.rect(INSET - hs, INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Top-right
+            painter.rect(PAGE_W - INSET - hs, INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Bottom-left
+            painter.rect(INSET - hs, PAGE_H - INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            // Bottom-right
+            painter.rect(PAGE_W - INSET - hs, PAGE_H - INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+
+            // ── Top-right decoration: grid + crosses (Vercel-style) ──
+            const trX = PAGE_W - DECO_W;
+
+            const fadeTR = (x: number, y: number) => {
+              const dx = (PAGE_W - x) / DECO_W;
+              const dy = y / DECO_H;
+              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.1);
+            };
+
+            // Vertical grid lines
+            painter.lineWidth(0.5);
+            for (let lx = 0; lx <= DECO_W; lx += GRID_STEP) {
+              for (let ly = 0; ly < DECO_H; ly += GRID_STEP) {
+                const ax = trX + lx;
+                const op = fadeTR(ax, ly + GRID_STEP / 2) * 0.18;
+                if (op > 0.001) {
+                  painter.moveTo(ax, ly).lineTo(ax, Math.min(ly + GRID_STEP, DECO_H))
+                    .strokeColor(c.accent).strokeOpacity(op).stroke();
+                }
+              }
+            }
+            // Horizontal grid lines
+            for (let ly = 0; ly <= DECO_H; ly += GRID_STEP) {
+              for (let lx = 0; lx < DECO_W; lx += GRID_STEP) {
+                const ax = trX + lx;
+                const op = fadeTR(ax + GRID_STEP / 2, ly) * 0.18;
+                if (op > 0.001) {
+                  painter.moveTo(ax, ly).lineTo(Math.min(ax + GRID_STEP, PAGE_W), ly)
+                    .strokeColor(c.accent).strokeOpacity(op).stroke();
+                }
+              }
+            }
+
+            // Cross markers at specific grid intersections
+            const crosses = [
+              [2, 2], [5, 1], [8, 3], [10, 1], [4, 5], [7, 6], [12, 2],
+              [3, 3], [9, 5], [11, 4], [6, 2],
+            ];
+            painter.lineWidth(0.8);
+            for (const [cx, cy] of crosses) {
+              const ax = trX + cx * GRID_STEP;
+              const ay = cy * GRID_STEP;
+              const op = fadeTR(ax, ay) * 0.4;
+              if (op > 0.005) {
+                painter.moveTo(ax - 3.5, ay).lineTo(ax + 3.5, ay)
+                  .strokeColor(c.accent).strokeOpacity(op).stroke();
+                painter.moveTo(ax, ay - 3.5).lineTo(ax, ay + 3.5)
+                  .strokeColor(c.accent).strokeOpacity(op).stroke();
+              }
+            }
 
             painter.restore();
             return null;
