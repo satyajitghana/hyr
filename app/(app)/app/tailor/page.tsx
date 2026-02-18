@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { motion, AnimatePresence } from "motion/react";
@@ -16,6 +16,12 @@ import {
   Send,
   RotateCcw,
   ArrowLeft,
+  CheckCheck,
+  XCircle,
+  ChevronDown,
+  Search,
+  Briefcase,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +47,16 @@ const aiSuggestions = [
   { label: "Less jargon", prompt: "Tone down technical jargon" },
 ];
 
+const sectionLabels: Record<string, string> = {
+  summary: "Summary",
+  experience: "Experience",
+  skills: "Skills",
+  education: "Education",
+  certifications: "Certifications",
+};
+
+const sectionOrder = ["summary", "experience", "skills", "education", "certifications"];
+
 export default function TailorPage() {
   const router = useRouter();
   const { resumes, addResume } = useResumeStore();
@@ -53,6 +69,7 @@ export default function TailorPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [fetchingUrl, setFetchingUrl] = useState(false);
+  const [extractionDone, setExtractionDone] = useState(false);
 
   const selectedResume = resumes.find((r) => r.id === selectedId);
 
@@ -89,6 +106,7 @@ export default function TailorPage() {
 
     setStep("processing");
     setResult(null);
+    setExtractionDone(false);
 
     // First extract job details
     const detailsRes = await fetch("/api/ai/extract-job", {
@@ -97,6 +115,7 @@ export default function TailorPage() {
       body: JSON.stringify({ description: jobDescription }),
     });
     const { output: details } = await detailsRes.json();
+    setExtractionDone(true);
 
     // Then stream the tailoring via AI SDK
     submitTailor({
@@ -114,6 +133,26 @@ export default function TailorPage() {
       changes: result.changes.map((c) =>
         c.id === changeId ? { ...c, accepted: !c.accepted } : c
       ),
+    });
+  };
+
+  const toggleSection = (section: string) => {
+    if (!result) return;
+    const sectionChanges = result.changes.filter((c) => c.section === section);
+    const allAccepted = sectionChanges.every((c) => c.accepted);
+    setResult({
+      ...result,
+      changes: result.changes.map((c) =>
+        c.section === section ? { ...c, accepted: !allAccepted } : c
+      ),
+    });
+  };
+
+  const toggleAll = (accept: boolean) => {
+    if (!result) return;
+    setResult({
+      ...result,
+      changes: result.changes.map((c) => ({ ...c, accepted: accept })),
     });
   };
 
@@ -210,6 +249,46 @@ export default function TailorPage() {
     step === "processing"
       ? streamingObject?.company
       : result?.company;
+
+  // Group changes by section for the result step
+  const groupedChanges = useMemo(() => {
+    if (!result?.changes) return [];
+    const groups: { section: string; label: string; changes: TailoredChangeOutput[] }[] = [];
+    const changesBySection = new Map<string, TailoredChangeOutput[]>();
+
+    for (const change of result.changes) {
+      const existing = changesBySection.get(change.section);
+      if (existing) {
+        existing.push(change);
+      } else {
+        changesBySection.set(change.section, [change]);
+      }
+    }
+
+    // Sort by predefined order
+    for (const section of sectionOrder) {
+      const changes = changesBySection.get(section);
+      if (changes) {
+        groups.push({
+          section,
+          label: sectionLabels[section] ?? section,
+          changes,
+        });
+        changesBySection.delete(section);
+      }
+    }
+
+    // Any remaining sections
+    for (const [section, changes] of changesBySection) {
+      groups.push({
+        section,
+        label: sectionLabels[section] ?? section,
+        changes,
+      });
+    }
+
+    return groups;
+  }, [result?.changes]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -393,12 +472,12 @@ export default function TailorPage() {
             exit={{ opacity: 0, scale: 0.98 }}
             className="space-y-5"
           >
-            {/* Streaming header */}
+            {/* Pipeline stages */}
             <Card className="border-violet-500/20">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-4">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-4 mb-2">
                   <motion.div
-                    animate={{ rotate: 360 }}
+                    animate={isTailoring ? { rotate: 360 } : {}}
                     transition={{
                       duration: 3,
                       repeat: Infinity,
@@ -415,22 +494,20 @@ export default function TailorPage() {
                         : "Tailoring Your Resume..."}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      {displayChanges && displayChanges.length > 0
-                        ? `${displayChanges.length} change${displayChanges.length !== 1 ? "s" : ""} generated`
+                      {displayJobTitle && displayCompany
+                        ? (
+                          <>
+                            Optimizing for{" "}
+                            <span className="font-medium text-foreground">
+                              {displayJobTitle}
+                            </span>{" "}
+                            at{" "}
+                            <span className="font-medium text-foreground">
+                              {displayCompany}
+                            </span>
+                          </>
+                        )
                         : "AI is analyzing the job and optimizing your resume"}
-                      {displayJobTitle && displayCompany && (
-                        <span>
-                          {" "}
-                          for{" "}
-                          <span className="font-medium text-foreground">
-                            {displayJobTitle}
-                          </span>{" "}
-                          at{" "}
-                          <span className="font-medium text-foreground">
-                            {displayCompany}
-                          </span>
-                        </span>
-                      )}
                     </p>
                   </div>
                   {displayScore && (
@@ -440,6 +517,78 @@ export default function TailorPage() {
                       </span>
                     </div>
                   )}
+                </div>
+
+                {/* Stage indicators */}
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    {extractionDone ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Search className="h-4 w-4 text-violet-500" />
+                      </motion.div>
+                    )}
+                    <span className={extractionDone ? "text-green-600 dark:text-green-400" : "text-violet-600 dark:text-violet-400"}>
+                      Extract job details
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground rotate-[-90deg]" />
+                  <div className="flex items-center gap-2">
+                    {displayChanges && displayChanges.length > 0 ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : extractionDone ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Briefcase className="h-4 w-4 text-violet-500" />
+                      </motion.div>
+                    ) : (
+                      <Briefcase className="h-4 w-4 text-muted-foreground/40" />
+                    )}
+                    <span className={
+                      displayChanges && displayChanges.length > 0
+                        ? "text-green-600 dark:text-green-400"
+                        : extractionDone
+                        ? "text-violet-600 dark:text-violet-400"
+                        : "text-muted-foreground/40"
+                    }>
+                      Analyze resume
+                    </span>
+                  </div>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground rotate-[-90deg]" />
+                  <div className="flex items-center gap-2">
+                    {displayScore ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    ) : displayChanges && displayChanges.length > 0 ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      >
+                        <Cpu className="h-4 w-4 text-violet-500" />
+                      </motion.div>
+                    ) : (
+                      <Cpu className="h-4 w-4 text-muted-foreground/40" />
+                    )}
+                    <span className={
+                      displayScore
+                        ? "text-green-600 dark:text-green-400"
+                        : displayChanges && displayChanges.length > 0
+                        ? "text-violet-600 dark:text-violet-400"
+                        : "text-muted-foreground/40"
+                    }>
+                      Generate changes
+                    </span>
+                    {displayChanges && displayChanges.length > 0 && (
+                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                        {displayChanges.length}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -491,14 +640,20 @@ export default function TailorPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setStep("input");
-                        setResult(null);
-                      }}
+                      onClick={() => toggleAll(true)}
                       className="gap-1.5"
                     >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Start Over
+                      <CheckCheck className="h-3.5 w-3.5" />
+                      Accept All
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => toggleAll(false)}
+                      className="gap-1.5"
+                    >
+                      <XCircle className="h-3.5 w-3.5" />
+                      Reject All
                     </Button>
                     <Button
                       size="sm"
@@ -513,15 +668,46 @@ export default function TailorPage() {
               </CardContent>
             </Card>
 
-            {/* Changes */}
-            <div className="space-y-3">
-              <h3 className="font-display text-base font-semibold px-1">
-                Proposed Changes
-              </h3>
-              <StreamingChanges
-                changes={result.changes}
-                onToggle={toggleChange}
-              />
+            {/* Grouped Changes */}
+            <div className="space-y-4">
+              {groupedChanges.map((group) => {
+                const groupAccepted = group.changes.filter((c) => c.accepted).length;
+                const allAccepted = groupAccepted === group.changes.length;
+                return (
+                  <div key={group.section} className="space-y-2">
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-display text-sm font-semibold capitalize">
+                          {group.label}
+                        </h3>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                          {groupAccepted}/{group.changes.length}
+                        </Badge>
+                      </div>
+                      <button
+                        onClick={() => toggleSection(group.section)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                      >
+                        {allAccepted ? (
+                          <>
+                            <XCircle className="h-3 w-3" />
+                            Reject section
+                          </>
+                        ) : (
+                          <>
+                            <CheckCheck className="h-3 w-3" />
+                            Accept section
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <StreamingChanges
+                      changes={group.changes}
+                      onToggle={toggleChange}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             {/* AI Refinement */}

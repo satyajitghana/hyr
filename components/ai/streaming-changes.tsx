@@ -60,6 +60,7 @@ export function StreamingChanges({
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
         {changes.map((change, idx) => {
+          if (!change || !change.type) return null;
           const config = changeTypeConfig[change.type];
           return (
             <motion.div

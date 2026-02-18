@@ -1,8 +1,51 @@
+import path from "path";
 import { renderToBuffer } from "@react-pdf/renderer";
+import { Font } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
 import { ResumePDF } from "@/components/resume/resume-pdf";
 import { resumeInputSchema } from "@/lib/ai/schemas";
 import React from "react";
+
+// Register Geist fonts for PDF rendering
+const fontsDir = path.join(
+  process.cwd(),
+  "node_modules",
+  "geist",
+  "dist",
+  "fonts"
+);
+
+Font.register({
+  family: "Geist",
+  fonts: [
+    {
+      src: path.join(fontsDir, "geist-sans", "Geist-Regular.ttf"),
+      fontWeight: 400,
+    },
+    {
+      src: path.join(fontsDir, "geist-sans", "Geist-Medium.ttf"),
+      fontWeight: 500,
+    },
+    {
+      src: path.join(fontsDir, "geist-sans", "Geist-SemiBold.ttf"),
+      fontWeight: 600,
+    },
+    {
+      src: path.join(fontsDir, "geist-sans", "Geist-Bold.ttf"),
+      fontWeight: 700,
+    },
+  ],
+});
+
+Font.register({
+  family: "GeistMono",
+  fonts: [
+    {
+      src: path.join(fontsDir, "geist-mono", "GeistMono-Regular.ttf"),
+      fontWeight: 400,
+    },
+  ],
+});
 
 export async function POST(req: Request) {
   try {
