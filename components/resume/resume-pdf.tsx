@@ -57,7 +57,7 @@ const PAGE_H = 792;
 // Corner mark constants
 const INSET = 16;
 const MARK_LEN = 20;
-const SQUARE_SIZE = 3; // filled corner square size
+const SQUARE_SIZE = 4; // filled corner square size
 
 // Top-right decoration grid
 const DECO_W = 200;
@@ -252,36 +252,38 @@ export function ResumePDF({
           paint={(painter: any): null => {
             painter.save();
 
-            // ── Corner border marks (L-shaped + filled square) ──
-            painter.lineWidth(0.4).strokeColor(c.border).strokeOpacity(0.5);
+            const x0 = INSET;
+            const y0 = INSET;
+            const x1 = PAGE_W - INSET;
+            const y1 = PAGE_H - INSET;
 
-            // Top-left corner
-            painter.moveTo(INSET, INSET).lineTo(INSET + MARK_LEN, INSET).stroke();
-            painter.moveTo(INSET, INSET).lineTo(INSET, INSET + MARK_LEN).stroke();
+            // ── 1. Full page border (light) ──
+            painter.lineWidth(0.4).strokeColor(c.border).strokeOpacity(0.25);
+            painter.rect(x0, y0, x1 - x0, y1 - y0).stroke();
 
-            // Top-right corner
-            painter.moveTo(PAGE_W - INSET, INSET).lineTo(PAGE_W - INSET - MARK_LEN, INSET).stroke();
-            painter.moveTo(PAGE_W - INSET, INSET).lineTo(PAGE_W - INSET, INSET + MARK_LEN).stroke();
+            // ── 2. Darker corner L-marks (overdraw on top of light border) ──
+            painter.lineWidth(0.6).strokeColor(c.dark).strokeOpacity(0.3);
 
-            // Bottom-left corner
-            painter.moveTo(INSET, PAGE_H - INSET).lineTo(INSET + MARK_LEN, PAGE_H - INSET).stroke();
-            painter.moveTo(INSET, PAGE_H - INSET).lineTo(INSET, PAGE_H - INSET - MARK_LEN).stroke();
-
-            // Bottom-right corner
-            painter.moveTo(PAGE_W - INSET, PAGE_H - INSET).lineTo(PAGE_W - INSET - MARK_LEN, PAGE_H - INSET).stroke();
-            painter.moveTo(PAGE_W - INSET, PAGE_H - INSET).lineTo(PAGE_W - INSET, PAGE_H - INSET - MARK_LEN).stroke();
-
-            // ── Filled corner squares ──
-            const hs = SQUARE_SIZE / 2;
-            painter.fillColor(c.dark).fillOpacity(0.35);
             // Top-left
-            painter.rect(INSET - hs, INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.moveTo(x0, y0).lineTo(x0 + MARK_LEN, y0).stroke();
+            painter.moveTo(x0, y0).lineTo(x0, y0 + MARK_LEN).stroke();
             // Top-right
-            painter.rect(PAGE_W - INSET - hs, INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.moveTo(x1, y0).lineTo(x1 - MARK_LEN, y0).stroke();
+            painter.moveTo(x1, y0).lineTo(x1, y0 + MARK_LEN).stroke();
             // Bottom-left
-            painter.rect(INSET - hs, PAGE_H - INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.moveTo(x0, y1).lineTo(x0 + MARK_LEN, y1).stroke();
+            painter.moveTo(x0, y1).lineTo(x0, y1 - MARK_LEN).stroke();
             // Bottom-right
-            painter.rect(PAGE_W - INSET - hs, PAGE_H - INSET - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.moveTo(x1, y1).lineTo(x1 - MARK_LEN, y1).stroke();
+            painter.moveTo(x1, y1).lineTo(x1, y1 - MARK_LEN).stroke();
+
+            // ── 3. Filled corner squares (darkest, centered on corner) ──
+            const hs = SQUARE_SIZE / 2;
+            painter.fillColor(c.dark).fillOpacity(0.8);
+            painter.rect(x0 - hs, y0 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(x1 - hs, y0 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(x0 - hs, y1 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(x1 - hs, y1 - hs, SQUARE_SIZE, SQUARE_SIZE).fill();
 
             // ── Top-right decoration: grid + crosses (Vercel-style) ──
             const trX = PAGE_W - DECO_W;
