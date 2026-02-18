@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useRef } from "react";
+import { use, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
@@ -19,6 +19,8 @@ import {
   Loader2,
   ImagePlus,
   X,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +45,17 @@ export default function ResumeDetailPage({
   const [newSkill, setNewSkill] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [processingImage, setProcessingImage] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Clean up blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   if (!resume) {
     return (
@@ -121,6 +133,33 @@ export default function ResumeDetailPage({
     }
   };
 
+  const handleTogglePreview = async () => {
+    if (previewing) {
+      setPreviewing(false);
+      return;
+    }
+    setLoadingPreview(true);
+    try {
+      const res = await fetch("/api/resume/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resume, ditherImage: resume.ditherImage }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        console.error("PDF preview failed:", err);
+        return;
+      }
+      const blob = await res.blob();
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      setPreviewing(true);
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <motion.div
@@ -144,6 +183,22 @@ export default function ResumeDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleTogglePreview}
+            disabled={loadingPreview}
+          >
+            {loadingPreview ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : previewing ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+            {previewing ? "Hide Preview" : "Preview"}
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -172,6 +227,34 @@ export default function ResumeDetailPage({
           </Link>
         </div>
       </motion.div>
+
+      {/* PDF Preview Panel */}
+      {previewing && previewUrl && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border bg-muted/30 p-2 overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-2 pb-2">
+            <p className="text-sm font-medium text-muted-foreground">PDF Preview</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 gap-1.5 text-xs"
+              onClick={() => setPreviewing(false)}
+            >
+              <X className="h-3.5 w-3.5" />
+              Close
+            </Button>
+          </div>
+          <iframe
+            src={previewUrl}
+            className="w-full rounded-lg border bg-white"
+            style={{ height: "80vh" }}
+            title="Resume PDF Preview"
+          />
+        </motion.div>
+      )}
 
       {/* Profile Photo for PDF */}
       <Card>

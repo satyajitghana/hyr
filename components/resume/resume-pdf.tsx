@@ -4,119 +4,129 @@ import {
   Text,
   View,
   Image,
+  Canvas,
   StyleSheet,
 } from "@react-pdf/renderer";
 import type { Resume } from "@/lib/resume/types";
 
 // ── Color palette ──
 const c = {
-  black:  "#111827",
-  dark:   "#1f2937",
-  muted:  "#4b5563",
-  light:  "#9ca3af",
-  border: "#d1d5db",
+  black:  "#0a0a0a",
+  dark:   "#171717",
+  muted:  "#525252",
+  light:  "#a3a3a3",
+  border: "#e5e5e5",
   accent: "#4f46e5",
 };
 
 // LETTER page = 612 × 792 pt
-// Padding: top 36, bottom 36, horizontal 48
-// To bleed a full-page bg image to the page edges, offset by padding:
-const PAGE_PAD_TOP  = 36;
-const PAGE_PAD_H    = 48;
+const PAGE_PAD_TOP  = 40;
+const PAGE_PAD_BOT  = 40;
+const PAGE_PAD_H    = 52;
 const PAGE_W        = 612;
 const PAGE_H        = 792;
+
+// Seeded RNG for deterministic dot placement
+function seededRng(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
+  return () => {
+    h = ((h ^ (h >>> 16)) * 0x45d9f3b) | 0;
+    h = ((h ^ (h >>> 16)) * 0x45d9f3b) | 0;
+    h = h ^ (h >>> 16);
+    return (h >>> 0) / 0xffffffff;
+  };
+}
 
 const styles = StyleSheet.create({
   page: {
     paddingTop:        PAGE_PAD_TOP,
-    paddingBottom:     36,
+    paddingBottom:     PAGE_PAD_BOT,
     paddingHorizontal: PAGE_PAD_H,
     fontSize:  10,
     color:     c.dark,
     lineHeight: 1.45,
-  },
-  // ── Full-page background (generative dots, rendered as PNG Image) ──
-  bgDither: {
-    position: "absolute",
-    top:    -PAGE_PAD_TOP,
-    left:   -PAGE_PAD_H,
-    width:   PAGE_W,
-    height:  PAGE_H,
-    opacity: 0.045,
-  },
-  // ── User dither photo (top-right corner) ──
-  ditherOverlay: {
-    position: "absolute",
-    top:   0,
-    right: 0,
-    width:  88,
-    height: 88,
-    opacity: 0.07,
+    backgroundColor: "#ffffff",
   },
   // ── Header ──
+  headerBlock: {
+    marginBottom: 12,
+  },
   name: {
-    fontSize:   22,
+    fontSize:   24,
     fontWeight: 700,
     color:      c.black,
-    marginBottom: 2,
+    marginBottom: 3,
+    letterSpacing: -0.3,
   },
   jobTitle: {
     fontSize:   11,
-    fontWeight: 500,
+    fontWeight: 400,
     color:      c.muted,
-    marginBottom: 6,
+    marginBottom: 7,
   },
   contactRow: {
     flexDirection: "row",
     flexWrap:      "wrap",
-    marginBottom:  8,
+    marginBottom:  0,
   },
   contactItem: {
-    fontSize: 9.5,
+    fontSize: 9,
     color:    c.muted,
   },
   contactSep: {
-    fontSize:       9.5,
-    color:          c.light,
-    marginHorizontal: 4,
+    fontSize:         9,
+    color:            c.light,
+    marginHorizontal: 5,
   },
-  // Thin accent rule that closes the header block — replaces the old 2px line
   headerRule: {
-    height:          1,
-    backgroundColor: c.accent,
-    marginBottom:    10,
-    opacity:         0.7,
+    height:          0.75,
+    backgroundColor: c.border,
+    marginTop:       12,
+    marginBottom:    12,
   },
   // ── Section ──
   section: {
-    marginBottom: 9,
+    marginBottom: 10,
   },
-  // Gray rule before sections OTHER than the first (no double-line)
   sectionRule: {
     height:          0.5,
     backgroundColor: c.border,
-    marginBottom:    5,
+    marginBottom:    6,
+  },
+  sectionTitleRow: {
+    flexDirection:  "row",
+    alignItems:     "center",
+    marginBottom:   5,
   },
   sectionTitle: {
-    fontSize:   10.5,
+    fontSize:   9,
     fontWeight: 700,
-    color:      c.black,
-    marginBottom: 3,
+    color:      c.light,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  sectionTitleAccent: {
+    width:           16,
+    height:          1.5,
+    backgroundColor: c.accent,
+    marginRight:     6,
+    opacity:         0.8,
   },
   // ── Summary ──
   summary: {
     fontSize:   10,
-    color:      c.dark,
-    lineHeight: 1.55,
+    color:      c.muted,
+    lineHeight: 1.6,
   },
   // ── Experience ──
   expItem: {
-    marginBottom: 7,
+    marginBottom: 8,
   },
   expHeader: {
     flexDirection:  "row",
     justifyContent: "space-between",
-    alignItems:     "baseline",
+    alignItems:     "flex-start",
     marginBottom:   1,
   },
   expTitle: {
@@ -125,34 +135,35 @@ const styles = StyleSheet.create({
     color:      c.black,
   },
   expDates: {
-    fontSize: 9.5,
-    color:    c.muted,
+    fontSize: 9,
+    color:    c.light,
+    fontWeight: 400,
   },
   expCompany: {
     fontSize:     9.5,
     color:        c.muted,
-    fontWeight:   500,
-    marginBottom: 2.5,
+    marginBottom: 4,
   },
   bullet: {
     flexDirection: "row",
-    marginBottom:  1.5,
-    paddingLeft:   6,
+    marginBottom:  2,
+    paddingLeft:   0,
   },
   bulletChar: {
-    width:    10,
-    fontSize: 10,
-    color:    c.muted,
+    width:      10,
+    fontSize:   9.5,
+    color:      c.light,
+    marginTop:  0.5,
   },
   bulletText: {
     flex:       1,
-    fontSize:   10,
-    lineHeight: 1.45,
-    color:      c.dark,
+    fontSize:   9.5,
+    lineHeight: 1.5,
+    color:      c.muted,
   },
   // ── Education ──
   eduItem: {
-    marginBottom: 5,
+    marginBottom: 6,
   },
   eduHeader: {
     flexDirection:  "row",
@@ -165,8 +176,8 @@ const styles = StyleSheet.create({
     color:      c.black,
   },
   eduDate: {
-    fontSize: 9.5,
-    color:    c.muted,
+    fontSize: 9,
+    color:    c.light,
   },
   eduSchool: {
     fontSize: 9.5,
@@ -175,42 +186,46 @@ const styles = StyleSheet.create({
   // ── Skills ──
   skillsText: {
     fontSize:   10,
-    color:      c.dark,
-    lineHeight: 1.5,
+    color:      c.muted,
+    lineHeight: 1.55,
   },
   // ── Certifications ──
   certItem: {
     flexDirection: "row" as const,
-    marginBottom:  2,
-    paddingLeft:   6,
+    marginBottom:  2.5,
   },
 });
 
-// Section heading — `first` suppresses the gray rule to avoid double-line
-// after the header accent rule.
 function SectionHeading({ title, first = false }: { title: string; first?: boolean }) {
   return (
     <>
       {!first && <View style={styles.sectionRule} />}
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionTitleRow}>
+        <View style={styles.sectionTitleAccent} />
+        <Text style={styles.sectionTitle}>{title}</Text>
+      </View>
     </>
   );
 }
 
 // ── Main Component ──
 interface ResumePDFProps {
-  resume:           Resume;
-  fontFamily?:      string;
-  ditherImage?:     string;   // user-uploaded halftone photo
-  backgroundDither?: string;  // generative dot-pattern PNG (server-generated)
+  resume:       Resume;
+  fontFamily?:  string;
+  monoFamily?:  string;
+  ditherImage?: string;
+  ditherSeed?:  string;
 }
 
 export function ResumePDF({
   resume,
   fontFamily = "Helvetica",
+  monoFamily,
   ditherImage,
-  backgroundDither,
+  ditherSeed,
 }: ResumePDFProps) {
+  // Resolved monospace family for dates and numbers
+  const mono = monoFamily ?? fontFamily;
   const contactItems: string[] = [
     resume.contact.email,
     resume.contact.phone,
@@ -225,43 +240,128 @@ export function ResumePDF({
   const hasSkills   = resume.skills.length       > 0;
   const hasCerts    = resume.certifications.length > 0;
 
-  // Which is the first visible section? It gets `first` (no gray rule above).
-  // Sections render in order: Summary → Experience → Education → Skills → Certs
   let firstSection: "summary" | "experience" | "education" | "skills" | "certs" | null = null;
-  if (hasSummary)   firstSection = "summary";
-  else if (hasExp)  firstSection = "experience";
-  else if (hasEdu)  firstSection = "education";
+  if (hasSummary)     firstSection = "summary";
+  else if (hasExp)    firstSection = "experience";
+  else if (hasEdu)    firstSection = "education";
   else if (hasSkills) firstSection = "skills";
   else if (hasCerts)  firstSection = "certs";
+
+  // Corner decoration dimensions
+  const DECO_W = 180;
+  const DECO_H = 160;
 
   return (
     <Document>
       <Page size="LETTER" style={[styles.page, { fontFamily }]}>
 
-        {/* ── Generative dot background (PNG Image, avoids SVG blank-page bug) ── */}
-        {backgroundDither && (
-          <Image src={backgroundDither} style={styles.bgDither} />
-        )}
+        {/* ── Corner geometric decoration via Canvas (zero layout impact) ── */}
+        <Canvas
+          style={{
+            position: "absolute",
+            top:   0,
+            right: 0,
+            width:  DECO_W,
+            height: DECO_H,
+          }}
+          paint={(painter: any): null => {
+            const STEP = 16;
+            painter.save();
 
-        {/* ── User dithered photo (top-right corner watermark) ── */}
+            // Grid lines — very subtle
+            painter.lineWidth(0.4);
+            for (let x = 0; x <= DECO_W; x += STEP) {
+              painter
+                .moveTo(x, 0)
+                .lineTo(x, DECO_H)
+                .strokeColor(c.accent)
+                .strokeOpacity(0.07)
+                .stroke();
+            }
+            for (let y = 0; y <= DECO_H; y += STEP) {
+              painter
+                .moveTo(0, y)
+                .lineTo(DECO_W, y)
+                .strokeColor(c.accent)
+                .strokeOpacity(0.07)
+                .stroke();
+            }
+
+            // Cross markers at selected intersections
+            const crosses = [
+              [STEP * 2, STEP * 3],
+              [STEP * 5, STEP * 1],
+              [STEP * 8, STEP * 4],
+              [STEP * 4, STEP * 6],
+              [STEP * 7, STEP * 7],
+            ];
+            painter.lineWidth(0.75);
+            for (const [cx, cy] of crosses) {
+              painter
+                .moveTo(cx - 4, cy)
+                .lineTo(cx + 4, cy)
+                .strokeColor(c.accent)
+                .strokeOpacity(0.18)
+                .stroke();
+              painter
+                .moveTo(cx, cy - 4)
+                .lineTo(cx, cy + 4)
+                .strokeColor(c.accent)
+                .strokeOpacity(0.18)
+                .stroke();
+            }
+
+            // Seeded accent dots
+            if (ditherSeed) {
+              const rng = seededRng(ditherSeed);
+              for (let i = 0; i < 12; i++) {
+                const x = rng() * DECO_W;
+                const y = rng() * DECO_H;
+                const r = 0.8 + rng() * 1.2;
+                painter
+                  .circle(x, y, r)
+                  .fillColor(c.accent)
+                  .fillOpacity(0.12)
+                  .fill();
+              }
+            }
+
+            painter.restore();
+            return null;
+          }}
+        />
+
+        {/* ── User dithered photo (top-right area, under decoration) ── */}
         {ditherImage && (
-          <Image src={ditherImage} style={styles.ditherOverlay} />
+          <Image src={ditherImage} style={{
+            position: "absolute",
+            top:    PAGE_PAD_TOP,
+            right:  PAGE_PAD_H,
+            width:  72,
+            height: 72,
+            opacity: 0.12,
+          }} />
         )}
 
         {/* ── Header ── */}
-        <Text style={styles.name}>{resume.contact.name}</Text>
-        {resume.experience[0]?.title && (
-          <Text style={styles.jobTitle}>{resume.experience[0].title}</Text>
-        )}
-        <View style={styles.contactRow}>
-          {contactItems.map((item, i) => (
-            <View key={i} style={{ flexDirection: "row" as const }}>
-              {i > 0 && <Text style={styles.contactSep}>·</Text>}
-              <Text style={styles.contactItem}>{item}</Text>
-            </View>
-          ))}
+        <View style={styles.headerBlock}>
+          <Text style={[styles.name, { fontFamily }]}>{resume.contact.name}</Text>
+          {resume.experience[0]?.title && (
+            <Text style={[styles.jobTitle, { fontFamily }]}>
+              {resume.experience[0].title}
+            </Text>
+          )}
+          <View style={styles.contactRow}>
+            {contactItems.map((item, i) => (
+              <View key={i} style={{ flexDirection: "row" as const }}>
+                {i > 0 && <Text style={styles.contactSep}>·</Text>}
+                <Text style={styles.contactItem}>{item}</Text>
+              </View>
+            ))}
+          </View>
         </View>
-        {/* Single thin accent line closes the header — no duplicate below */}
+
+        {/* Thin rule closes header */}
         <View style={styles.headerRule} />
 
         {/* ── Summary ── */}
@@ -280,8 +380,8 @@ export function ResumePDF({
               <View key={exp.id} style={styles.expItem} wrap={false}>
                 <View style={styles.expHeader}>
                   <Text style={styles.expTitle}>{exp.title}</Text>
-                  <Text style={styles.expDates}>
-                    {exp.startDate}{" \u2014 "}{exp.endDate}
+                  <Text style={[styles.expDates, { fontFamily: mono }]}>
+                    {exp.startDate}{" \u2013 "}{exp.endDate}
                   </Text>
                 </View>
                 <Text style={styles.expCompany}>
@@ -306,11 +406,11 @@ export function ResumePDF({
               <View key={edu.id} style={styles.eduItem} wrap={false}>
                 <View style={styles.eduHeader}>
                   <Text style={styles.eduDegree}>{edu.degree}</Text>
-                  <Text style={styles.eduDate}>{edu.graduationDate}</Text>
+                  <Text style={[styles.eduDate, { fontFamily: mono }]}>{edu.graduationDate}</Text>
                 </View>
                 <Text style={styles.eduSchool}>
                   {edu.school}{" \u00B7 "}{edu.location}
-                  {edu.gpa ? `\u00B7 GPA: ${edu.gpa}` : ""}
+                  {edu.gpa ? `  \u00B7  GPA: ${edu.gpa}` : ""}
                 </Text>
               </View>
             ))}
