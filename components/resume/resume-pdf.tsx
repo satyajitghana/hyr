@@ -241,226 +241,165 @@ export function ResumePDF({
           fontFamily,
         }}
       >
-        {/* ── Layer 0: Full-page dithered dot background ── */}
+        {/* ── All background artwork in a single tiny Canvas ──
+             Uses 1x1 declared size to avoid layout overflow (blank page bug).
+             PDFKit painter draws on absolute page coordinates regardless. */}
         <Canvas
           style={{
             position: "absolute",
             top: 0,
             left: 0,
-            width: PAGE_W,
-            height: PAGE_H,
+            width: 1,
+            height: 1,
           }}
           paint={(painter: any): null => {
-            const rng = seededRng(ditherSeed || "default-seed");
-            const DOT_COUNT = 600;
-
             painter.save();
-            for (let i = 0; i < DOT_COUNT; i++) {
-              const x = rng() * PAGE_W;
-              const y = rng() * PAGE_H;
-              const r = 0.3 + rng() * 0.5;
-              const opacity = 0.015 + rng() * 0.025;
 
+            // ── Full-page dithered dot background ──
+            const bgRng = seededRng(ditherSeed || "default-seed");
+            for (let i = 0; i < 800; i++) {
+              const x = bgRng() * PAGE_W;
+              const y = bgRng() * PAGE_H;
+              const r = 0.3 + bgRng() * 0.6;
+              const opacity = 0.02 + bgRng() * 0.035;
               painter
                 .circle(x, y, r)
                 .fillColor(c.accent)
                 .fillOpacity(opacity)
                 .fill();
             }
+
+            // ── Top-right corner: grid + crosses + dots with smooth fade ──
+            const STEP = 14;
+            const trX = PAGE_W - DECO_W; // offset to top-right
+
+            const fadeTR = (x: number, y: number) => {
+              const dx = (PAGE_W - x) / DECO_W;
+              const dy = y / DECO_H;
+              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.1);
+            };
+
+            // Vertical grid lines
+            painter.lineWidth(0.35);
+            for (let lx = 0; lx <= DECO_W; lx += STEP) {
+              for (let ly = 0; ly < DECO_H; ly += STEP) {
+                const ax = trX + lx;
+                const op = fadeTR(ax, ly + STEP / 2) * 0.09;
+                if (op > 0.001) {
+                  painter.moveTo(ax, ly).lineTo(ax, Math.min(ly + STEP, DECO_H))
+                    .strokeColor(c.accent).strokeOpacity(op).stroke();
+                }
+              }
+            }
+            // Horizontal grid lines
+            for (let ly = 0; ly <= DECO_H; ly += STEP) {
+              for (let lx = 0; lx < DECO_W; lx += STEP) {
+                const ax = trX + lx;
+                const op = fadeTR(ax + STEP / 2, ly) * 0.09;
+                if (op > 0.001) {
+                  painter.moveTo(ax, ly).lineTo(Math.min(ax + STEP, PAGE_W), ly)
+                    .strokeColor(c.accent).strokeOpacity(op).stroke();
+                }
+              }
+            }
+
+            // Cross markers
+            const crosses = [
+              [2, 2], [5, 1], [8, 3], [10, 1], [4, 5], [7, 6], [12, 2],
+            ];
+            painter.lineWidth(0.6);
+            for (const [cx, cy] of crosses) {
+              const ax = trX + cx * STEP;
+              const ay = cy * STEP;
+              const op = fadeTR(ax, ay) * 0.25;
+              if (op > 0.005) {
+                painter.moveTo(ax - 3, ay).lineTo(ax + 3, ay)
+                  .strokeColor(c.accent).strokeOpacity(op).stroke();
+                painter.moveTo(ax, ay - 3).lineTo(ax, ay + 3)
+                  .strokeColor(c.accent).strokeOpacity(op).stroke();
+              }
+            }
+
+            // Seeded accent dots (top-right)
+            if (ditherSeed) {
+              const trRng = seededRng(ditherSeed);
+              for (let i = 0; i < 28; i++) {
+                const x = trX + trRng() * DECO_W;
+                const y = trRng() * DECO_H;
+                const r = 0.6 + trRng() * 1.2;
+                const op = fadeTR(x, y) * 0.2;
+                if (op > 0.005) {
+                  painter.circle(x, y, r)
+                    .fillColor(c.accent).fillOpacity(op).fill();
+                }
+              }
+            }
+
+            // ── Bottom-left corner: smaller, subtler mirror ──
+            const blY = PAGE_H - DECO_BL_H;
+
+            const fadeBL = (x: number, y: number) => {
+              const dx = x / DECO_BL_W;
+              const dy = (PAGE_H - y) / DECO_BL_H;
+              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.2) * 0.5;
+            };
+
+            painter.lineWidth(0.3);
+            for (let lx = 0; lx <= DECO_BL_W; lx += STEP) {
+              for (let ly = 0; ly < DECO_BL_H; ly += STEP) {
+                const ay = blY + ly;
+                const op = fadeBL(lx, ay + STEP / 2) * 0.08;
+                if (op > 0.001) {
+                  painter.moveTo(lx, ay).lineTo(lx, Math.min(ay + STEP, PAGE_H))
+                    .strokeColor(c.accent).strokeOpacity(op).stroke();
+                }
+              }
+            }
+            for (let ly = 0; ly <= DECO_BL_H; ly += STEP) {
+              for (let lx = 0; lx < DECO_BL_W; lx += STEP) {
+                const ay = blY + ly;
+                const op = fadeBL(lx + STEP / 2, ay) * 0.08;
+                if (op > 0.001) {
+                  painter.moveTo(lx, ay).lineTo(Math.min(lx + STEP, DECO_BL_W), ay)
+                    .strokeColor(c.accent).strokeOpacity(op).stroke();
+                }
+              }
+            }
+
+            // Bottom-left seeded dots
+            if (ditherSeed) {
+              const blRng = seededRng(ditherSeed + "-bl");
+              for (let i = 0; i < 14; i++) {
+                const x = blRng() * DECO_BL_W;
+                const y = blY + blRng() * DECO_BL_H;
+                const r = 0.5 + blRng() * 0.9;
+                const op = fadeBL(x, y) * 0.15;
+                if (op > 0.003) {
+                  painter.circle(x, y, r)
+                    .fillColor(c.accent).fillOpacity(op).fill();
+                }
+              }
+            }
+
             painter.restore();
             return null;
           }}
         />
 
-        {/* ── Layer 1: Dither image watermark (larger, more subtle) ── */}
+        {/* ── Dither image watermark (if uploaded) ── */}
         {ditherImage && (
           <Image
             src={ditherImage}
             style={{
               position: "absolute",
-              top: 0,
-              right: 0,
-              width: 200,
-              height: 200,
-              opacity: 0.04,
+              top: 20,
+              right: 36,
+              width: 100,
+              height: 100,
+              opacity: 0.08,
             }}
           />
         )}
-
-        {/* ── Layer 2: Top-right corner decoration with gradient fade ── */}
-        <Canvas
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: DECO_W,
-            height: DECO_H,
-          }}
-          paint={(painter: any): null => {
-            const STEP = 14;
-            painter.save();
-
-            // Fade function: opacity decreases with distance from top-right corner
-            const fade = (x: number, y: number) => {
-              const dx = (DECO_W - x) / DECO_W;
-              const dy = y / DECO_H;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              return Math.max(0, 1 - dist * 1.2);
-            };
-
-            // Grid lines with per-segment fading
-            painter.lineWidth(0.35);
-            for (let x = 0; x <= DECO_W; x += STEP) {
-              for (let y = 0; y < DECO_H; y += STEP) {
-                const opacity = fade(x, y + STEP / 2) * 0.07;
-                if (opacity > 0.001) {
-                  painter
-                    .moveTo(x, y)
-                    .lineTo(x, Math.min(y + STEP, DECO_H))
-                    .strokeColor(c.accent)
-                    .strokeOpacity(opacity)
-                    .stroke();
-                }
-              }
-            }
-            for (let y = 0; y <= DECO_H; y += STEP) {
-              for (let x = 0; x < DECO_W; x += STEP) {
-                const opacity = fade(x + STEP / 2, y) * 0.07;
-                if (opacity > 0.001) {
-                  painter
-                    .moveTo(x, y)
-                    .lineTo(Math.min(x + STEP, DECO_W), y)
-                    .strokeColor(c.accent)
-                    .strokeOpacity(opacity)
-                    .stroke();
-                }
-              }
-            }
-
-            // Cross markers with fading
-            const crosses = [
-              [STEP * 2, STEP * 2],
-              [STEP * 5, STEP * 1],
-              [STEP * 8, STEP * 3],
-              [STEP * 10, STEP * 1],
-              [STEP * 4, STEP * 5],
-              [STEP * 7, STEP * 6],
-              [STEP * 12, STEP * 2],
-            ];
-            painter.lineWidth(0.6);
-            for (const [cx, cy] of crosses) {
-              const opacity = fade(cx, cy) * 0.2;
-              if (opacity > 0.005) {
-                painter
-                  .moveTo(cx - 3, cy)
-                  .lineTo(cx + 3, cy)
-                  .strokeColor(c.accent)
-                  .strokeOpacity(opacity)
-                  .stroke();
-                painter
-                  .moveTo(cx, cy - 3)
-                  .lineTo(cx, cy + 3)
-                  .strokeColor(c.accent)
-                  .strokeOpacity(opacity)
-                  .stroke();
-              }
-            }
-
-            // Seeded dots with fading
-            if (ditherSeed) {
-              const rng = seededRng(ditherSeed);
-              for (let i = 0; i < 20; i++) {
-                const x = rng() * DECO_W;
-                const y = rng() * DECO_H;
-                const r = 0.6 + rng() * 1.0;
-                const opacity = fade(x, y) * 0.15;
-                if (opacity > 0.005) {
-                  painter
-                    .circle(x, y, r)
-                    .fillColor(c.accent)
-                    .fillOpacity(opacity)
-                    .fill();
-                }
-              }
-            }
-
-            painter.restore();
-            return null;
-          }}
-        />
-
-        {/* ── Layer 3: Bottom-left corner decoration (subtle mirror) ── */}
-        <Canvas
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: DECO_BL_W,
-            height: DECO_BL_H,
-          }}
-          paint={(painter: any): null => {
-            const STEP = 14;
-            painter.save();
-
-            // Fade from bottom-left corner (0, DECO_BL_H)
-            const fade = (x: number, y: number) => {
-              const dx = x / DECO_BL_W;
-              const dy = (DECO_BL_H - y) / DECO_BL_H;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              return Math.max(0, 1 - dist * 1.3) * 0.5; // Half opacity scale
-            };
-
-            // Grid lines
-            painter.lineWidth(0.3);
-            for (let x = 0; x <= DECO_BL_W; x += STEP) {
-              for (let y = 0; y < DECO_BL_H; y += STEP) {
-                const opacity = fade(x, y + STEP / 2) * 0.07;
-                if (opacity > 0.001) {
-                  painter
-                    .moveTo(x, y)
-                    .lineTo(x, Math.min(y + STEP, DECO_BL_H))
-                    .strokeColor(c.accent)
-                    .strokeOpacity(opacity)
-                    .stroke();
-                }
-              }
-            }
-            for (let y = 0; y <= DECO_BL_H; y += STEP) {
-              for (let x = 0; x < DECO_BL_W; x += STEP) {
-                const opacity = fade(x + STEP / 2, y) * 0.07;
-                if (opacity > 0.001) {
-                  painter
-                    .moveTo(x, y)
-                    .lineTo(Math.min(x + STEP, DECO_BL_W), y)
-                    .strokeColor(c.accent)
-                    .strokeOpacity(opacity)
-                    .stroke();
-                }
-              }
-            }
-
-            // A few seeded dots
-            if (ditherSeed) {
-              const rng = seededRng(ditherSeed + "-bl");
-              for (let i = 0; i < 10; i++) {
-                const x = rng() * DECO_BL_W;
-                const y = rng() * DECO_BL_H;
-                const r = 0.5 + rng() * 0.8;
-                const opacity = fade(x, y) * 0.12;
-                if (opacity > 0.003) {
-                  painter
-                    .circle(x, y, r)
-                    .fillColor(c.accent)
-                    .fillOpacity(opacity)
-                    .fill();
-                }
-              }
-            }
-
-            painter.restore();
-            return null;
-          }}
-        />
 
         {/* ── Header ── */}
         <View style={{ marginBottom: 6 }}>
