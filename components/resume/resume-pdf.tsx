@@ -20,7 +20,6 @@ const styles = StyleSheet.create({
     padding: 48,
     paddingTop: 44,
     paddingBottom: 44,
-    fontFamily: "Geist",
     fontSize: 9,
     color: c.dark,
     lineHeight: 1.5,
@@ -145,9 +144,10 @@ const styles = StyleSheet.create({
 
 interface ResumePDFProps {
   resume: Resume;
+  fontFamily?: string;
 }
 
-export function ResumePDF({ resume }: ResumePDFProps) {
+export function ResumePDF({ resume, fontFamily = "Helvetica" }: ResumePDFProps) {
   const contactItems: string[] = [
     resume.contact.email,
     resume.contact.phone,
@@ -158,7 +158,7 @@ export function ResumePDF({ resume }: ResumePDFProps) {
 
   return (
     <Document>
-      <Page size="LETTER" style={styles.page}>
+      <Page size="LETTER" style={[styles.page, { fontFamily }]}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.name}>{resume.contact.name}</Text>

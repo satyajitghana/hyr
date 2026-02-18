@@ -76,6 +76,12 @@ export default function ResumeDetailPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resume }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        console.error("PDF generation failed:", err);
+        alert(`PDF generation failed: ${err.details || err.error}`);
+        return;
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
