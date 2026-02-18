@@ -5,6 +5,8 @@ import { Font } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
 import { ResumePDF } from "@/components/resume/resume-pdf";
 import { resumeInputSchema } from "@/lib/ai/schemas";
+import { getBirdForName } from "@/lib/resume/birds";
+import { ditherImageServer } from "@/lib/resume/server-dither";
 import React from "react";
 
 // ── Font registration ──
@@ -40,6 +42,13 @@ if (fs.existsSync(geistRegularPath)) {
     family: "GeistMono",
     fonts: [
       { src: path.join(fontsDir, "geist-mono", "GeistMono-Regular.ttf"), fontWeight: 400 },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-Medium.ttf"), fontWeight: 500 },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-SemiBold.ttf"), fontWeight: 600 },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-Bold.ttf"), fontWeight: 700 },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-Italic.ttf"), fontWeight: 400, fontStyle: "italic" as const },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-MediumItalic.ttf"), fontWeight: 500, fontStyle: "italic" as const },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-SemiBoldItalic.ttf"), fontWeight: 600, fontStyle: "italic" as const },
+      { src: path.join(fontsDir, "geist-mono", "GeistMono-BoldItalic.ttf"), fontWeight: 700, fontStyle: "italic" as const },
     ],
   });
   usingGeist = true;
@@ -61,8 +70,15 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
     };
 
-    // Seed the corner decoration from the primary job title (unique per role)
-    const ditherSeed = (resume.experience[0]?.title ?? resume.contact.name) + resume.contact.name;
+    // Deterministic bird assignment based on person name
+    const bird = getBirdForName(resume.contact.name);
+    const birdPath = path.join(process.cwd(), "public", "birds", bird.file);
+    let birdImage: string | undefined;
+    try {
+      birdImage = await ditherImageServer(birdPath);
+    } catch (e) {
+      console.warn("Bird dither failed, skipping:", e);
+    }
 
     const buffer = await renderToBuffer(
       React.createElement(ResumePDF, {
@@ -70,7 +86,7 @@ export async function POST(req: Request) {
         fontFamily: usingGeist ? "Geist" : "Helvetica",
         monoFamily: usingGeist ? "GeistMono" : undefined,
         ditherImage: body.ditherImage || undefined,
-        ditherSeed,
+        birdImage,
       }) as any
     );
 

@@ -54,25 +54,18 @@ const c = {
 const PAGE_W = 612;
 const PAGE_H = 792;
 
-// ── Seeded RNG for deterministic dot placement ──
-function seededRng(seed: string) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++)
-    h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
-  return () => {
-    h = ((h ^ (h >>> 16)) * 0x45d9f3b) | 0;
-    h = ((h ^ (h >>> 16)) * 0x45d9f3b) | 0;
-    h = h ^ (h >>> 16);
-    return (h >>> 0) / 0xffffffff;
-  };
-}
+// Corner mark constants
+const INSET = 16;
+const MARK_LEN = 20;
 
 // ── Section heading with accent bar ──
 function SectionHeading({
   title,
+  mono,
   first = false,
 }: {
   title: string;
+  mono: string;
   first?: boolean;
 }) {
   return (
@@ -106,6 +99,7 @@ function SectionHeading({
           style={{
             fontSize: 8.5,
             fontWeight: 700,
+            fontFamily: mono,
             color: c.light,
             letterSpacing: 1.2,
             textTransform: "uppercase",
@@ -122,10 +116,12 @@ function SectionHeading({
 function ContactItem({
   icon,
   text,
+  mono,
   isFirst,
 }: {
   icon: React.ReactNode;
   text: string;
+  mono: string;
   isFirst?: boolean;
 }) {
   return (
@@ -142,7 +138,9 @@ function ContactItem({
         </Text>
       )}
       <View style={{ marginRight: 2 }}>{icon}</View>
-      <Text style={{ fontSize: 8.5, color: c.muted }}>{text}</Text>
+      <Text style={{ fontSize: 8.5, color: c.muted, fontFamily: mono }}>
+        {text}
+      </Text>
     </View>
   );
 }
@@ -153,7 +151,7 @@ interface ResumePDFProps {
   fontFamily?: string;
   monoFamily?: string;
   ditherImage?: string;
-  ditherSeed?: string;
+  birdImage?: string;
 }
 
 export function ResumePDF({
@@ -161,7 +159,7 @@ export function ResumePDF({
   fontFamily = "Helvetica",
   monoFamily,
   ditherImage,
-  ditherSeed,
+  birdImage,
 }: ResumePDFProps) {
   const mono = monoFamily ?? fontFamily;
 
@@ -183,13 +181,6 @@ export function ResumePDF({
   else if (hasEdu) firstSection = "education";
   else if (hasSkills) firstSection = "skills";
   else if (hasCerts) firstSection = "certs";
-
-  // Corner decoration dimensions
-  const DECO_W = 200;
-  const DECO_H = 180;
-  // Bottom-left decoration (smaller, subtler)
-  const DECO_BL_W = 120;
-  const DECO_BL_H = 100;
 
   // Contact items with icons
   const iconSize = 7.5;
@@ -241,7 +232,7 @@ export function ResumePDF({
           fontFamily,
         }}
       >
-        {/* ── All background artwork in a single tiny Canvas ──
+        {/* ── Corner border marks (L-shaped registration marks) ──
              Uses 1x1 declared size to avoid layout overflow (blank page bug).
              PDFKit painter draws on absolute page coordinates regardless. */}
         <Canvas
@@ -254,153 +245,45 @@ export function ResumePDF({
           }}
           paint={(painter: any): null => {
             painter.save();
+            painter.lineWidth(0.4).strokeColor(c.border).strokeOpacity(0.5);
 
-            // ── Full-page dithered dot background ──
-            const bgRng = seededRng(ditherSeed || "default-seed");
-            // Small scattered dots across the page
-            for (let i = 0; i < 500; i++) {
-              const x = bgRng() * PAGE_W;
-              const y = bgRng() * PAGE_H;
-              const r = 0.4 + bgRng() * 0.8;
-              const opacity = 0.04 + bgRng() * 0.06;
-              painter
-                .circle(x, y, r)
-                .fillColor(c.accent)
-                .fillOpacity(opacity)
-                .fill();
-            }
-            // Larger accent dots (fewer, more visible)
-            for (let i = 0; i < 60; i++) {
-              const x = bgRng() * PAGE_W;
-              const y = bgRng() * PAGE_H;
-              const r = 1.0 + bgRng() * 1.5;
-              const opacity = 0.03 + bgRng() * 0.04;
-              painter
-                .circle(x, y, r)
-                .fillColor(c.accent)
-                .fillOpacity(opacity)
-                .fill();
-            }
+            // Top-left corner
+            painter.moveTo(INSET, INSET).lineTo(INSET + MARK_LEN, INSET).stroke();
+            painter.moveTo(INSET, INSET).lineTo(INSET, INSET + MARK_LEN).stroke();
 
-            // ── Top-right corner: grid + crosses + dots with smooth fade ──
-            const STEP = 14;
-            const trX = PAGE_W - DECO_W; // offset to top-right
+            // Top-right corner
+            painter.moveTo(PAGE_W - INSET, INSET).lineTo(PAGE_W - INSET - MARK_LEN, INSET).stroke();
+            painter.moveTo(PAGE_W - INSET, INSET).lineTo(PAGE_W - INSET, INSET + MARK_LEN).stroke();
 
-            const fadeTR = (x: number, y: number) => {
-              const dx = (PAGE_W - x) / DECO_W;
-              const dy = y / DECO_H;
-              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.1);
-            };
+            // Bottom-left corner
+            painter.moveTo(INSET, PAGE_H - INSET).lineTo(INSET + MARK_LEN, PAGE_H - INSET).stroke();
+            painter.moveTo(INSET, PAGE_H - INSET).lineTo(INSET, PAGE_H - INSET - MARK_LEN).stroke();
 
-            // Vertical grid lines
-            painter.lineWidth(0.5);
-            for (let lx = 0; lx <= DECO_W; lx += STEP) {
-              for (let ly = 0; ly < DECO_H; ly += STEP) {
-                const ax = trX + lx;
-                const op = fadeTR(ax, ly + STEP / 2) * 0.18;
-                if (op > 0.001) {
-                  painter.moveTo(ax, ly).lineTo(ax, Math.min(ly + STEP, DECO_H))
-                    .strokeColor(c.accent).strokeOpacity(op).stroke();
-                }
-              }
-            }
-            // Horizontal grid lines
-            for (let ly = 0; ly <= DECO_H; ly += STEP) {
-              for (let lx = 0; lx < DECO_W; lx += STEP) {
-                const ax = trX + lx;
-                const op = fadeTR(ax + STEP / 2, ly) * 0.18;
-                if (op > 0.001) {
-                  painter.moveTo(ax, ly).lineTo(Math.min(ax + STEP, PAGE_W), ly)
-                    .strokeColor(c.accent).strokeOpacity(op).stroke();
-                }
-              }
-            }
-
-            // Cross markers
-            const crosses = [
-              [2, 2], [5, 1], [8, 3], [10, 1], [4, 5], [7, 6], [12, 2],
-              [3, 3], [9, 5], [11, 4], [6, 2],
-            ];
-            painter.lineWidth(0.8);
-            for (const [cx, cy] of crosses) {
-              const ax = trX + cx * STEP;
-              const ay = cy * STEP;
-              const op = fadeTR(ax, ay) * 0.4;
-              if (op > 0.005) {
-                painter.moveTo(ax - 3.5, ay).lineTo(ax + 3.5, ay)
-                  .strokeColor(c.accent).strokeOpacity(op).stroke();
-                painter.moveTo(ax, ay - 3.5).lineTo(ax, ay + 3.5)
-                  .strokeColor(c.accent).strokeOpacity(op).stroke();
-              }
-            }
-
-            // Seeded accent dots (top-right)
-            if (ditherSeed) {
-              const trRng = seededRng(ditherSeed);
-              for (let i = 0; i < 40; i++) {
-                const x = trX + trRng() * DECO_W;
-                const y = trRng() * DECO_H;
-                const r = 0.8 + trRng() * 1.8;
-                const op = fadeTR(x, y) * 0.35;
-                if (op > 0.005) {
-                  painter.circle(x, y, r)
-                    .fillColor(c.accent).fillOpacity(op).fill();
-                }
-              }
-            }
-
-            // ── Bottom-left corner: smaller, subtler mirror ──
-            const blY = PAGE_H - DECO_BL_H;
-
-            const fadeBL = (x: number, y: number) => {
-              const dx = x / DECO_BL_W;
-              const dy = (PAGE_H - y) / DECO_BL_H;
-              return Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) * 1.2) * 0.6;
-            };
-
-            painter.lineWidth(0.4);
-            for (let lx = 0; lx <= DECO_BL_W; lx += STEP) {
-              for (let ly = 0; ly < DECO_BL_H; ly += STEP) {
-                const ay = blY + ly;
-                const op = fadeBL(lx, ay + STEP / 2) * 0.15;
-                if (op > 0.001) {
-                  painter.moveTo(lx, ay).lineTo(lx, Math.min(ay + STEP, PAGE_H))
-                    .strokeColor(c.accent).strokeOpacity(op).stroke();
-                }
-              }
-            }
-            for (let ly = 0; ly <= DECO_BL_H; ly += STEP) {
-              for (let lx = 0; lx < DECO_BL_W; lx += STEP) {
-                const ay = blY + ly;
-                const op = fadeBL(lx + STEP / 2, ay) * 0.15;
-                if (op > 0.001) {
-                  painter.moveTo(lx, ay).lineTo(Math.min(lx + STEP, DECO_BL_W), ay)
-                    .strokeColor(c.accent).strokeOpacity(op).stroke();
-                }
-              }
-            }
-
-            // Bottom-left seeded dots
-            if (ditherSeed) {
-              const blRng = seededRng(ditherSeed + "-bl");
-              for (let i = 0; i < 20; i++) {
-                const x = blRng() * DECO_BL_W;
-                const y = blY + blRng() * DECO_BL_H;
-                const r = 0.6 + blRng() * 1.2;
-                const op = fadeBL(x, y) * 0.28;
-                if (op > 0.003) {
-                  painter.circle(x, y, r)
-                    .fillColor(c.accent).fillOpacity(op).fill();
-                }
-              }
-            }
+            // Bottom-right corner
+            painter.moveTo(PAGE_W - INSET, PAGE_H - INSET).lineTo(PAGE_W - INSET - MARK_LEN, PAGE_H - INSET).stroke();
+            painter.moveTo(PAGE_W - INSET, PAGE_H - INSET).lineTo(PAGE_W - INSET, PAGE_H - INSET - MARK_LEN).stroke();
 
             painter.restore();
             return null;
           }}
         />
 
-        {/* ── Dither image watermark (if uploaded) ── */}
+        {/* ── Dithered bird watermark ── */}
+        {birdImage && (
+          <Image
+            src={birdImage}
+            style={{
+              position: "absolute",
+              bottom: 28,
+              right: 36,
+              width: 64,
+              height: 64,
+              opacity: 0.1,
+            }}
+          />
+        )}
+
+        {/* ── Dither image watermark (user-uploaded photo) ── */}
         {ditherImage && (
           <Image
             src={ditherImage}
@@ -446,7 +329,7 @@ export function ResumePDF({
             </Text>
           )}
 
-          {/* Contact row with icons */}
+          {/* Contact row with icons (mono font) */}
           <View
             style={{
               flexDirection: "row",
@@ -459,6 +342,7 @@ export function ResumePDF({
                 key={i}
                 icon={entry.icon}
                 text={entry.text}
+                mono={mono}
                 isFirst={i === 0}
               />
             ))}
@@ -480,6 +364,7 @@ export function ResumePDF({
           <View style={{ marginBottom: 6 }}>
             <SectionHeading
               title="Summary"
+              mono={mono}
               first={firstSection === "summary"}
             />
             <Text
@@ -499,6 +384,7 @@ export function ResumePDF({
           <View style={{ marginBottom: 6 }}>
             <SectionHeading
               title="Experience"
+              mono={mono}
               first={firstSection === "experience"}
             />
             {resume.experience.map((exp) => (
@@ -594,6 +480,7 @@ export function ResumePDF({
           <View style={{ marginBottom: 6 }}>
             <SectionHeading
               title="Education"
+              mono={mono}
               first={firstSection === "education"}
             />
             {resume.education.map((edu) => (
@@ -631,7 +518,7 @@ export function ResumePDF({
                   </Text>
                 </View>
 
-                {/* School + Location (italic) */}
+                {/* School + Location + GPA (italic, GPA in mono) */}
                 <Text
                   style={{
                     fontSize: 9,
@@ -642,23 +529,28 @@ export function ResumePDF({
                   {edu.school}
                   {" \u00B7 "}
                   {edu.location}
-                  {edu.gpa ? `  \u00B7  GPA: ${edu.gpa}` : ""}
+                  {edu.gpa ? "  \u00B7  GPA: " : ""}
+                  {edu.gpa && (
+                    <Text style={{ fontFamily: mono }}>{edu.gpa}</Text>
+                  )}
                 </Text>
               </View>
             ))}
           </View>
         )}
 
-        {/* ── Skills ── */}
+        {/* ── Skills (mono font) ── */}
         {hasSkills && (
           <View style={{ marginBottom: 6 }}>
             <SectionHeading
               title="Skills"
+              mono={mono}
               first={firstSection === "skills"}
             />
             <Text
               style={{
                 fontSize: 9,
+                fontFamily: mono,
                 color: c.muted,
                 lineHeight: 1.35,
               }}
@@ -673,6 +565,7 @@ export function ResumePDF({
           <View style={{ marginBottom: 6 }}>
             <SectionHeading
               title="Certifications"
+              mono={mono}
               first={firstSection === "certs"}
             />
             {resume.certifications.map((cert, i) => (
