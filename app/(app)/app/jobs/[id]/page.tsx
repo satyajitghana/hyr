@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, useMemo } from "react";
+import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -42,8 +42,7 @@ import {
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 import { useJobStore } from "@/lib/store/job-store";
 import { useResumeStore } from "@/lib/store/resume-store";
-import { getAIProvider } from "@/lib/ai/provider";
-import { Resume } from "@/lib/resume/types";
+import type { EasyApplyEvent } from "@/lib/ai/schemas";
 
 function formatSalary(n: number) {
   return `$${(n / 1000).toFixed(0)}K`;
@@ -55,20 +54,6 @@ interface ProcessingStatus {
   tailoring: "pending" | "active" | "done";
   coverLetter: "pending" | "active" | "done";
   recruiterEmail: "pending" | "active" | "done";
-}
-
-/** Parse "Subject: ..." from first line of email text */
-function parseEmail(raw: string) {
-  const lines = raw.split("\n");
-  let subject = "";
-  let bodyStart = 0;
-  if (lines[0]?.startsWith("Subject:")) {
-    subject = lines[0].replace("Subject:", "").trim();
-    // skip blank line after subject
-    bodyStart = lines[1]?.trim() === "" ? 2 : 1;
-  }
-  const body = lines.slice(bodyStart).join("\n").trim();
-  return { subject, body };
 }
 
 export default function JobDetailPage({
@@ -94,7 +79,8 @@ export default function JobDetailPage({
     recruiterEmail: "pending",
   });
   const [coverLetter, setCoverLetter] = useState("");
-  const [recruiterEmail, setRecruiterEmail] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
   const [tailoredChanges, setTailoredChanges] = useState<string[]>([]);
   const [showChanges, setShowChanges] = useState(false);
   const [editingCover, setEditingCover] = useState(false);
@@ -102,8 +88,6 @@ export default function JobDetailPage({
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const selectedResume = resumes.find((r) => r.id === selectedResumeId);
-
-  const parsedEmail = useMemo(() => parseEmail(recruiterEmail), [recruiterEmail]);
 
   const handleCopy = useCallback(
     async (text: string, field: string) => {
@@ -124,7 +108,8 @@ export default function JobDetailPage({
       recruiterEmail: "pending",
     });
     setCoverLetter("");
-    setRecruiterEmail("");
+    setEmailSubject("");
+    setEmailBody("");
     setTailoredChanges([]);
     setShowChanges(false);
     setEditingCover(false);
@@ -135,40 +120,85 @@ export default function JobDetailPage({
     if (!selectedResume || !job) return;
     setStep("processing");
 
-    const ai = getAIProvider();
+    try {
+      const res = await fetch("/api/ai/easy-apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resume: selectedResume,
+          job: {
+            title: job.title,
+            company: job.company,
+            description: job.description,
+            tags: job.tags,
+            requirements: job.requirements,
+          },
+        }),
+      });
 
-    setProcessingStatus((s) => ({ ...s, tailoring: "active" }));
-    const tailored = await ai.tailorResume(
-      selectedResume,
-      job.description,
-      job.title,
-      job.company
-    );
-    setTailoredChanges(
-      tailored.changes.map(
-        (c) =>
-          `${c.section}: ${c.field} — ${c.type === "addition" ? "Added" : "Modified"}`
-      )
-    );
-    setProcessingStatus((s) => ({
-      ...s,
-      tailoring: "done",
-      coverLetter: "active",
-    }));
+      const reader = res.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-    const cl = await ai.generateCoverLetter(selectedResume, job);
-    setCoverLetter(cl);
-    setProcessingStatus((s) => ({
-      ...s,
-      coverLetter: "done",
-      recruiterEmail: "active",
-    }));
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-    const email = await ai.generateRecruiterEmail(selectedResume, job);
-    setRecruiterEmail(email);
-    setProcessingStatus((s) => ({ ...s, recruiterEmail: "done" }));
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() ?? "";
 
-    setTimeout(() => setStep("review"), 500);
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data: EasyApplyEvent = JSON.parse(line.slice(6));
+
+          switch (data.step) {
+            case "extracting":
+              setProcessingStatus((s) => ({ ...s, tailoring: "active" }));
+              break;
+            case "tailoring":
+              setProcessingStatus((s) => ({ ...s, tailoring: "active" }));
+              break;
+            case "cover-letter":
+              if (data.tailored) {
+                setTailoredChanges(
+                  data.tailored.changes.map(
+                    (c) =>
+                      `${c.section}: ${c.field} — ${c.type === "addition" ? "Added" : "Modified"}`
+                  )
+                );
+              }
+              setProcessingStatus((s) => ({
+                ...s,
+                tailoring: "done",
+                coverLetter: "active",
+              }));
+              break;
+            case "email":
+              setCoverLetter(data.coverLetter);
+              setProcessingStatus((s) => ({
+                ...s,
+                coverLetter: "done",
+                recruiterEmail: "active",
+              }));
+              break;
+            case "done":
+              if (data.recruiterEmail) {
+                setEmailSubject(data.recruiterEmail.subject);
+                setEmailBody(data.recruiterEmail.body);
+              }
+              setProcessingStatus((s) => ({ ...s, recruiterEmail: "done" }));
+              setTimeout(() => setStep("review"), 500);
+              break;
+            case "error":
+              console.error("Easy Apply error:", data.error);
+              break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Easy Apply failed:", error);
+    }
   }, [selectedResume, job]);
 
   const handleApply = useCallback(() => {
@@ -737,7 +767,7 @@ export default function JobDetailPage({
                         size="icon"
                         className="h-7 w-7"
                         onClick={() =>
-                          handleCopy(recruiterEmail, "email")
+                          handleCopy(`Subject: ${emailSubject}\n\n${emailBody}`, "email")
                         }
                       >
                         {copiedField === "email" ? (
@@ -758,13 +788,24 @@ export default function JobDetailPage({
                   </div>
 
                   {editingEmail ? (
-                    <div className="p-4">
-                      <Textarea
-                        value={recruiterEmail}
-                        onChange={(e) => setRecruiterEmail(e.target.value)}
-                        rows={12}
-                        className="text-xs font-mono"
-                      />
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Subject</label>
+                        <input
+                          value={emailSubject}
+                          onChange={(e) => setEmailSubject(e.target.value)}
+                          className="w-full rounded-md border bg-background px-3 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground mb-1 block">Body</label>
+                        <Textarea
+                          value={emailBody}
+                          onChange={(e) => setEmailBody(e.target.value)}
+                          rows={10}
+                          className="text-xs font-mono"
+                        />
+                      </div>
                     </div>
                   ) : (
                     <>
@@ -803,7 +844,7 @@ export default function JobDetailPage({
                             Subject
                           </span>
                           <span className="font-medium text-foreground">
-                            {parsedEmail.subject ||
+                            {emailSubject ||
                               `${job.title} Application`}
                           </span>
                         </div>
@@ -832,7 +873,7 @@ export default function JobDetailPage({
                       {/* Email body */}
                       <div className="p-4">
                         <div className="space-y-3">
-                          {parsedEmail.body
+                          {emailBody
                             .split("\n\n")
                             .map((paragraph, i) => (
                               <p

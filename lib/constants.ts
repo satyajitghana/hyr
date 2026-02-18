@@ -12,6 +12,8 @@ export const APP_NAV_ITEMS = [
   { label: "Dashboard", href: "/app", icon: "LayoutDashboard" },
   { label: "Resumes", href: "/app/resume", icon: "FileText" },
   { label: "Tailor", href: "/app/tailor", icon: "Wand2" },
+  { label: "Cover Letter", href: "/app/cover-letter", icon: "Mail" },
+  { label: "Recruiter Email", href: "/app/recruiter-email", icon: "Send" },
   { label: "Jobs", href: "/app/jobs", icon: "Briefcase" },
   { label: "Applications", href: "/app/applications", icon: "ClipboardList" },
 ] as const;

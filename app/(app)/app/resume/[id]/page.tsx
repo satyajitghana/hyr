@@ -15,6 +15,8 @@ import {
   MapPin,
   Globe,
   Linkedin,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +38,7 @@ export default function ResumeDetailPage({
   const resume = resumes.find((r) => r.id === id);
   const [editing, setEditing] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   if (!resume) {
     return (
@@ -64,6 +67,27 @@ export default function ResumeDetailPage({
     updateResume(id, { skills: resume.skills.filter((s) => s !== skill) });
   };
 
+  const handleDownloadPDF = async () => {
+    if (!resume) return;
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/resume/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resume }),
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${resume.contact.name.replace(/\s+/g, "_")}_Resume.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <motion.div
@@ -87,6 +111,20 @@ export default function ResumeDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+          >
+            {downloading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+            PDF
+          </Button>
           <Link href={`/app/resume/${id}/optimize`}>
             <Button variant="outline" size="sm" className="gap-2">
               <Shield className="h-4 w-4" />
