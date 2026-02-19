@@ -2,12 +2,12 @@ import { Resume } from "@/lib/resume/types";
 import { Application } from "@/lib/jobs/types";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 
-export const MOCK_DATA_VERSION = 2;
+export const MOCK_DATA_VERSION = 3;
 
 export const SAMPLE_RESUMES: Resume[] = [
   {
     id: "sample-1",
-    name: "My Resume",
+    name: "Senior Product Engineer Resume",
     contact: {
       name: "Alex Johnson",
       email: "alex.johnson@email.com",
@@ -17,7 +17,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       website: "alexjohnson.dev",
     },
     summary:
-      "Full-stack software engineer with 5+ years of experience building scalable web applications. Passionate about creating elegant user experiences and writing clean, maintainable code. Proven track record of delivering high-impact features in fast-paced startup environments.",
+      "Product-minded full-stack engineer with 7+ years of experience building SaaS platforms from zero-to-one and scaling mature products to millions of sessions per month. I partner deeply with product, design, and GTM teams to prioritize high-impact bets, instrument outcomes, and ship polished features that move conversion, retention, and revenue. Strong background in TypeScript, React, Node.js, and cloud infrastructure with a focus on performance, reliability, and maintainable architecture.",
     experience: [
       {
         id: "exp-1",
@@ -27,10 +27,11 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2023-01",
         endDate: "Present",
         bullets: [
-          "Led development of a real-time collaboration platform serving 50K+ daily active users, improving team productivity by 35%",
-          "Architected and implemented a microservices migration that reduced API latency by 60% and improved system reliability to 99.9% uptime",
-          "Mentored 4 junior engineers through code reviews, pair programming, and weekly 1-on-1s",
-          "Introduced comprehensive testing strategy that increased code coverage from 45% to 92%",
+          "Led end-to-end delivery of a real-time planning workspace used by 85K+ weekly active users; rollout increased team adoption by 34% within two quarters.",
+          "Designed an event-driven service architecture (Node.js, Kafka, Postgres) that reduced median API latency by 58% and cut incident volume by 41% year-over-year.",
+          "Partnered with product analytics to define success metrics and experimentation strategy, resulting in a 17% lift in trial-to-paid conversion for self-serve accounts.",
+          "Mentored five engineers through design reviews, pairing, and growth plans; two promoted to senior level within 12 months.",
+          "Introduced quality gates and contract testing across CI pipelines, increasing change confidence and reducing regression escapes by 63%.",
         ],
       },
       {
@@ -98,7 +99,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       linkedin: "linkedin.com/in/priyapatel",
     },
     summary:
-      "Product-focused software engineer with 4+ years of experience building user-facing products at high-growth startups. Skilled at bridging engineering and design, shipping features that drive business metrics, and working cross-functionally with product and design teams.",
+      "Product-focused engineer with 6 years of experience building customer-facing workflows in fintech and collaboration software. Experienced at translating ambiguous customer pain points into roadmap-ready specs, then delivering well-instrumented features with measurable impact. Known for crisp communication, thoughtful design-system contributions, and strong ownership from discovery through launch.",
     experience: [
       {
         id: "exp-p1",
@@ -257,7 +258,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       linkedin: "linkedin.com/in/sarahkim",
     },
     summary:
-      "Strategic brand marketing leader with 6+ years of experience driving integrated campaigns for Fortune 500 brands. Expert in consumer insights, digital marketing, and brand storytelling. Proven ability to increase brand awareness and engagement across channels.",
+      "Strategic brand and growth marketing leader with 8+ years of experience launching integrated campaigns across retail, social, and lifecycle channels. Combines consumer research with creative execution to build durable brand narratives and measurable business outcomes. Comfortable owning multimillion-dollar budgets, agency partnerships, and cross-functional launch programs from strategy to postmortem.",
     experience: [
       {
         id: "exp-s1",

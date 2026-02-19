@@ -87,7 +87,7 @@ export async function POST(req: Request) {
         monoFamily: usingGeist ? "GeistMono" : undefined,
         ditherImage: body.ditherImage || undefined,
         birdImage,
-      }) as any
+      })
     );
 
     const fileName = `${resume.contact.name.replace(/\s+/g, "_")}_Resume.pdf`;

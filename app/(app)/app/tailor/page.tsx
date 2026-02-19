@@ -14,7 +14,6 @@ import {
   Link2,
   MessageSquare,
   Send,
-  RotateCcw,
   ArrowLeft,
   CheckCheck,
   XCircle,
@@ -179,7 +178,7 @@ export default function TailorPage() {
 
     const acceptedChanges = result.changes.filter((c) => c.accepted);
 
-    let newSkills = [...selectedResume.skills];
+    const newSkills = [...selectedResume.skills];
     let newSummary = selectedResume.summary;
     const newExperience = selectedResume.experience.map((exp) => ({
       ...exp,
@@ -288,7 +287,7 @@ export default function TailorPage() {
     }
 
     return groups;
-  }, [result?.changes]);
+  }, [result]);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -308,6 +307,11 @@ export default function TailorPage() {
             <p className="text-muted-foreground">
               AI-powered resume optimization for any job description.
             </p>
+            <div className="mt-2">
+              <Badge variant="secondary" className="rounded-full text-[10px] uppercase tracking-wide">
+                AI SDK · Mock Provider
+              </Badge>
+            </div>
           </div>
         </div>
       </motion.div>

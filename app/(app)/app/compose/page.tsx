@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { coverLetterSchema, recruiterEmailSchema } from "@/lib/ai/schemas";
 import { StreamingText } from "@/components/ai/streaming-text";
@@ -146,6 +147,11 @@ export default function ComposePage() {
             <p className="text-muted-foreground">
               Generate cover letters and recruiter emails.
             </p>
+            <div className="mt-2">
+              <Badge variant="secondary" className="rounded-full text-[10px] uppercase tracking-wide">
+                AI SDK · Mock Provider
+              </Badge>
+            </div>
           </div>
         </div>
       </motion.div>

@@ -31,6 +31,7 @@ import { Separator } from "@/components/ui/separator";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { processImageToDither } from "@/lib/resume/dither";
 import Link from "next/link";
+import Image from "next/image";
 import { ResumePdfViewer } from "@/components/resume/pdf-viewer";
 
 export default function ResumeDetailPage({
@@ -268,9 +269,12 @@ export default function ResumeDetailPage({
           <div className="flex items-center gap-4">
             {resume.ditherImage ? (
               <div className="relative group">
-                <img
+                <Image
                   src={resume.ditherImage}
                   alt="Dithered profile"
+                  width={80}
+                  height={80}
+                  unoptimized
                   className="h-20 w-20 rounded-lg border object-cover"
                   style={{ imageRendering: "pixelated" }}
                 />
