@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { Font } from "@react-pdf/renderer";
+import { Font, type DocumentProps } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
 import { ResumePDF } from "@/components/resume/resume-pdf";
 import { resumeInputSchema } from "@/lib/ai/schemas";
@@ -80,15 +80,15 @@ export async function POST(req: Request) {
       console.warn("Bird dither failed, skipping:", e);
     }
 
-    const buffer = await renderToBuffer(
-      React.createElement(ResumePDF, {
-        resume: fullResume,
-        fontFamily: usingGeist ? "Geist" : "Helvetica",
-        monoFamily: usingGeist ? "GeistMono" : undefined,
-        ditherImage: body.ditherImage || undefined,
-        birdImage,
-      })
-    );
+    const pdfDocument = React.createElement(ResumePDF, {
+      resume: fullResume,
+      fontFamily: usingGeist ? "Geist" : "Helvetica",
+      monoFamily: usingGeist ? "GeistMono" : undefined,
+      ditherImage: body.ditherImage || undefined,
+      birdImage,
+    }) as unknown as React.ReactElement<DocumentProps>;
+
+    const buffer = await renderToBuffer(pdfDocument);
 
     const fileName = `${resume.contact.name.replace(/\s+/g, "_")}_Resume.pdf`;
 

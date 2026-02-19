@@ -343,8 +343,8 @@ export function ResumePDF({
 
         {/* ── Dithered bird watermark ── */}
         {birdImage && (
+          // eslint-disable-next-line jsx-a11y/alt-text
           <Image
-            alt=""
             src={birdImage}
             style={{
               position: "absolute",
@@ -359,8 +359,8 @@ export function ResumePDF({
 
         {/* ── Dither image watermark (user-uploaded photo) ── */}
         {ditherImage && (
+          // eslint-disable-next-line jsx-a11y/alt-text
           <Image
-            alt=""
             src={ditherImage}
             style={{
               position: "absolute",
