@@ -3,12 +3,12 @@
  */
 
 const BIRDS = [
-  { name: "bluebird", file: "bluebird.svg" },
-  { name: "mockingbird", file: "mockingbird.svg" },
-  { name: "blackbird", file: "blackbird.svg" },
-  { name: "kitebird", file: "kitebird.svg" },
-  { name: "cardinalbird", file: "cardinalbird.svg" },
-  { name: "kestrelbird", file: "kestrelbird.svg" },
+  { name: "bluebird", file: "bluebird.jpg" },
+  { name: "mockingbird", file: "mockingbird.jpg" },
+  { name: "blackbird", file: "blackbird.jpg" },
+  { name: "kitebird", file: "kitebird.jpg" },
+  { name: "cardinalbird", file: "cardinalbird.jpg" },
+  { name: "kestrelbird", file: "kestrelbird.jpg" },
 ] as const;
 
 export type Bird = (typeof BIRDS)[number];

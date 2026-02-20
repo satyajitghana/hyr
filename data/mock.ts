@@ -2,7 +2,7 @@ import { Resume } from "@/lib/resume/types";
 import { Application } from "@/lib/jobs/types";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 
-export const MOCK_DATA_VERSION = 3;
+export const MOCK_DATA_VERSION = 4;
 
 export const SAMPLE_RESUMES: Resume[] = [
   {
@@ -42,9 +42,10 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2021-03",
         endDate: "2022-12",
         bullets: [
-          "Built a customer-facing dashboard with React and TypeScript that processed $2M+ in monthly transactions",
-          "Designed and implemented RESTful APIs using Node.js and PostgreSQL, handling 10K+ requests per minute",
-          "Reduced page load time by 40% through code splitting, lazy loading, and image optimization",
+          "Built a customer-facing dashboard with React and TypeScript that processed $2M+ in monthly transactions and surfaced real-time account health for enterprise admins.",
+          "Designed and implemented RESTful APIs using Node.js and PostgreSQL, handling 10K+ requests per minute while maintaining 99.95% uptime.",
+          "Reduced page load time by 40% through code splitting, lazy loading, and image optimization, increasing weekly retention by 11%.",
+          "Shipped role-based permissions and audit logs to satisfy SOC 2 customer requirements, unlocking expansion into mid-market accounts.",
         ],
       },
       {
@@ -55,8 +56,22 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2019-06",
         endDate: "2021-02",
         bullets: [
-          "Developed responsive web applications for 15+ clients using React, Vue.js, and modern CSS",
-          "Collaborated with design team to implement pixel-perfect UI components and animations",
+          "Developed responsive web applications for 15+ clients using React, Vue.js, and modern CSS.",
+          "Collaborated with design team to implement pixel-perfect UI components and animations.",
+          "Set up reusable component libraries and coding standards that reduced delivery time for new client sites by 25%.",
+        ],
+      },
+      {
+        id: "exp-4",
+        title: "Software Engineering Intern",
+        company: "Atlassian",
+        location: "San Francisco, CA",
+        startDate: "2018-05",
+        endDate: "2018-08",
+        bullets: [
+          "Built internal automation scripts for release QA that cut regression verification time from two days to under six hours.",
+          "Implemented Jira Cloud UI improvements in React and TypeScript and partnered with designers to improve task creation completion rate by 8%.",
+          "Presented internship capstone to engineering leadership and contributed production-ready code merged into the next quarterly release.",
         ],
       },
     ],
@@ -123,9 +138,23 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2020-08",
         endDate: "2022-05",
         bullets: [
-          "Implemented real-time collaboration features for the design editor used by 4M+ designers worldwide",
-          "Optimized rendering performance of the canvas engine, reducing frame drops by 50% on complex files",
-          "Built the plugin marketplace search and discovery experience from scratch",
+          "Implemented real-time collaboration features for the design editor used by 4M+ designers worldwide.",
+          "Optimized rendering performance of the canvas engine, reducing frame drops by 50% on complex files.",
+          "Built the plugin marketplace search and discovery experience from scratch.",
+          "Partnered with support and data teams to instrument funnel analytics, improving plugin install conversion by 19%.",
+        ],
+      },
+      {
+        id: "exp-p3",
+        title: "Product Engineer",
+        company: "Asana",
+        location: "San Francisco, CA",
+        startDate: "2018-07",
+        endDate: "2020-07",
+        bullets: [
+          "Owned roadmap delivery for portfolio planning workflows used by enterprise PMOs, increasing weekly active teams by 26%.",
+          "Built a reusable design-system package that reduced visual regressions and cut frontend bug volume by 32%.",
+          "Facilitated customer interviews with product managers and translated feedback into scoped milestones for quarterly planning.",
         ],
       },
     ],
@@ -204,8 +233,22 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2018-07",
         endDate: "2020-02",
         bullets: [
-          "Developed edge computing platform features serving 25M+ HTTP requests per second globally",
-          "Built automated DDoS mitigation rules that blocked 99.7% of attack traffic without false positives",
+          "Developed edge computing platform features serving 25M+ HTTP requests per second globally.",
+          "Built automated DDoS mitigation rules that blocked 99.7% of attack traffic without false positives.",
+          "Implemented distributed canary deployments and health checks across edge clusters, reducing failed global releases by 45%.",
+        ],
+      },
+      {
+        id: "exp-m4",
+        title: "Site Reliability Engineer",
+        company: "Twilio",
+        location: "Remote",
+        startDate: "2016-06",
+        endDate: "2018-06",
+        bullets: [
+          "Maintained messaging platform reliability with 99.99% SLA across multi-region infrastructure and on-call ownership.",
+          "Created incident response playbooks and dashboards that reduced MTTR from 38 minutes to 19 minutes.",
+          "Automated infrastructure provisioning with Terraform and Packer, reducing environment setup time from days to under one hour.",
         ],
       },
     ],
@@ -295,8 +338,22 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2018-08",
         endDate: "2020-05",
         bullets: [
-          "Coordinated product launch events and experiential marketing activations across 12 US markets",
-          "Managed social media calendar and community engagement, growing followers by 35%",
+          "Coordinated product launch events and experiential marketing activations across 12 US markets.",
+          "Managed social media calendar and community engagement, growing followers by 35%.",
+          "Built campaign reporting templates for weekly executive reviews, improving channel budget decisions and forecast accuracy.",
+        ],
+      },
+      {
+        id: "exp-s4",
+        title: "Marketing Intern",
+        company: "Airbnb",
+        location: "San Francisco, CA",
+        startDate: "2017-06",
+        endDate: "2018-07",
+        bullets: [
+          "Supported lifecycle email experiments and audience segmentation for host onboarding campaigns, increasing activation by 9%.",
+          "Coordinated creator partnerships and managed campaign assets for social channels reaching 3M+ monthly impressions.",
+          "Performed post-campaign analysis and competitor research that informed positioning for two seasonal brand launches.",
         ],
       },
     ],

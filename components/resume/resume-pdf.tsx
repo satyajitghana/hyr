@@ -48,7 +48,7 @@ const PAGE_H = 792;
 // Corner mark constants
 const INSET = 16;
 const MARK_LEN = 20;
-const SQUARE_SIZE = 4; // filled corner square size
+const SQUARE_SIZE = 6; // filled corner square size
 const SQUARE_OFFSET = 2;
 
 // Top-right decoration grid
@@ -280,10 +280,10 @@ export function ResumePDF({
 
             // ── 3. Filled corner squares (darkest, inner edge flush with border) ──
             painter.fillColor(c.dark).fillOpacity(0.8);
-            painter.rect(tlx - SQUARE_SIZE, tly - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
-            painter.rect(trx, try_ - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
-            painter.rect(blx - SQUARE_SIZE, bly, SQUARE_SIZE, SQUARE_SIZE).fill();
-            painter.rect(brx, bry, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(tlx, tly, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(trx - SQUARE_SIZE, try_, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(blx, bly - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(brx - SQUARE_SIZE, bry - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
 
             // ── Top-right decoration: grid + crosses (Vercel-style) ──
             const trX = PAGE_W - DECO_W;
@@ -348,11 +348,11 @@ export function ResumePDF({
             src={birdImage}
             style={{
               position: "absolute",
-              bottom: 22,
-              right: 28,
-              width: 86,
-              height: 86,
-              opacity: 0.14,
+              bottom: 12,
+              right: 16,
+              width: 132,
+              height: 132,
+              opacity: 0.17,
             }}
           />
         )}

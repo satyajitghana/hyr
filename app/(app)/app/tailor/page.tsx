@@ -290,7 +290,7 @@ export default function TailorPage() {
   }, [result]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
