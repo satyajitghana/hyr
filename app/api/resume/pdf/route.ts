@@ -6,7 +6,6 @@ import { NextResponse } from "next/server";
 import { ResumePDF } from "@/components/resume/resume-pdf";
 import { resumeInputSchema } from "@/lib/ai/schemas";
 import { getBirdForName } from "@/lib/resume/birds";
-import { ditherImageServer } from "@/lib/resume/server-dither";
 import React from "react";
 
 // ── Font registration ──
@@ -72,12 +71,19 @@ export async function POST(req: Request) {
 
     // Deterministic bird assignment based on person name
     const bird = getBirdForName(resume.contact.name);
-    const birdPath = path.join(process.cwd(), "public", "birds", bird.file);
+    const ditheredBirdPath = path.join(
+      process.cwd(),
+      "public",
+      "birds",
+      "dithered",
+      `${bird.name}.png`,
+    );
     let birdImage: string | undefined;
     try {
-      birdImage = await ditherImageServer(birdPath);
+      const data = fs.readFileSync(ditheredBirdPath);
+      birdImage = `data:image/png;base64,${data.toString("base64")}`;
     } catch (e) {
-      console.warn("Bird dither failed, skipping:", e);
+      console.warn("Bird image load failed, skipping:", e);
     }
 
     const pdfDocument = React.createElement(ResumePDF, {
