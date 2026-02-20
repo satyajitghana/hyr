@@ -22,13 +22,17 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { useResumeStore } from "@/lib/store/resume-store";
+import { ContactInfo, Experience, Education } from "@/lib/resume/types";
 import { processImageToDither } from "@/lib/resume/dither";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -51,7 +55,13 @@ export default function ResumeDetailPage({
   const { resumes, updateResume } = useResumeStore();
   const resume = resumes.find((r) => r.id === id);
   const [editing, setEditing] = useState<string | null>(null);
+  const [contactDraft, setContactDraft] = useState<ContactInfo | null>(null);
+  const [expDraft, setExpDraft] = useState<Experience | null>(null);
+  const [eduDraft, setEduDraft] = useState<Education | null>(null);
+  const [certsDraft, setCertsDraft] = useState<string[] | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
   const [newSkill, setNewSkill] = useState("");
+  const [skillOpen, setSkillOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [processingImage, setProcessingImage] = useState(false);
   const [previewing, setPreviewing] = useState(false);
@@ -93,6 +103,24 @@ export default function ResumeDetailPage({
     updateResume(id, { skills: resume.skills.filter((s) => s !== skill) });
   };
 
+  const PRESET_SKILLS = [
+    "React", "TypeScript", "JavaScript", "Node.js", "Python", "Go", "Java", "Rust",
+    "AWS", "GCP", "Azure", "Docker", "Kubernetes", "Terraform", "CI/CD",
+    "PostgreSQL", "MongoDB", "Redis", "DynamoDB", "MySQL",
+    "GraphQL", "REST APIs", "gRPC", "Kafka", "RabbitMQ",
+    "Next.js", "Vue.js", "Angular", "Tailwind CSS", "CSS", "HTML",
+    "Git", "GitHub", "Linux", "Figma", "Product Management", "Agile", "Scrum",
+  ];
+
+  const openEdit = (section: string) => {
+    setContactDraft(null);
+    setExpDraft(null);
+    setEduDraft(null);
+    setCertsDraft(null);
+    setNameDraft("");
+    setEditing(section);
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -130,7 +158,13 @@ export default function ResumeDetailPage({
         alert(`PDF generation failed: ${err.details || err.error}`);
         return;
       }
-      const blob = await res.blob();
+      const arrayBuffer = await res.arrayBuffer();
+      const pdfText = new TextDecoder("latin1").decode(arrayBuffer);
+      const pageCount = (pdfText.match(/\/Type\s*\/Page\b/g) ?? []).length;
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+      if (pageCount > 1) {
+        toast.warning(`Resume is ${pageCount} pages — aim for 1 page for best results.`, { duration: 6000 });
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -159,7 +193,13 @@ export default function ResumeDetailPage({
         console.error("PDF preview failed:", err);
         return;
       }
-      const blob = await res.blob();
+      const arrayBuffer = await res.arrayBuffer();
+      const pdfText = new TextDecoder("latin1").decode(arrayBuffer);
+      const pageCount = (pdfText.match(/\/Type\s*\/Page\b/g) ?? []).length;
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+      if (pageCount > 1) {
+        toast.warning(`Resume is ${pageCount} pages — aim for 1 page for best results.`, { duration: 6000 });
+      }
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       const url = URL.createObjectURL(blob);
       setPreviewUrl(url);
@@ -185,7 +225,33 @@ export default function ResumeDetailPage({
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="font-display text-2xl font-bold">{resume.name}</h1>
+            {editing === "name" ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={nameDraft}
+                  onChange={(e) => setNameDraft(e.target.value)}
+                  className="font-display text-xl font-bold h-9 max-w-xs"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { updateResume(id, { name: nameDraft }); setEditing(null); }
+                    if (e.key === "Escape") setEditing(null);
+                  }}
+                  autoFocus
+                />
+                <Button size="sm" onClick={() => { updateResume(id, { name: nameDraft }); setEditing(null); }} className="gap-1.5">
+                  <Save className="h-3 w-3" />
+                  Save
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+              </div>
+            ) : (
+              <h1
+                className="font-display text-3xl font-bold tracking-tight cursor-pointer hover:opacity-70 transition-opacity"
+                onClick={() => { setNameDraft(resume.name); openEdit("name"); }}
+                title="Click to edit"
+              >
+                {resume.name}
+              </h1>
+            )}
             <p className="text-sm text-muted-foreground">
               Last updated {new Date(resume.updatedAt).toLocaleDateString()}
             </p>
@@ -348,36 +414,84 @@ export default function ResumeDetailPage({
 
       {/* Contact Info */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="font-display text-lg">Contact Information</CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (editing === "contact") { setEditing(null); setContactDraft(null); }
+              else { setContactDraft({ ...resume.contact }); openEdit("contact"); }
+            }}
+          >
+            {editing === "contact" ? "Cancel" : <><Plus className="h-3.5 w-3.5 mr-1" />Edit</>}
+          </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              {resume.contact.email}
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              {resume.contact.phone}
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4 text-muted-foreground" />
-              {resume.contact.location}
-            </div>
-            {resume.contact.linkedin && (
-              <div className="flex items-center gap-2 text-sm">
-                <Linkedin className="h-4 w-4 text-muted-foreground" />
-                {resume.contact.linkedin}
+          {editing === "contact" ? (
+            <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {([
+                  { field: "name" as keyof ContactInfo, label: "Full Name" },
+                  { field: "email" as keyof ContactInfo, label: "Email" },
+                  { field: "phone" as keyof ContactInfo, label: "Phone" },
+                  { field: "location" as keyof ContactInfo, label: "Location" },
+                  { field: "linkedin" as keyof ContactInfo, label: "LinkedIn" },
+                  { field: "website" as keyof ContactInfo, label: "Website" },
+                ] as const).map(({ field, label }) => (
+                  <div key={field}>
+                    <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
+                    <Input
+                      placeholder={label}
+                      value={(contactDraft as ContactInfo)?.[field] ?? ""}
+                      onChange={(e) =>
+                        setContactDraft((prev) => prev ? { ...prev, [field]: e.target.value } : prev)
+                      }
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-            {resume.contact.website && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (contactDraft) updateResume(id, { contact: contactDraft });
+                  setEditing(null);
+                  setContactDraft(null);
+                }}
+                className="gap-2"
+              >
+                <Save className="h-3 w-3" />
+                Save Changes
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex items-center gap-2 text-sm">
-                <Globe className="h-4 w-4 text-muted-foreground" />
-                {resume.contact.website}
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                {resume.contact.email}
               </div>
-            )}
-          </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                {resume.contact.phone}
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                {resume.contact.location}
+              </div>
+              {resume.contact.linkedin && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Linkedin className="h-4 w-4 text-muted-foreground" />
+                  {resume.contact.linkedin}
+                </div>
+              )}
+              {resume.contact.website && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Globe className="h-4 w-4 text-muted-foreground" />
+                  {resume.contact.website}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -423,35 +537,117 @@ export default function ResumeDetailPage({
 
       {/* Experience */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="font-display text-lg">Experience</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              const newExp: Experience = {
+                id: crypto.randomUUID(),
+                title: "",
+                company: "",
+                location: "",
+                startDate: "",
+                endDate: "Present",
+                bullets: [],
+              };
+              updateResume(id, { experience: [...resume.experience, newExp] });
+              setExpDraft(newExp);
+              openEdit(`exp-${newExp.id}`);
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add
+          </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           {resume.experience.map((exp, idx) => (
             <div key={exp.id}>
               {idx > 0 && <Separator className="mb-6" />}
-              <div className="flex justify-between">
-                <div>
-                  <h4 className="font-semibold">{exp.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {exp.company} &middot; {exp.location}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {exp.startDate} — {exp.endDate}
-                  </p>
+              {editing === `exp-${exp.id}` ? (
+                <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Input placeholder="Job Title" value={expDraft?.title ?? ""}
+                      onChange={(e) => setExpDraft(d => d ? {...d, title: e.target.value} : d)} />
+                    <Input placeholder="Company" value={expDraft?.company ?? ""}
+                      onChange={(e) => setExpDraft(d => d ? {...d, company: e.target.value} : d)} />
+                    <Input placeholder="Location" value={expDraft?.location ?? ""}
+                      onChange={(e) => setExpDraft(d => d ? {...d, location: e.target.value} : d)} />
+                    <div className="flex gap-2">
+                      <Input placeholder="Start (YYYY-MM)" value={expDraft?.startDate ?? ""}
+                        onChange={(e) => setExpDraft(d => d ? {...d, startDate: e.target.value} : d)} />
+                      <Input placeholder="End Date" value={expDraft?.endDate ?? ""}
+                        onChange={(e) => setExpDraft(d => d ? {...d, endDate: e.target.value} : d)} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {expDraft?.bullets.map((bullet, bIdx) => (
+                      <div key={bIdx} className="flex gap-2">
+                        <Textarea value={bullet} rows={2}
+                          onChange={(e) => setExpDraft(d => d ? {
+                            ...d, bullets: d.bullets.map((b, i) => i === bIdx ? e.target.value : b)
+                          } : d)} className="flex-1 text-sm" />
+                        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 text-destructive self-start mt-0.5"
+                          onClick={() => setExpDraft(d => d ? {...d, bullets: d.bullets.filter((_, i) => i !== bIdx)} : d)}>
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" className="gap-1.5"
+                      onClick={() => setExpDraft(d => d ? {...d, bullets: [...d.bullets, ""]} : d)}>
+                      <Plus className="h-3.5 w-3.5" />Add bullet
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" className="gap-2"
+                      onClick={() => {
+                        if (!expDraft) return;
+                        updateResume(id, { experience: resume.experience.map(e => e.id === expDraft.id ? expDraft : e) });
+                        setEditing(null); setExpDraft(null);
+                      }}>
+                      <Save className="h-3 w-3" />Save
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setEditing(null); setExpDraft(null); }}>Cancel</Button>
+                  </div>
                 </div>
-              </div>
-              <ul className="mt-3 space-y-1.5">
-                {exp.bullets.map((bullet, bIdx) => (
-                  <li
-                    key={bIdx}
-                    className="flex items-start gap-2 text-sm text-muted-foreground"
-                  >
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold">{exp.title}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {exp.company} &middot; {exp.location}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {exp.startDate} — {exp.endDate}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-7 w-7"
+                        onClick={() => { setExpDraft({ ...exp }); openEdit(`exp-${exp.id}`); }}>
+                        <Save className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"
+                        onClick={() => updateResume(id, { experience: resume.experience.filter(e => e.id !== exp.id) })}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                  <ul className="mt-3 space-y-1.5">
+                    {exp.bullets.map((bullet, bIdx) => (
+                      <li
+                        key={bIdx}
+                        className="flex items-start gap-2 text-sm text-muted-foreground"
+                      >
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </div>
           ))}
         </CardContent>
@@ -459,20 +655,86 @@ export default function ResumeDetailPage({
 
       {/* Education */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="font-display text-lg">Education</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              const newEdu: Education = {
+                id: crypto.randomUUID(),
+                degree: "",
+                school: "",
+                location: "",
+                graduationDate: "",
+                gpa: "",
+              };
+              updateResume(id, { education: [...resume.education, newEdu] });
+              setEduDraft(newEdu);
+              openEdit(`edu-${newEdu.id}`);
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {resume.education.map((edu) => (
+          {resume.education.map((edu, idx) => (
             <div key={edu.id}>
-              <h4 className="font-semibold">{edu.degree}</h4>
-              <p className="text-sm text-muted-foreground">
-                {edu.school} &middot; {edu.location}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Graduated {edu.graduationDate}
-                {edu.gpa && ` &middot; GPA: ${edu.gpa}`}
-              </p>
+              {idx > 0 && <Separator className="mb-4" />}
+              {editing === `edu-${edu.id}` ? (
+                <div className="space-y-3 p-3 rounded-lg border bg-muted/30">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Input placeholder="Degree" value={eduDraft?.degree ?? ""}
+                      onChange={(e) => setEduDraft(d => d ? {...d, degree: e.target.value} : d)} />
+                    <Input placeholder="School" value={eduDraft?.school ?? ""}
+                      onChange={(e) => setEduDraft(d => d ? {...d, school: e.target.value} : d)} />
+                    <Input placeholder="Location" value={eduDraft?.location ?? ""}
+                      onChange={(e) => setEduDraft(d => d ? {...d, location: e.target.value} : d)} />
+                    <Input placeholder="Graduation Date (YYYY-MM)" value={eduDraft?.graduationDate ?? ""}
+                      onChange={(e) => setEduDraft(d => d ? {...d, graduationDate: e.target.value} : d)} />
+                    <Input placeholder="GPA (optional)" value={eduDraft?.gpa ?? ""}
+                      onChange={(e) => setEduDraft(d => d ? {...d, gpa: e.target.value} : d)} />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" className="gap-2"
+                      onClick={() => {
+                        if (!eduDraft) return;
+                        updateResume(id, { education: resume.education.map(e => e.id === eduDraft.id ? eduDraft : e) });
+                        setEditing(null); setEduDraft(null);
+                      }}>
+                      <Save className="h-3 w-3" />Save
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => { setEditing(null); setEduDraft(null); }}>Cancel</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold">{edu.degree}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {edu.school} &middot; {edu.location}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Graduated {edu.graduationDate}
+                        {edu.gpa && ` · GPA: ${edu.gpa}`}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-7 w-7"
+                        onClick={() => { setEduDraft({ ...edu }); openEdit(`edu-${edu.id}`); }}>
+                        <Save className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive"
+                        onClick={() => updateResume(id, { education: resume.education.filter(e => e.id !== edu.id) })}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </CardContent>
@@ -486,49 +748,125 @@ export default function ResumeDetailPage({
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {resume.skills.map((skill) => (
-              <Badge
+              <span
                 key={skill}
-                variant="secondary"
-                className="cursor-pointer group gap-1"
-                onClick={() => removeSkill(skill)}
+                className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-sm font-medium text-secondary-foreground"
               >
                 {skill}
-                <Trash2 className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity text-destructive" />
-              </Badge>
+                <button
+                  onClick={() => removeSkill(skill)}
+                  className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-full hover:bg-muted-foreground/20 transition-colors"
+                  aria-label={`Remove ${skill}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </span>
             ))}
           </div>
-          <div className="mt-3 flex gap-2">
-            <Input
-              placeholder="Add a skill..."
-              value={newSkill}
-              onChange={(e) => setNewSkill(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addSkill()}
-              className="max-w-xs"
-            />
-            <Button variant="outline" size="sm" onClick={addSkill}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+          <Popover open={skillOpen} onOpenChange={setSkillOpen}>
+            <PopoverTrigger asChild>
+              <div className="mt-3 flex gap-2">
+                <Input
+                  placeholder="Add a skill..."
+                  value={newSkill}
+                  onChange={(e) => {
+                    setNewSkill(e.target.value);
+                    setSkillOpen(e.target.value.length > 0);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { addSkill(); setSkillOpen(false); }
+                    if (e.key === "Escape") setSkillOpen(false);
+                  }}
+                  className="max-w-xs"
+                />
+                <Button variant="outline" size="sm" onClick={() => { addSkill(); setSkillOpen(false); }}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+              <Command>
+                <CommandList>
+                  <CommandEmpty>No matching skills.</CommandEmpty>
+                  <CommandGroup heading="Suggestions">
+                    {PRESET_SKILLS
+                      .filter((s) => s.toLowerCase().includes(newSkill.toLowerCase()) && !resume.skills.includes(s))
+                      .slice(0, 8)
+                      .map((skill) => (
+                        <CommandItem
+                          key={skill}
+                          onSelect={() => {
+                            updateResume(id, { skills: [...resume.skills, skill] });
+                            setNewSkill("");
+                            setSkillOpen(false);
+                          }}
+                        >
+                          {skill}
+                        </CommandItem>
+                      ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </CardContent>
       </Card>
 
       {/* Certifications */}
-      {resume.certifications.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Certifications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1">
-              {resume.certifications.map((cert) => (
-                <li key={cert} className="text-sm text-muted-foreground">
-                  {cert}
-                </li>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="font-display text-lg">Certifications</CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (editing === "cert") { setEditing(null); setCertsDraft(null); }
+              else { setCertsDraft([...resume.certifications]); openEdit("cert"); }
+            }}
+          >
+            {editing === "cert" ? "Cancel" : <><Plus className="h-3.5 w-3.5 mr-1" />Edit</>}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {editing === "cert" ? (
+            <div className="space-y-2">
+              {certsDraft?.map((cert, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <Input value={cert}
+                    onChange={(e) => setCertsDraft(d => d ? d.map((c, i) => i === idx ? e.target.value : c) : d)} />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive shrink-0"
+                    onClick={() => setCertsDraft(d => d ? d.filter((_, i) => i !== idx) : d)}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               ))}
+              <Button variant="outline" size="sm" className="gap-1.5"
+                onClick={() => setCertsDraft(d => d ? [...d, ""] : d)}>
+                <Plus className="h-3.5 w-3.5" />Add certification
+              </Button>
+              <Button size="sm" className="gap-2 mt-1"
+                onClick={() => {
+                  if (certsDraft) updateResume(id, { certifications: certsDraft.filter(c => c.trim()) });
+                  setEditing(null); setCertsDraft(null);
+                }}>
+                <Save className="h-3 w-3" />Save
+              </Button>
+            </div>
+          ) : (
+            <ul className="space-y-1">
+              {resume.certifications.length > 0 ? (
+                resume.certifications.map((cert) => (
+                  <li key={cert} className="text-sm text-muted-foreground">
+                    {cert}
+                  </li>
+                ))
+              ) : (
+                <li className="text-sm text-muted-foreground italic">No certifications added yet.</li>
+              )}
             </ul>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

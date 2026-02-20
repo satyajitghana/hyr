@@ -205,7 +205,7 @@ export default function BeastModePage() {
                 break;
               case "done":
                 // Create application in store
-                const newResumeId = `resume-beast-${Date.now()}-${i}`;
+                const newResumeId = crypto.randomUUID();
                 addResume({
                   ...selectedResume,
                   id: newResumeId,
@@ -215,7 +215,7 @@ export default function BeastModePage() {
                 });
 
                 addApplication({
-                  id: `app-beast-${Date.now()}-${i}`,
+                  id: crypto.randomUUID(),
                   jobId: job.id,
                   job,
                   resumeId: newResumeId,
@@ -536,6 +536,7 @@ export default function BeastModePage() {
                             <Checkbox
                               checked={isSelected}
                               onCheckedChange={() => toggleJob(job.id)}
+                              onClick={(e) => e.stopPropagation()}
                               className="shrink-0"
                             />
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-500 dark:from-slate-600 dark:to-slate-400 font-display text-xs font-bold text-white shadow-sm">

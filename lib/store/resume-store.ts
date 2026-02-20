@@ -45,8 +45,11 @@ export const useResumeStore = create<ResumeState>()(
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as ResumeState;
         if (version < MOCK_DATA_VERSION) {
+          // Filter out both current sample UUIDs and legacy sample-N / resume-* IDs
           const userResumes = (state.resumes || []).filter(
-            (r) => !SAMPLE_IDS.has(r.id)
+            (r) =>
+              !SAMPLE_IDS.has(r.id) &&
+              !/^(sample-|resume-)/.test(r.id)
           );
           return {
             ...state,

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useResumeStore } from "@/lib/store/resume-store";
@@ -87,11 +88,50 @@ export default function ATSOptimizePage({
 
   if (isLoading && !score?.overall) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="text-muted-foreground">
-          Analyzing your resume for ATS compatibility...
-        </p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9 rounded-md" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        {/* Score circle card */}
+        <Card>
+          <CardContent className="flex flex-col items-center py-10 gap-4">
+            <Skeleton className="h-36 w-36 rounded-full" />
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </CardContent>
+        </Card>
+        {/* Category bars card */}
+        <Card>
+          <CardHeader><Skeleton className="h-6 w-36" /></CardHeader>
+          <CardContent className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-10" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+        {/* Suggestions skeleton */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <Skeleton className="h-6 w-28" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-lg" />
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -124,11 +164,8 @@ export default function ATSOptimizePage({
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="font-display text-2xl font-bold">ATS Optimizer</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">ATS Optimizer</h1>
           <p className="text-sm text-muted-foreground">{resume.name}</p>
-          <Badge variant="secondary" className="mt-2 rounded-full text-[10px] uppercase tracking-wide">
-            AI SDK · Mock Provider
-          </Badge>
         </div>
       </motion.div>
 

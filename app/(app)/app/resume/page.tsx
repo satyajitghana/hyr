@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import {
@@ -13,6 +13,7 @@ import {
   Download,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -35,6 +36,8 @@ export default function ResumePage() {
   const { resumes, addResume, deleteResume } = useResumeStore();
   const [showUpload, setShowUpload] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const handleUpload = async () => {
     setIsUploading(true);
@@ -43,7 +46,7 @@ export default function ResumePage() {
     await new Promise((r) => setTimeout(r, 2000));
 
     const newResume: Resume = {
-      id: `resume-${Date.now()}`,
+      id: crypto.randomUUID(),
       name: `Resume ${resumes.length + 1}`,
       contact: {
         name: "Jordan Rivera",
@@ -55,7 +58,7 @@ export default function ResumePage() {
         "Product-minded software engineer with experience shipping customer-facing web products, improving conversion funnels, and collaborating across product, design, and operations.",
       experience: [
         {
-          id: `exp-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: "Software Engineer",
           company: "Northstar Labs",
           location: "Austin, TX",
@@ -70,7 +73,7 @@ export default function ResumePage() {
       ],
       education: [
         {
-          id: `edu-${Date.now()}`,
+          id: crypto.randomUUID(),
           degree: "B.S. Computer Science",
           school: "University of Texas at Austin",
           location: "Austin, TX",
@@ -117,7 +120,30 @@ export default function ResumePage() {
         </DialogContent>
       </Dialog>
 
-      {resumes.length === 0 ? (
+      {!mounted ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-5">
+                <div className="flex items-start gap-3">
+                  <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <div className="flex gap-1.5 pt-1">
+                    {[...Array(4)].map((_, j) => <Skeleton key={j} className="h-5 w-14 rounded-full" />)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : resumes.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

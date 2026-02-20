@@ -37,9 +37,8 @@ export function AppBreadcrumb() {
     const segment = relevantSegments[i];
     const isLast = i === relevantSegments.length - 1;
 
-    // Skip UUID-like segments and just show them as their parent
-    if (segment.match(/^(sample-|resume-|app-|\d+$)/)) {
-      items.push({ label: `#${segment}` });
+    // Skip UUID segments and pure numeric IDs (job IDs) — show parent label only
+    if (segment.match(/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|\d+$)/)) {
       continue;
     }
 
