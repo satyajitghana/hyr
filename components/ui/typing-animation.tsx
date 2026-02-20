@@ -15,7 +15,6 @@ interface TypingAnimationProps extends MotionProps {
   delay?: number
   pauseDelay?: number
   loop?: boolean
-  as?: React.ElementType
   startOnView?: boolean
   showCursor?: boolean
   blinkCursor?: boolean
@@ -32,22 +31,17 @@ export function TypingAnimation({
   delay = 0,
   pauseDelay = 1000,
   loop = false,
-  as: Component = "span",
   startOnView = true,
   showCursor = true,
   blinkCursor = true,
   cursorStyle = "line",
   ...props
 }: TypingAnimationProps) {
-  const MotionComponent = motion.create(Component, {
-    forwardMotionProps: true,
-  })
-
   const [displayedText, setDisplayedText] = useState<string>("")
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [currentCharIndex, setCurrentCharIndex] = useState(0)
   const [phase, setPhase] = useState<"typing" | "pause" | "deleting">("typing")
-  const elementRef = useRef<HTMLElement | null>(null)
+  const elementRef = useRef<HTMLSpanElement | null>(null)
   const isInView = useInView(elementRef as React.RefObject<Element>, {
     amount: 0.3,
     once: true,
@@ -85,12 +79,10 @@ export function TypingAnimation({
           if (currentCharIndex < graphemes.length) {
             setDisplayedText(graphemes.slice(0, currentCharIndex + 1).join(""))
             setCurrentCharIndex(currentCharIndex + 1)
-          } else {
-            if (hasMultipleWords || loop) {
-              const isLastWord = currentWordIndex === wordsToAnimate.length - 1
-              if (!isLastWord || loop) {
-                setPhase("pause")
-              }
+          } else if (hasMultipleWords || loop) {
+            const isLastWord = currentWordIndex === wordsToAnimate.length - 1
+            if (!isLastWord || loop) {
+              setPhase("pause")
             }
           }
           break
@@ -128,9 +120,7 @@ export function TypingAnimation({
     delay,
   ])
 
-  const currentWordGraphemes = Array.from(
-    wordsToAnimate[currentWordIndex] || ""
-  )
+  const currentWordGraphemes = Array.from(wordsToAnimate[currentWordIndex] || "")
   const isComplete =
     !loop &&
     currentWordIndex === wordsToAnimate.length - 1 &&
@@ -155,7 +145,7 @@ export function TypingAnimation({
   }
 
   return (
-    <MotionComponent
+    <motion.span
       ref={elementRef}
       className={cn("leading-[5rem] tracking-[-0.02em]", className)}
       {...props}
@@ -168,6 +158,6 @@ export function TypingAnimation({
           {getCursorChar()}
         </span>
       )}
-    </MotionComponent>
+    </motion.span>
   )
 }

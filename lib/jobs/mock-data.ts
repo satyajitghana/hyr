@@ -13,10 +13,10 @@ export const MOCK_JOBS: Job[] = [
     salaryMin: 180000,
     salaryMax: 280000,
     description:
-      "Join Google's core search team to build next-generation search experiences. You'll work on performance-critical React applications serving billions of users, collaborating with world-class engineers to shape the future of information access.",
+      "Join Google's Search UX platform team to build high-performance interfaces used by billions of users each month. You'll partner with ranking, personalization, and accessibility teams to ship measurable improvements across query understanding, results exploration, and post-search journeys. This role blends product engineering, platform ownership, and experimentation at global scale.",
     requirements: [
-      "5+ years of experience with React, TypeScript, and modern frontend frameworks",
-      "Strong understanding of web performance optimization",
+      "5+ years building production React/TypeScript applications with strong testing discipline",
+      "Demonstrated impact improving Core Web Vitals and rendering performance in large apps",
       "Experience with large-scale distributed systems",
       "BS/MS in Computer Science or equivalent experience",
     ],
@@ -41,7 +41,7 @@ export const MOCK_JOBS: Job[] = [
     salaryMin: 150000,
     salaryMax: 220000,
     description:
-      "Build the economic infrastructure for the internet. Work on Stripe's dashboard and API products that power millions of businesses worldwide. You'll ship features that directly impact developer experience and business growth.",
+      "Work on Stripe's billing and revenue automation surfaces used by startups through Fortune 500 companies. You'll design and build full-stack workflows that help operators reconcile payments faster, reduce churn, and confidently scale internationally. Expect close collaboration with risk, finance systems, and API design teams.",
     requirements: [
       "3+ years of experience with React and Node.js",
       "Experience with payment systems or financial technology",
@@ -68,7 +68,7 @@ export const MOCK_JOBS: Job[] = [
     salaryMin: 200000,
     salaryMax: 350000,
     description:
-      "Work on the cutting edge of artificial intelligence. Help build and deploy large language models that are changing how people interact with technology. Collaborate with researchers to bring AI capabilities to millions.",
+      "Build and productionize model-serving infrastructure for OpenAI's multi-tenant platform. You'll collaborate with researchers and product engineers to turn model advances into resilient, low-latency APIs with strong observability and safety controls. The team owns deployment quality, cost efficiency, and release velocity across model families.",
     requirements: [
       "5+ years in machine learning or AI research",
       "Experience with PyTorch or TensorFlow",
@@ -96,7 +96,7 @@ export const MOCK_JOBS: Job[] = [
     salaryMin: 140000,
     salaryMax: 200000,
     description:
-      "Design the tools that designers use every day. Shape the future of collaborative design at Figma, working on features used by millions of creative professionals worldwide.",
+      "Design core collaboration workflows in Figma used by product, brand, and design systems teams worldwide. You'll lead ambiguous problem spaces from research synthesis through polished interaction patterns, partnering closely with PM and engineering to ship high-leverage experiences that scale across web and desktop.",
     requirements: [
       "3+ years of product design experience",
       "Strong portfolio demonstrating UX/UI skills",
@@ -124,7 +124,7 @@ export const MOCK_JOBS: Job[] = [
     salaryMin: 190000,
     salaryMax: 300000,
     description:
-      "Build infrastructure that connects billions of people. Work on distributed systems, data processing pipelines, and real-time communication platforms at unprecedented scale.",
+      "Join Meta's messaging infrastructure group to build resilient backend systems powering communication products at global scale. You'll own services spanning ingestion, fan-out, and consistency guarantees while collaborating with product teams on reliability and launch-readiness for new experiences.",
     requirements: [
       "5+ years of backend development experience",
       "Proficiency in C++, Java, or Python",

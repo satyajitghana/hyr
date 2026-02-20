@@ -71,7 +71,7 @@ export default function ATSOptimizePage({
     if (resume) {
       submit({ resume });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [resume?.id]);
 
   if (!resume) {
@@ -110,7 +110,7 @@ export default function ATSOptimizePage({
   const suggestions = score?.suggestions ?? [];
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -126,6 +126,9 @@ export default function ATSOptimizePage({
         <div>
           <h1 className="font-display text-2xl font-bold">ATS Optimizer</h1>
           <p className="text-sm text-muted-foreground">{resume.name}</p>
+          <Badge variant="secondary" className="mt-2 rounded-full text-[10px] uppercase tracking-wide">
+            AI SDK · Mock Provider
+          </Badge>
         </div>
       </motion.div>
 

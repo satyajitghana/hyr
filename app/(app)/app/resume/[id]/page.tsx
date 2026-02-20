@@ -30,8 +30,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { processImageToDither } from "@/lib/resume/dither";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ResumePdfViewer } from "@/components/resume/pdf-viewer";
+import Image from "next/image";
+
+// react-pdf (pdfjs-dist) uses DOMMatrix at module-level — crashes SSR.
+// ssr: false prevents the module from loading on the server entirely.
+const ResumePdfViewer = dynamic(
+  () => import("@/components/resume/pdf-viewer").then((m) => m.ResumePdfViewer),
+  { ssr: false },
+);
 
 export default function ResumeDetailPage({
   params,
@@ -162,7 +170,7 @@ export default function ResumeDetailPage({
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -268,9 +276,12 @@ export default function ResumeDetailPage({
           <div className="flex items-center gap-4">
             {resume.ditherImage ? (
               <div className="relative group">
-                <img
+                <Image
                   src={resume.ditherImage}
                   alt="Dithered profile"
+                  width={80}
+                  height={80}
+                  unoptimized
                   className="h-20 w-20 rounded-lg border object-cover"
                   style={{ imageRendering: "pixelated" }}
                 />

@@ -1,12 +1,11 @@
 import fs from "fs";
 import path from "path";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { Font } from "@react-pdf/renderer";
+import { Font, type DocumentProps } from "@react-pdf/renderer";
 import { NextResponse } from "next/server";
 import { ResumePDF } from "@/components/resume/resume-pdf";
 import { resumeInputSchema } from "@/lib/ai/schemas";
 import { getBirdForName } from "@/lib/resume/birds";
-import { ditherImageServer } from "@/lib/resume/server-dither";
 import React from "react";
 
 // ── Font registration ──
@@ -58,8 +57,56 @@ if (fs.existsSync(geistRegularPath)) {
 
 Font.registerHyphenationCallback((word) => [word]);
 
+// ── Bird image cache (loaded once at module startup) ──
+const birdCache = new Map<string, string>();
+for (const name of [
+  "bluebird", "mockingbird", "blackbird",
+  "kitebird", "cardinalbird", "kestrelbird",
+]) {
+  try {
+    const p = path.join(process.cwd(), "public", "birds", "dithered", `${name}.png`);
+    birdCache.set(name, `data:image/png;base64,${fs.readFileSync(p).toString("base64")}`);
+  } catch { /* precomputed file not found – silently skip */ }
+}
+
+// ── Renderer warmup ──
+// Stored as a module-level Promise so the handler can await it.
+// This serialises the warmup render and the first real render — they never run
+// concurrently. @react-pdf/renderer shares internal state (Yoga WASM init,
+// font store) that deadlocks when two renderToBuffer() calls overlap, causing
+// the Vercel function to hang for the full 300 s timeout.
+const warmupPromise: Promise<void> = (async () => {
+  try {
+    const warmupResume = {
+      id: "_warmup",
+      name: "_warmup",
+      contact: { name: "W", email: "w@w", phone: "0", location: "W" },
+      summary: "W",
+      experience: [{ id: "w", title: "W", company: "W", location: "W", startDate: "W", endDate: "W", bullets: ["W"] }],
+      education: [{ id: "w", degree: "W", school: "W", location: "W", graduationDate: "W" }],
+      skills: ["W"],
+      certifications: ["W"],
+      createdAt: "",
+      updatedAt: "",
+    };
+    await renderToBuffer(
+      React.createElement(ResumePDF, {
+        resume: warmupResume,
+        fontFamily: usingGeist ? "Geist" : "Helvetica",
+        monoFamily: usingGeist ? "GeistMono" : undefined,
+        birdImage: birdCache.values().next().value,
+      }) as unknown as React.ReactElement<DocumentProps>,
+    );
+  } catch { /* warmup failure is non-critical */ }
+})();
+
 // ── Route handler ──
 export async function POST(req: Request) {
+  // Ensure warmup render has completed before starting the real render.
+  // Awaiting a resolved Promise is a no-op, so this only blocks the very
+  // first request (while warmup is in progress).
+  await warmupPromise;
+
   try {
     const body = await req.json();
     const resume = resumeInputSchema.parse(body.resume);
@@ -70,25 +117,19 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
     };
 
-    // Deterministic bird assignment based on person name
+    // Deterministic bird assignment based on person name (served from module-level cache)
     const bird = getBirdForName(resume.contact.name);
-    const birdPath = path.join(process.cwd(), "public", "birds", bird.file);
-    let birdImage: string | undefined;
-    try {
-      birdImage = await ditherImageServer(birdPath);
-    } catch (e) {
-      console.warn("Bird dither failed, skipping:", e);
-    }
+    const birdImage = birdCache.get(bird.name);
 
-    const buffer = await renderToBuffer(
-      React.createElement(ResumePDF, {
-        resume: fullResume,
-        fontFamily: usingGeist ? "Geist" : "Helvetica",
-        monoFamily: usingGeist ? "GeistMono" : undefined,
-        ditherImage: body.ditherImage || undefined,
-        birdImage,
-      }) as any
-    );
+    const pdfDocument = React.createElement(ResumePDF, {
+      resume: fullResume,
+      fontFamily: usingGeist ? "Geist" : "Helvetica",
+      monoFamily: usingGeist ? "GeistMono" : undefined,
+      ditherImage: body.ditherImage || undefined,
+      birdImage,
+    }) as unknown as React.ReactElement<DocumentProps>;
+
+    const buffer = await renderToBuffer(pdfDocument);
 
     const fileName = `${resume.contact.name.replace(/\s+/g, "_")}_Resume.pdf`;
 

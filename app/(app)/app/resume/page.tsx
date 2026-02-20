@@ -36,7 +36,7 @@ export default function ResumePage() {
   const [showUpload, setShowUpload] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleUpload = async (_file: File) => {
+  const handleUpload = async () => {
     setIsUploading(true);
 
     // Mock: simulate parsing delay
@@ -46,37 +46,38 @@ export default function ResumePage() {
       id: `resume-${Date.now()}`,
       name: `Resume ${resumes.length + 1}`,
       contact: {
-        name: "Your Name",
-        email: "you@email.com",
+        name: "Jordan Rivera",
+        email: "jordan.rivera@email.com",
         phone: "(555) 000-0000",
-        location: "Your City, State",
+        location: "Austin, TX",
       },
       summary:
-        "Experienced professional with a diverse skill set. Update this summary with your own experience and achievements.",
+        "Product-minded software engineer with experience shipping customer-facing web products, improving conversion funnels, and collaborating across product, design, and operations.",
       experience: [
         {
           id: `exp-${Date.now()}`,
-          title: "Your Job Title",
-          company: "Your Company",
-          location: "City, State",
+          title: "Software Engineer",
+          company: "Northstar Labs",
+          location: "Austin, TX",
           startDate: "2023-01",
           endDate: "Present",
           bullets: [
-            "Describe your key achievements and responsibilities",
-            "Quantify your impact where possible",
+            "Launched three product features that increased weekly active usage by 21% quarter over quarter",
+            "Reduced page load time from 3.8s to 1.6s by optimizing bundle strategy, caching, and image delivery",
+            "Partnered with design and support to reduce onboarding drop-off by 18% through UX and content improvements",
           ],
         },
       ],
       education: [
         {
           id: `edu-${Date.now()}`,
-          degree: "Your Degree",
-          school: "Your University",
-          location: "City, State",
+          degree: "B.S. Computer Science",
+          school: "University of Texas at Austin",
+          location: "Austin, TX",
           graduationDate: "2022-05",
         },
       ],
-      skills: ["Skill 1", "Skill 2", "Skill 3"],
+      skills: ["React", "TypeScript", "Next.js", "Node.js", "SQL", "Product Analytics"],
       certifications: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

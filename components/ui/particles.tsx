@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from "react"
 
 import { cn } from "@/lib/utils"
@@ -100,49 +101,7 @@ export const Particles: React.FC<ParticlesProps> = ({
   const rafID = useRef<number | null>(null)
   const resizeTimeout = useRef<NodeJS.Timeout | null>(null)
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      context.current = canvasRef.current.getContext("2d")
-    }
-    initCanvas()
-    animate()
-
-    const handleResize = () => {
-      if (resizeTimeout.current) {
-        clearTimeout(resizeTimeout.current)
-      }
-      resizeTimeout.current = setTimeout(() => {
-        initCanvas()
-      }, 200)
-    }
-
-    window.addEventListener("resize", handleResize)
-
-    return () => {
-      if (rafID.current != null) {
-        window.cancelAnimationFrame(rafID.current)
-      }
-      if (resizeTimeout.current) {
-        clearTimeout(resizeTimeout.current)
-      }
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [color])
-
-  useEffect(() => {
-    onMouseMove()
-  }, [mousePosition.x, mousePosition.y])
-
-  useEffect(() => {
-    initCanvas()
-  }, [refresh])
-
-  const initCanvas = () => {
-    resizeCanvas()
-    drawParticles()
-  }
-
-  const onMouseMove = () => {
+  const onMouseMove = useCallback(() => {
     if (canvasRef.current) {
       const rect = canvasRef.current.getBoundingClientRect()
       const { w, h } = canvasSize.current
@@ -154,9 +113,9 @@ export const Particles: React.FC<ParticlesProps> = ({
         mouse.current.y = y
       }
     }
-  }
+  }, [mousePosition.x, mousePosition.y])
 
-  const resizeCanvas = () => {
+  const resizeCanvas = useCallback(() => {
     if (canvasContainerRef.current && canvasRef.current && context.current) {
       canvasSize.current.w = canvasContainerRef.current.offsetWidth
       canvasSize.current.h = canvasContainerRef.current.offsetHeight
@@ -174,9 +133,9 @@ export const Particles: React.FC<ParticlesProps> = ({
         drawCircle(circle)
       }
     }
-  }
+  }, [dpr, quantity])
 
-  const circleParams = (): Circle => {
+  function circleParams(): Circle {
     const x = Math.floor(Math.random() * canvasSize.current.w)
     const y = Math.floor(Math.random() * canvasSize.current.h)
     const translateX = 0
@@ -203,7 +162,7 @@ export const Particles: React.FC<ParticlesProps> = ({
 
   const rgb = hexToRgb(color)
 
-  const drawCircle = (circle: Circle, update = false) => {
+  function drawCircle(circle: Circle, update = false) {
     if (context.current) {
       const { x, y, translateX, translateY, size, alpha } = circle
       context.current.translate(translateX, translateY)
@@ -219,7 +178,7 @@ export const Particles: React.FC<ParticlesProps> = ({
     }
   }
 
-  const clearContext = () => {
+  const clearContext = useCallback(() => {
     if (context.current) {
       context.current.clearRect(
         0,
@@ -228,16 +187,21 @@ export const Particles: React.FC<ParticlesProps> = ({
         canvasSize.current.h
       )
     }
-  }
+  }, [])
 
-  const drawParticles = () => {
+  const drawParticles = useCallback(() => {
     clearContext()
     const particleCount = quantity
     for (let i = 0; i < particleCount; i++) {
       const circle = circleParams()
       drawCircle(circle)
     }
-  }
+  }, [clearContext, drawCircle, circleParams, quantity])
+
+  const initCanvas = useCallback(() => {
+    resizeCanvas()
+    drawParticles()
+  }, [resizeCanvas, drawParticles])
 
   const remapValue = (
     value: number,
@@ -251,7 +215,7 @@ export const Particles: React.FC<ParticlesProps> = ({
     return remapped > 0 ? remapped : 0
   }
 
-  const animate = () => {
+  const animate = useCallback(() => {
     clearContext()
     circles.current.forEach((circle: Circle, i: number) => {
       // Handle the alpha value
@@ -298,8 +262,46 @@ export const Particles: React.FC<ParticlesProps> = ({
         drawCircle(newCircle)
       }
     })
-    rafID.current = window.requestAnimationFrame(animate)
-  }
+    rafID.current = window.requestAnimationFrame(() => animate())
+  }, [clearContext, drawCircle, circleParams, ease, staticity, vx, vy])
+
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      context.current = canvasRef.current.getContext("2d")
+    }
+    initCanvas()
+    animate()
+
+    const handleResize = () => {
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current)
+      }
+      resizeTimeout.current = setTimeout(() => {
+        initCanvas()
+      }, 200)
+    }
+
+    window.addEventListener("resize", handleResize)
+
+    return () => {
+      if (rafID.current != null) {
+        window.cancelAnimationFrame(rafID.current)
+      }
+      if (resizeTimeout.current) {
+        clearTimeout(resizeTimeout.current)
+      }
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [color, animate, initCanvas])
+
+  useEffect(() => {
+    onMouseMove()
+  }, [onMouseMove])
+
+  useEffect(() => {
+    initCanvas()
+  }, [refresh, initCanvas])
 
   return (
     <div

@@ -12,14 +12,9 @@ import {
   DollarSign,
   Building2,
   Filter,
-  Rocket,
   ArrowRight,
   X,
   Trophy,
-  Sparkles,
-  Shield,
-  Clock,
-  Target,
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";

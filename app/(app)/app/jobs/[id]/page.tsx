@@ -16,11 +16,9 @@ import {
   Loader2,
   FileText,
   Mail,
-  MessageSquare,
   ChevronDown,
   ChevronUp,
   Sparkles,
-  X,
   Check,
   Copy,
   Pencil,
@@ -242,7 +240,7 @@ export default function JobDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       {/* Back nav */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}

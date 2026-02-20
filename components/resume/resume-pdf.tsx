@@ -6,7 +6,6 @@ import {
   Image,
   Canvas,
 } from "@react-pdf/renderer";
-import { createTw } from "react-pdf-tailwind";
 import type { Resume } from "@/lib/resume/types";
 import {
   MailIcon,
@@ -16,29 +15,20 @@ import {
   GlobeIcon,
 } from "./pdf-icons";
 
-// ── Tailwind-like styling (following Invoicely pattern) ──
-const tw = createTw({
-  theme: {
-    fontFamily: {
-      sans: ["Geist"],
-      mono: ["GeistMono"],
-    },
-    extend: {
-      colors: {
-        black: "#0a0a0a",
-        dark: "#171717",
-        muted: "#525252",
-        light: "#a3a3a3",
-        border: "#e5e5e5",
-        accent: "#4f46e5",
-      },
-      fontSize: {
-        "2xs": "0.625rem",
-        "3xs": "0.5rem",
-      },
-    },
-  },
-});
+interface PdfPainter {
+  save: () => void;
+  restore: () => void;
+  lineWidth: (width: number) => PdfPainter;
+  strokeColor: (color: string) => PdfPainter;
+  strokeOpacity: (opacity: number) => PdfPainter;
+  fillColor: (color: string) => PdfPainter;
+  fillOpacity: (opacity: number) => PdfPainter;
+  rect: (x: number, y: number, width: number, height: number) => PdfPainter;
+  moveTo: (x: number, y: number) => PdfPainter;
+  lineTo: (x: number, y: number) => PdfPainter;
+  stroke: () => PdfPainter;
+  fill: () => PdfPainter;
+}
 
 // ── Color palette (for Canvas paint functions) ──
 const c = {
@@ -47,6 +37,7 @@ const c = {
   muted: "#525252",
   light: "#a3a3a3",
   border: "#e5e5e5",
+  softBorder: "#d4d4d8",
   accent: "#4f46e5",
 };
 
@@ -57,7 +48,8 @@ const PAGE_H = 792;
 // Corner mark constants
 const INSET = 16;
 const MARK_LEN = 20;
-const SQUARE_SIZE = 4; // filled corner square size
+const SQUARE_SIZE = 6; // filled corner square size
+const SQUARE_OFFSET = 2;
 
 // Top-right decoration grid
 const DECO_W = 200;
@@ -239,9 +231,12 @@ export function ResumePDF({
         }}
       >
         {/* ── Corner border marks (L-shaped registration marks) ──
-             Uses 1x1 declared size to avoid layout overflow (blank page bug).
-             PDFKit painter draws on absolute page coordinates regardless. */}
+             Uses 1x1 declared size to avoid layout overflow.
+             fixed={true} keeps it out of the page-break algorithm — without it,
+             react-pdf's Canvas + NON_WRAP_TYPES combination causes an infinite
+             layout loop when content overflows to a second page. */}
         <Canvas
+          fixed
           style={{
             position: "absolute",
             top: 0,
@@ -249,7 +244,7 @@ export function ResumePDF({
             width: 1,
             height: 1,
           }}
-          paint={(painter: any): null => {
+          paint={(painter: PdfPainter): null => {
             painter.save();
 
             const x0 = INSET;
@@ -258,35 +253,40 @@ export function ResumePDF({
             const y1 = PAGE_H - INSET;
 
             // ── 1. Full page border (light) ──
-            painter.lineWidth(0.4).strokeColor(c.border).strokeOpacity(0.25);
+            painter.lineWidth(0.45).strokeColor(c.softBorder).strokeOpacity(0.26);
             painter.rect(x0, y0, x1 - x0, y1 - y0).stroke();
 
             // ── 2. Darker corner L-marks (overdraw on top of light border) ──
-            painter.lineWidth(0.6).strokeColor(c.dark).strokeOpacity(0.3);
+            painter.lineWidth(0.65).strokeColor(c.dark).strokeOpacity(0.32);
+
+            const tlx = x0 + SQUARE_OFFSET;
+            const tly = y0 + SQUARE_OFFSET;
+            const trx = x1 - SQUARE_OFFSET;
+            const try_ = y0 + SQUARE_OFFSET;
+            const blx = x0 + SQUARE_OFFSET;
+            const bly = y1 - SQUARE_OFFSET;
+            const brx = x1 - SQUARE_OFFSET;
+            const bry = y1 - SQUARE_OFFSET;
 
             // Top-left
-            painter.moveTo(x0, y0).lineTo(x0 + MARK_LEN, y0).stroke();
-            painter.moveTo(x0, y0).lineTo(x0, y0 + MARK_LEN).stroke();
+            painter.moveTo(tlx, tly).lineTo(tlx + MARK_LEN, tly).stroke();
+            painter.moveTo(tlx, tly).lineTo(tlx, tly + MARK_LEN).stroke();
             // Top-right
-            painter.moveTo(x1, y0).lineTo(x1 - MARK_LEN, y0).stroke();
-            painter.moveTo(x1, y0).lineTo(x1, y0 + MARK_LEN).stroke();
+            painter.moveTo(trx, try_).lineTo(trx - MARK_LEN, try_).stroke();
+            painter.moveTo(trx, try_).lineTo(trx, try_ + MARK_LEN).stroke();
             // Bottom-left
-            painter.moveTo(x0, y1).lineTo(x0 + MARK_LEN, y1).stroke();
-            painter.moveTo(x0, y1).lineTo(x0, y1 - MARK_LEN).stroke();
+            painter.moveTo(blx, bly).lineTo(blx + MARK_LEN, bly).stroke();
+            painter.moveTo(blx, bly).lineTo(blx, bly - MARK_LEN).stroke();
             // Bottom-right
-            painter.moveTo(x1, y1).lineTo(x1 - MARK_LEN, y1).stroke();
-            painter.moveTo(x1, y1).lineTo(x1, y1 - MARK_LEN).stroke();
+            painter.moveTo(brx, bry).lineTo(brx - MARK_LEN, bry).stroke();
+            painter.moveTo(brx, bry).lineTo(brx, bry - MARK_LEN).stroke();
 
             // ── 3. Filled corner squares (darkest, inner edge flush with border) ──
             painter.fillColor(c.dark).fillOpacity(0.8);
-            // Top-left: square sits outside, inner edge at (x0, y0)
-            painter.rect(x0 - SQUARE_SIZE, y0 - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
-            // Top-right: square sits outside, inner edge at (x1, y0)
-            painter.rect(x1, y0 - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
-            // Bottom-left: square sits outside, inner edge at (x0, y1)
-            painter.rect(x0 - SQUARE_SIZE, y1, SQUARE_SIZE, SQUARE_SIZE).fill();
-            // Bottom-right: square sits outside, inner edge at (x1, y1)
-            painter.rect(x1, y1, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(tlx, tly, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(trx - SQUARE_SIZE, try_, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(blx, bly - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
+            painter.rect(brx - SQUARE_SIZE, bry - SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE).fill();
 
             // ── Top-right decoration: grid + crosses (Vercel-style) ──
             const trX = PAGE_W - DECO_W;
@@ -345,22 +345,29 @@ export function ResumePDF({
         />
 
         {/* ── Dithered bird watermark ── */}
+        {/* fixed={true}: bird image appears on every page as a watermark.
+            Also required to prevent the layout engine from trying to split
+            this absolute-positioned image across page boundaries, which
+            causes an infinite pagination loop for multi-page resumes. */}
         {birdImage && (
+          // eslint-disable-next-line jsx-a11y/alt-text
           <Image
+            fixed
             src={birdImage}
             style={{
               position: "absolute",
-              bottom: 28,
-              right: 36,
-              width: 64,
-              height: 64,
-              opacity: 0.1,
+              bottom: -20,
+              right: -20,
+              width: 396,
+              height: 396,
+              opacity: 0.12,
             }}
           />
         )}
 
         {/* ── Dither image watermark (user-uploaded photo) ── */}
         {ditherImage && (
+          // eslint-disable-next-line jsx-a11y/alt-text
           <Image
             src={ditherImage}
             style={{
@@ -383,7 +390,7 @@ export function ResumePDF({
               fontWeight: 700,
               color: c.black,
               lineHeight: 1.2,
-              marginBottom: 3,
+              marginBottom: 4,
             }}
           >
             {resume.contact.name}
@@ -398,7 +405,7 @@ export function ResumePDF({
                 fontStyle: "italic",
                 color: c.muted,
                 lineHeight: 1.3,
-                marginBottom: 5,
+                marginBottom: 6,
               }}
             >
               {resume.experience[0].title}
@@ -430,8 +437,8 @@ export function ResumePDF({
           style={{
             height: 0.75,
             backgroundColor: c.border,
-            marginTop: 6,
-            marginBottom: 8,
+            marginTop: 7,
+            marginBottom: 10,
           }}
         />
 
@@ -467,7 +474,6 @@ export function ResumePDF({
               <View
                 key={exp.id}
                 style={{ marginBottom: 4 }}
-                wrap={false}
               >
                 {/* Title + Dates on same line */}
                 <View
@@ -563,7 +569,6 @@ export function ResumePDF({
               <View
                 key={edu.id}
                 style={{ marginBottom: 3 }}
-                wrap={false}
               >
                 {/* Degree + Date on same line */}
                 <View

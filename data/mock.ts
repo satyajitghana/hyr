@@ -2,12 +2,12 @@ import { Resume } from "@/lib/resume/types";
 import { Application } from "@/lib/jobs/types";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 
-export const MOCK_DATA_VERSION = 2;
+export const MOCK_DATA_VERSION = 4;
 
 export const SAMPLE_RESUMES: Resume[] = [
   {
     id: "sample-1",
-    name: "My Resume",
+    name: "Senior Product Engineer Resume",
     contact: {
       name: "Alex Johnson",
       email: "alex.johnson@email.com",
@@ -17,7 +17,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       website: "alexjohnson.dev",
     },
     summary:
-      "Full-stack software engineer with 5+ years of experience building scalable web applications. Passionate about creating elegant user experiences and writing clean, maintainable code. Proven track record of delivering high-impact features in fast-paced startup environments.",
+      "Product-minded full-stack engineer with 7+ years of experience building SaaS platforms from zero-to-one and scaling mature products to millions of sessions per month. I partner deeply with product, design, and GTM teams to prioritize high-impact bets, instrument outcomes, and ship polished features that move conversion, retention, and revenue. Strong background in TypeScript, React, Node.js, and cloud infrastructure with a focus on performance, reliability, and maintainable architecture.",
     experience: [
       {
         id: "exp-1",
@@ -27,10 +27,11 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2023-01",
         endDate: "Present",
         bullets: [
-          "Led development of a real-time collaboration platform serving 50K+ daily active users, improving team productivity by 35%",
-          "Architected and implemented a microservices migration that reduced API latency by 60% and improved system reliability to 99.9% uptime",
-          "Mentored 4 junior engineers through code reviews, pair programming, and weekly 1-on-1s",
-          "Introduced comprehensive testing strategy that increased code coverage from 45% to 92%",
+          "Led end-to-end delivery of a real-time planning workspace used by 85K+ weekly active users; rollout increased team adoption by 34% within two quarters.",
+          "Designed an event-driven service architecture (Node.js, Kafka, Postgres) that reduced median API latency by 58% and cut incident volume by 41% year-over-year.",
+          "Partnered with product analytics to define success metrics and experimentation strategy, resulting in a 17% lift in trial-to-paid conversion for self-serve accounts.",
+          "Mentored five engineers through design reviews, pairing, and growth plans; two promoted to senior level within 12 months.",
+          "Introduced quality gates and contract testing across CI pipelines, increasing change confidence and reducing regression escapes by 63%.",
         ],
       },
       {
@@ -41,9 +42,10 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2021-03",
         endDate: "2022-12",
         bullets: [
-          "Built a customer-facing dashboard with React and TypeScript that processed $2M+ in monthly transactions",
-          "Designed and implemented RESTful APIs using Node.js and PostgreSQL, handling 10K+ requests per minute",
-          "Reduced page load time by 40% through code splitting, lazy loading, and image optimization",
+          "Built a customer-facing dashboard with React and TypeScript that processed $2M+ in monthly transactions and surfaced real-time account health for enterprise admins.",
+          "Designed and implemented RESTful APIs using Node.js and PostgreSQL, handling 10K+ requests per minute while maintaining 99.95% uptime.",
+          "Reduced page load time by 40% through code splitting, lazy loading, and image optimization, increasing weekly retention by 11%.",
+          "Shipped role-based permissions and audit logs to satisfy SOC 2 customer requirements, unlocking expansion into mid-market accounts.",
         ],
       },
       {
@@ -54,8 +56,22 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2019-06",
         endDate: "2021-02",
         bullets: [
-          "Developed responsive web applications for 15+ clients using React, Vue.js, and modern CSS",
-          "Collaborated with design team to implement pixel-perfect UI components and animations",
+          "Developed responsive web applications for 15+ clients using React, Vue.js, and modern CSS.",
+          "Collaborated with design team to implement pixel-perfect UI components and animations.",
+          "Set up reusable component libraries and coding standards that reduced delivery time for new client sites by 25%.",
+        ],
+      },
+      {
+        id: "exp-4",
+        title: "Software Engineering Intern",
+        company: "Atlassian",
+        location: "San Francisco, CA",
+        startDate: "2018-05",
+        endDate: "2018-08",
+        bullets: [
+          "Built internal automation scripts for release QA that cut regression verification time from two days to under six hours.",
+          "Implemented Jira Cloud UI improvements in React and TypeScript and partnered with designers to improve task creation completion rate by 8%.",
+          "Presented internship capstone to engineering leadership and contributed production-ready code merged into the next quarterly release.",
         ],
       },
     ],
@@ -98,7 +114,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       linkedin: "linkedin.com/in/priyapatel",
     },
     summary:
-      "Product-focused software engineer with 4+ years of experience building user-facing products at high-growth startups. Skilled at bridging engineering and design, shipping features that drive business metrics, and working cross-functionally with product and design teams.",
+      "Product-focused engineer with 6 years of experience building customer-facing workflows in fintech and collaboration software. Experienced at translating ambiguous customer pain points into roadmap-ready specs, then delivering well-instrumented features with measurable impact. Known for crisp communication, thoughtful design-system contributions, and strong ownership from discovery through launch.",
     experience: [
       {
         id: "exp-p1",
@@ -122,9 +138,23 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2020-08",
         endDate: "2022-05",
         bullets: [
-          "Implemented real-time collaboration features for the design editor used by 4M+ designers worldwide",
-          "Optimized rendering performance of the canvas engine, reducing frame drops by 50% on complex files",
-          "Built the plugin marketplace search and discovery experience from scratch",
+          "Implemented real-time collaboration features for the design editor used by 4M+ designers worldwide.",
+          "Optimized rendering performance of the canvas engine, reducing frame drops by 50% on complex files.",
+          "Built the plugin marketplace search and discovery experience from scratch.",
+          "Partnered with support and data teams to instrument funnel analytics, improving plugin install conversion by 19%.",
+        ],
+      },
+      {
+        id: "exp-p3",
+        title: "Product Engineer",
+        company: "Asana",
+        location: "San Francisco, CA",
+        startDate: "2018-07",
+        endDate: "2020-07",
+        bullets: [
+          "Owned roadmap delivery for portfolio planning workflows used by enterprise PMOs, increasing weekly active teams by 26%.",
+          "Built a reusable design-system package that reduced visual regressions and cut frontend bug volume by 32%.",
+          "Facilitated customer interviews with product managers and translated feedback into scoped milestones for quarterly planning.",
         ],
       },
     ],
@@ -203,8 +233,22 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2018-07",
         endDate: "2020-02",
         bullets: [
-          "Developed edge computing platform features serving 25M+ HTTP requests per second globally",
-          "Built automated DDoS mitigation rules that blocked 99.7% of attack traffic without false positives",
+          "Developed edge computing platform features serving 25M+ HTTP requests per second globally.",
+          "Built automated DDoS mitigation rules that blocked 99.7% of attack traffic without false positives.",
+          "Implemented distributed canary deployments and health checks across edge clusters, reducing failed global releases by 45%.",
+        ],
+      },
+      {
+        id: "exp-m4",
+        title: "Site Reliability Engineer",
+        company: "Twilio",
+        location: "Remote",
+        startDate: "2016-06",
+        endDate: "2018-06",
+        bullets: [
+          "Maintained messaging platform reliability with 99.99% SLA across multi-region infrastructure and on-call ownership.",
+          "Created incident response playbooks and dashboards that reduced MTTR from 38 minutes to 19 minutes.",
+          "Automated infrastructure provisioning with Terraform and Packer, reducing environment setup time from days to under one hour.",
         ],
       },
     ],
@@ -257,7 +301,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       linkedin: "linkedin.com/in/sarahkim",
     },
     summary:
-      "Strategic brand marketing leader with 6+ years of experience driving integrated campaigns for Fortune 500 brands. Expert in consumer insights, digital marketing, and brand storytelling. Proven ability to increase brand awareness and engagement across channels.",
+      "Strategic brand and growth marketing leader with 8+ years of experience launching integrated campaigns across retail, social, and lifecycle channels. Combines consumer research with creative execution to build durable brand narratives and measurable business outcomes. Comfortable owning multimillion-dollar budgets, agency partnerships, and cross-functional launch programs from strategy to postmortem.",
     experience: [
       {
         id: "exp-s1",
@@ -294,8 +338,22 @@ export const SAMPLE_RESUMES: Resume[] = [
         startDate: "2018-08",
         endDate: "2020-05",
         bullets: [
-          "Coordinated product launch events and experiential marketing activations across 12 US markets",
-          "Managed social media calendar and community engagement, growing followers by 35%",
+          "Coordinated product launch events and experiential marketing activations across 12 US markets.",
+          "Managed social media calendar and community engagement, growing followers by 35%.",
+          "Built campaign reporting templates for weekly executive reviews, improving channel budget decisions and forecast accuracy.",
+        ],
+      },
+      {
+        id: "exp-s4",
+        title: "Marketing Intern",
+        company: "Airbnb",
+        location: "San Francisco, CA",
+        startDate: "2017-06",
+        endDate: "2018-07",
+        bullets: [
+          "Supported lifecycle email experiments and audience segmentation for host onboarding campaigns, increasing activation by 9%.",
+          "Coordinated creator partnerships and managed campaign assets for social channels reaching 3M+ monthly impressions.",
+          "Performed post-campaign analysis and competitor research that informed positioning for two seasonal brand launches.",
         ],
       },
     ],
