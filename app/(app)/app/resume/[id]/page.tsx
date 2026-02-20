@@ -30,9 +30,16 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { processImageToDither } from "@/lib/resume/dither";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { ResumePdfViewer } from "@/components/resume/pdf-viewer";
+
+// react-pdf (pdfjs-dist) uses DOMMatrix at module-level — crashes SSR.
+// ssr: false prevents the module from loading on the server entirely.
+const ResumePdfViewer = dynamic(
+  () => import("@/components/resume/pdf-viewer").then((m) => m.ResumePdfViewer),
+  { ssr: false },
+);
 
 export default function ResumeDetailPage({
   params,

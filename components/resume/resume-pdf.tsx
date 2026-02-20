@@ -231,9 +231,12 @@ export function ResumePDF({
         }}
       >
         {/* ── Corner border marks (L-shaped registration marks) ──
-             Uses 1x1 declared size to avoid layout overflow (blank page bug).
-             PDFKit painter draws on absolute page coordinates regardless. */}
+             Uses 1x1 declared size to avoid layout overflow.
+             fixed={true} keeps it out of the page-break algorithm — without it,
+             react-pdf's Canvas + NON_WRAP_TYPES combination causes an infinite
+             layout loop when content overflows to a second page. */}
         <Canvas
+          fixed
           style={{
             position: "absolute",
             top: 0,
@@ -342,17 +345,22 @@ export function ResumePDF({
         />
 
         {/* ── Dithered bird watermark ── */}
+        {/* fixed={true}: bird image appears on every page as a watermark.
+            Also required to prevent the layout engine from trying to split
+            this absolute-positioned image across page boundaries, which
+            causes an infinite pagination loop for multi-page resumes. */}
         {birdImage && (
           // eslint-disable-next-line jsx-a11y/alt-text
           <Image
+            fixed
             src={birdImage}
             style={{
               position: "absolute",
-              bottom: 12,
-              right: 16,
-              width: 132,
-              height: 132,
-              opacity: 0.17,
+              bottom: -20,
+              right: -20,
+              width: 396,
+              height: 396,
+              opacity: 0.12,
             }}
           />
         )}
@@ -466,7 +474,6 @@ export function ResumePDF({
               <View
                 key={exp.id}
                 style={{ marginBottom: 4 }}
-                wrap={false}
               >
                 {/* Title + Dates on same line */}
                 <View
@@ -562,7 +569,6 @@ export function ResumePDF({
               <View
                 key={edu.id}
                 style={{ marginBottom: 3 }}
-                wrap={false}
               >
                 {/* Degree + Date on same line */}
                 <View
