@@ -57,6 +57,46 @@ if (fs.existsSync(geistRegularPath)) {
 
 Font.registerHyphenationCallback((word) => [word]);
 
+// ── Bird image cache (loaded once at module startup) ──
+const birdCache = new Map<string, string>();
+for (const name of [
+  "bluebird", "mockingbird", "blackbird",
+  "kitebird", "cardinalbird", "kestrelbird",
+]) {
+  try {
+    const p = path.join(process.cwd(), "public", "birds", "dithered", `${name}.png`);
+    birdCache.set(name, `data:image/png;base64,${fs.readFileSync(p).toString("base64")}`);
+  } catch { /* precomputed file not found – silently skip */ }
+}
+
+// ── Renderer warmup: render a minimal ResumePDF at module startup ──
+// Uses the actual component so fonts, Yoga layout, Canvas, and PDFKit are all
+// pre-warmed before the first real request arrives.
+void (async () => {
+  try {
+    const warmupResume = {
+      id: "_warmup",
+      name: "_warmup",
+      contact: { name: "W", email: "w@w", phone: "0", location: "W" },
+      summary: "W",
+      experience: [{ id: "w", title: "W", company: "W", location: "W", startDate: "W", endDate: "W", bullets: ["W"] }],
+      education: [{ id: "w", degree: "W", school: "W", location: "W", graduationDate: "W" }],
+      skills: ["W"],
+      certifications: ["W"],
+      createdAt: "",
+      updatedAt: "",
+    };
+    await renderToBuffer(
+      React.createElement(ResumePDF, {
+        resume: warmupResume,
+        fontFamily: usingGeist ? "Geist" : "Helvetica",
+        monoFamily: usingGeist ? "GeistMono" : undefined,
+        birdImage: birdCache.values().next().value,
+      }) as unknown as React.ReactElement<DocumentProps>,
+    );
+  } catch { /* warmup failure is non-critical */ }
+})();
+
 // ── Route handler ──
 export async function POST(req: Request) {
   try {
@@ -69,22 +109,9 @@ export async function POST(req: Request) {
       updatedAt: new Date().toISOString(),
     };
 
-    // Deterministic bird assignment based on person name
+    // Deterministic bird assignment based on person name (served from module-level cache)
     const bird = getBirdForName(resume.contact.name);
-    const ditheredBirdPath = path.join(
-      process.cwd(),
-      "public",
-      "birds",
-      "dithered",
-      `${bird.name}.png`,
-    );
-    let birdImage: string | undefined;
-    try {
-      const data = fs.readFileSync(ditheredBirdPath);
-      birdImage = `data:image/png;base64,${data.toString("base64")}`;
-    } catch (e) {
-      console.warn("Bird image load failed, skipping:", e);
-    }
+    const birdImage = birdCache.get(bird.name);
 
     const pdfDocument = React.createElement(ResumePDF, {
       resume: fullResume,
