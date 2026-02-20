@@ -10,7 +10,8 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 
-const DITHER_SIZE = 200;
+// Higher resolution so it stays sharp at 3× display size in the PDF
+const DITHER_SIZE = 600;
 
 const BIRDS = [
   { name: "bluebird", file: "bluebird.jpg" },
@@ -63,15 +64,32 @@ async function ditherToPng(inputPath: string, outputPath: string): Promise<void>
     }
   }
 
-  // Convert to RGBA
+  // Convert to RGBA with radial vignette alpha channel.
+  // The alpha fades from 1.0 at the centre to 0.0 at the edges so the image
+  // blends seamlessly into the white page background without a hard border.
+  const cx = (w - 1) / 2;
+  const cy = (h - 1) / 2;
+  const maxR = Math.min(cx, cy);
+  // Vignette starts fading at 45% radius and is fully transparent at 100%.
+  const FADE_START = 0.45;
+
   const rgba = Buffer.alloc(w * h * 4);
   for (let i = 0; i < pixels.length; i++) {
     const val = pixels[i] > 128 ? 255 : 0;
+    const x = i % w;
+    const y = Math.floor(i / w);
+    const dx = (x - cx) / maxR;
+    const dy = (y - cy) / maxR;
+    const r = Math.sqrt(dx * dx + dy * dy);
+    // Linear fade from FADE_START to 1.0 → alpha 255 to 0
+    const alpha = r <= FADE_START
+      ? 255
+      : Math.max(0, Math.round(255 * (1 - (r - FADE_START) / (1 - FADE_START))));
     const j = i * 4;
     rgba[j] = val;
     rgba[j + 1] = val;
     rgba[j + 2] = val;
-    rgba[j + 3] = 255;
+    rgba[j + 3] = alpha;
   }
 
   await sharp(rgba, {
