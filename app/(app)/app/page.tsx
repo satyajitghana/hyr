@@ -104,7 +104,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="space-y-6">
       <PageHeader
         icon={LayoutDashboard}
         title="Dashboard"

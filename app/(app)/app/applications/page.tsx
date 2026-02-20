@@ -167,9 +167,12 @@ export default function ApplicationsPage() {
   if (!mounted) {
     return (
       <div className="space-y-6">
-        <div>
-          <Skeleton className="h-9 w-64 mb-1" />
-          <Skeleton className="h-4 w-48" />
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-4 w-64" />
+          </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
@@ -189,7 +192,7 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="space-y-6">
       <PageHeader
         icon={ClipboardList}
         title="Applications"

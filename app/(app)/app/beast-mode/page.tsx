@@ -299,7 +299,7 @@ export default function BeastModePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <PageHeader
         icon={Zap}

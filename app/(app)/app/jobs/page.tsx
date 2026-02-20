@@ -66,7 +66,7 @@ export default function JobsPage() {
   }, [search, typeFilter, levelFilter, categoryFilter]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         icon={Briefcase}
         title="Jobs"

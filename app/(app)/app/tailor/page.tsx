@@ -299,7 +299,7 @@ export default function TailorPage() {
   }, [result]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <PageHeader
         icon={Wand2}

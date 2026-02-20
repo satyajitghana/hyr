@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import type { LucideIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PageHeaderProps {
   icon: LucideIcon;
@@ -42,5 +43,19 @@ export function PageHeader({
         {children && <div className="flex items-center gap-2">{children}</div>}
       </div>
     </motion.div>
+  );
+}
+
+export function PageHeaderSkeleton() {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+      </div>
+    </div>
   );
 }
