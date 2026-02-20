@@ -13,10 +13,12 @@ import {
   Send,
   BarChart3,
   Target,
+  LayoutDashboard,
 } from "lucide-react";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { useJobStore } from "@/lib/store/job-store";
+import { PageHeader } from "@/components/app/page-header";
 
 const quickActions = [
   {
@@ -103,18 +105,13 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Welcome back
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Here&apos;s an overview of your job search progress.
-        </p>
-      </motion.div>
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Dashboard"
+        subtitle="Here's an overview of your job search progress."
+        gradient="from-blue-600 to-blue-400"
+        shadow="shadow-blue-500/25"
+      />
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

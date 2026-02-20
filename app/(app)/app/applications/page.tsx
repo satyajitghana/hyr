@@ -31,6 +31,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useJobStore } from "@/lib/store/job-store";
 import type { Application } from "@/lib/jobs/types";
 import Link from "next/link";
+import { PageHeader } from "@/components/app/page-header";
 
 const statusConfig: Record<
   string,
@@ -189,17 +190,13 @@ export default function ApplicationsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Applications
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Track all your job applications in one place.
-        </p>
-      </motion.div>
+      <PageHeader
+        icon={ClipboardList}
+        title="Applications"
+        subtitle="Track all your job applications in one place."
+        gradient="from-amber-600 to-yellow-400"
+        shadow="shadow-amber-500/25"
+      />
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

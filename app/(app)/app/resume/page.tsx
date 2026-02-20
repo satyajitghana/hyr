@@ -31,6 +31,7 @@ import {
 import { ResumeUploader } from "@/components/resume/resume-uploader";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { Resume } from "@/lib/resume/types";
+import { PageHeader } from "@/components/app/page-header";
 
 export default function ResumePage() {
   const { resumes, addResume, deleteResume } = useResumeStore();
@@ -93,23 +94,18 @@ export default function ResumePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <div className="flex items-center justify-between">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="font-display text-3xl font-bold tracking-tight">
-            Resumes
-          </h1>
-          <p className="mt-1 text-muted-foreground">
-            Manage and optimize your resumes.
-          </p>
-        </motion.div>
+      <PageHeader
+        icon={FileText}
+        title="Resumes"
+        subtitle="Manage and optimize your resumes."
+        gradient="from-blue-600 to-blue-400"
+        shadow="shadow-blue-500/25"
+      >
         <Button onClick={() => setShowUpload(true)} className="gap-2">
           <Plus className="h-4 w-4" />
           Upload Resume
         </Button>
-      </div>
+      </PageHeader>
 
       <Dialog open={showUpload} onOpenChange={setShowUpload}>
         <DialogContent className="sm:max-w-lg">

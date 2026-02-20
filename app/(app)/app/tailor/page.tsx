@@ -35,6 +35,7 @@ import {
 import { StreamingChanges } from "@/components/ai/streaming-changes";
 import { HyperText } from "@/components/ui/hyper-text";
 import { toast } from "sonner";
+import { PageHeader } from "@/components/app/page-header";
 
 type Step = "input" | "processing" | "result";
 
@@ -300,29 +301,13 @@ export default function TailorPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-lg shadow-violet-500/25">
-            <Wand2 className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">
-              Tailor Resume
-            </h1>
-            <p className="text-muted-foreground">
-              AI-powered resume optimization for any job description.
-            </p>
-            <div className="mt-2">
-              <Badge variant="secondary" className="rounded-full text-[10px] uppercase tracking-wide">
-                AI SDK · Mock Provider
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      <PageHeader
+        icon={Wand2}
+        title="Tailor Resume"
+        subtitle="AI-powered resume optimization for any job description."
+        gradient="from-violet-600 to-purple-400"
+        shadow="shadow-violet-500/25"
+      />
 
       <AnimatePresence mode="wait">
         {/* ─── INPUT STEP ─── */}

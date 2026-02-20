@@ -10,6 +10,7 @@ import {
   Building2,
   Clock,
   Tag,
+  Briefcase,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 import { JobCategory } from "@/lib/jobs/types";
+import { PageHeader } from "@/components/app/page-header";
 
 const typeFilters = ["all", "remote", "hybrid", "onsite"] as const;
 const levelFilters = ["all", "junior", "mid", "senior", "lead"] as const;
@@ -65,17 +67,13 @@ export default function JobsPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Jobs
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Find and apply to jobs that match your skills across all industries.
-        </p>
-      </motion.div>
+      <PageHeader
+        icon={Briefcase}
+        title="Jobs"
+        subtitle="Find and apply to jobs that match your skills across all industries."
+        gradient="from-emerald-600 to-green-400"
+        shadow="shadow-emerald-500/25"
+      />
 
       {/* Search & Filters */}
       <div className="space-y-3">
