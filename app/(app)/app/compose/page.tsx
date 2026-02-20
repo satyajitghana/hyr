@@ -22,10 +22,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { useResumeStore } from "@/lib/store/resume-store";
 import { coverLetterSchema, recruiterEmailSchema } from "@/lib/ai/schemas";
 import { StreamingText } from "@/components/ai/streaming-text";
+import { PageHeader } from "@/components/app/page-header";
 
 export default function ComposePage() {
   const resumes = useResumeStore((s) => s.resumes);
@@ -131,30 +131,14 @@ export default function ComposePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-400 shadow-lg shadow-blue-500/25">
-            <PenLine className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">
-              Compose
-            </h1>
-            <p className="text-muted-foreground">
-              Generate cover letters and recruiter emails.
-            </p>
-            <div className="mt-2">
-              <Badge variant="secondary" className="rounded-full text-[10px] uppercase tracking-wide">
-                AI SDK · Mock Provider
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={PenLine}
+        title="Compose"
+        subtitle="Generate cover letters and recruiter emails."
+        gradient="from-blue-600 to-indigo-400"
+        shadow="shadow-blue-500/25"
+      />
 
       <div className="grid gap-6 lg:grid-cols-[1fr,1.2fr]">
         {/* Left Panel — Shared Inputs */}

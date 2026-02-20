@@ -28,6 +28,7 @@ import { useResumeStore } from "@/lib/store/resume-store";
 import { useJobStore } from "@/lib/store/job-store";
 import { JobCategory } from "@/lib/jobs/types";
 import type { EasyApplyEvent } from "@/lib/ai/schemas";
+import { PageHeader } from "@/components/app/page-header";
 
 type BeastPhase = "configure" | "processing" | "done";
 
@@ -205,7 +206,7 @@ export default function BeastModePage() {
                 break;
               case "done":
                 // Create application in store
-                const newResumeId = `resume-beast-${Date.now()}-${i}`;
+                const newResumeId = crypto.randomUUID();
                 addResume({
                   ...selectedResume,
                   id: newResumeId,
@@ -215,7 +216,7 @@ export default function BeastModePage() {
                 });
 
                 addApplication({
-                  id: `app-beast-${Date.now()}-${i}`,
+                  id: crypto.randomUUID(),
                   jobId: job.id,
                   job,
                   resumeId: newResumeId,
@@ -298,27 +299,15 @@ export default function BeastModePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-600 to-pink-400 shadow-lg shadow-rose-500/25">
-            <Zap className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">
-              Beast Mode
-            </h1>
-            <p className="text-muted-foreground">
-              Bulk apply to multiple jobs with AI-tailored resumes and cover
-              letters.
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      <PageHeader
+        icon={Zap}
+        title="Beast Mode"
+        subtitle="Bulk apply to multiple jobs with AI-tailored resumes and cover letters."
+        gradient="from-rose-600 to-pink-400"
+        shadow="shadow-rose-500/25"
+      />
 
       <AnimatePresence mode="wait">
         {/* ─── CONFIGURE ─── */}
@@ -536,6 +525,7 @@ export default function BeastModePage() {
                             <Checkbox
                               checked={isSelected}
                               onCheckedChange={() => toggleJob(job.id)}
+                              onClick={(e) => e.stopPropagation()}
                               className="shrink-0"
                             />
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-700 to-slate-500 dark:from-slate-600 dark:to-slate-400 font-display text-xs font-bold text-white shadow-sm">

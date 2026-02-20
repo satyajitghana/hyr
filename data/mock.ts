@@ -2,11 +2,11 @@ import { Resume } from "@/lib/resume/types";
 import { Application } from "@/lib/jobs/types";
 import { MOCK_JOBS } from "@/lib/jobs/mock-data";
 
-export const MOCK_DATA_VERSION = 4;
+export const MOCK_DATA_VERSION = 5;
 
 export const SAMPLE_RESUMES: Resume[] = [
   {
-    id: "sample-1",
+    id: "9c5d2d5e-88c4-40e6-a7a2-b1204e1b8900",
     name: "Senior Product Engineer Resume",
     contact: {
       name: "Alex Johnson",
@@ -20,7 +20,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       "Product-minded full-stack engineer with 7+ years of experience building SaaS platforms from zero-to-one and scaling mature products to millions of sessions per month. I partner deeply with product, design, and GTM teams to prioritize high-impact bets, instrument outcomes, and ship polished features that move conversion, retention, and revenue. Strong background in TypeScript, React, Node.js, and cloud infrastructure with a focus on performance, reliability, and maintainable architecture.",
     experience: [
       {
-        id: "exp-1",
+        id: "b9e7f8d0-a2c3-4b51-9a4e-1d3c8f0e2b45",
         title: "Senior Software Engineer",
         company: "TechCorp",
         location: "San Francisco, CA",
@@ -35,7 +35,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-2",
+        id: "c3d8f1a2-b5e6-4c72-8b3f-2a4d9e1c3b56",
         title: "Software Engineer",
         company: "StartupXYZ",
         location: "Remote",
@@ -49,7 +49,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-3",
+        id: "d4f9a2b3-c6e7-4d83-9c4a-3b5e0f2d4c67",
         title: "Junior Developer",
         company: "WebAgency",
         location: "New York, NY",
@@ -62,7 +62,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-4",
+        id: "e5a0b3c4-d7f8-4e94-ad5b-4c6f1a3e5d78",
         title: "Software Engineering Intern",
         company: "Atlassian",
         location: "San Francisco, CA",
@@ -77,7 +77,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     ],
     education: [
       {
-        id: "edu-1",
+        id: "b0d5e8f9-a2c3-4b83-96a4-9f1c6d8b0a23",
         degree: "B.S. Computer Science",
         school: "University of California, Berkeley",
         location: "Berkeley, CA",
@@ -104,7 +104,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     updatedAt: "2026-02-10T14:30:00Z",
   },
   {
-    id: "sample-2",
+    id: "3b54d1c4-9f4a-47b3-8d29-f7c842e9d0a1",
     name: "Product Resume",
     contact: {
       name: "Priya Patel",
@@ -117,7 +117,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       "Product-focused engineer with 6 years of experience building customer-facing workflows in fintech and collaboration software. Experienced at translating ambiguous customer pain points into roadmap-ready specs, then delivering well-instrumented features with measurable impact. Known for crisp communication, thoughtful design-system contributions, and strong ownership from discovery through launch.",
     experience: [
       {
-        id: "exp-p1",
+        id: "f6b1c4d5-e8a9-4fa5-be6c-5d7a2b4f6e89",
         title: "Software Engineer II",
         company: "Stripe",
         location: "San Francisco, CA",
@@ -131,7 +131,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-p2",
+        id: "a7c2d5e6-f9b0-4ab6-8f7d-6e8b3c5a7f90",
         title: "Frontend Engineer",
         company: "Figma",
         location: "San Francisco, CA",
@@ -145,7 +145,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-p3",
+        id: "b8d3e6f7-a0c1-4bc7-9a8e-7f9c4d6b8a01",
         title: "Product Engineer",
         company: "Asana",
         location: "San Francisco, CA",
@@ -160,7 +160,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     ],
     education: [
       {
-        id: "edu-p1",
+        id: "c1e6f9a0-b3d4-4c94-a7b5-0a2d7e9c1b34",
         degree: "B.S. Computer Science",
         school: "Stanford University",
         location: "Stanford, CA",
@@ -185,7 +185,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     updatedAt: "2026-02-12T09:00:00Z",
   },
   {
-    id: "sample-3",
+    id: "a2f3e8d7-b1c6-4d59-9e4a-c7830b2f6d12",
     name: "Backend Resume",
     contact: {
       name: "Marcus Chen",
@@ -199,7 +199,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       "Backend engineer specializing in distributed systems and cloud infrastructure with 6+ years of experience. Built and maintained services handling millions of requests per second at Amazon-scale. Passionate about reliability, observability, and developer productivity.",
     experience: [
       {
-        id: "exp-m1",
+        id: "c9e4f7a8-b1d2-4cd8-ab9f-8a0d5e7c9b12",
         title: "Senior Software Engineer",
         company: "Amazon",
         location: "Seattle, WA",
@@ -213,7 +213,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-m2",
+        id: "d0f5a8b9-c2e3-4de9-bc0a-9b1e6f8d0c23",
         title: "Backend Engineer",
         company: "Datadog",
         location: "New York, NY",
@@ -226,7 +226,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-m3",
+        id: "e1a6b9c0-d3f4-4efa-9d1b-0c2f7a9e1d34",
         title: "Software Engineer",
         company: "Cloudflare",
         location: "San Francisco, CA",
@@ -239,7 +239,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-m4",
+        id: "f2b7c0d1-e4a5-4f0b-ae2c-1d3a8b0f2e45",
         title: "Site Reliability Engineer",
         company: "Twilio",
         location: "Remote",
@@ -254,14 +254,14 @@ export const SAMPLE_RESUMES: Resume[] = [
     ],
     education: [
       {
-        id: "edu-m1",
+        id: "d2f7a0b1-c4e5-4da5-b8c6-1b3e8f0d2c45",
         degree: "M.S. Computer Science",
         school: "University of Washington",
         location: "Seattle, WA",
         graduationDate: "2018-06",
       },
       {
-        id: "edu-m2",
+        id: "e3a8b1c2-d5f6-4eb6-89d7-2c4f9a1e3d56",
         degree: "B.S. Computer Engineering",
         school: "Georgia Institute of Technology",
         location: "Atlanta, GA",
@@ -291,7 +291,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     updatedAt: "2026-02-14T16:00:00Z",
   },
   {
-    id: "sample-4",
+    id: "7e4a9f3b-d2c8-4a61-b305-8e971c4d0a23",
     name: "Marketing Resume",
     contact: {
       name: "Sarah Kim",
@@ -304,7 +304,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       "Strategic brand and growth marketing leader with 8+ years of experience launching integrated campaigns across retail, social, and lifecycle channels. Combines consumer research with creative execution to build durable brand narratives and measurable business outcomes. Comfortable owning multimillion-dollar budgets, agency partnerships, and cross-functional launch programs from strategy to postmortem.",
     experience: [
       {
-        id: "exp-s1",
+        id: "a3c8d1e2-f5b6-4a1c-8f3d-2e4b9c1a3f56",
         title: "Senior Brand Manager",
         company: "Nike",
         location: "Portland, OR",
@@ -318,7 +318,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-s2",
+        id: "b4d9e2f3-a6c7-4b2d-904e-3f5c0d2b4a67",
         title: "Content Marketing Manager",
         company: "HubSpot",
         location: "Remote",
@@ -331,7 +331,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-s3",
+        id: "c5e0f3a4-b7d8-4c3e-a15f-4a6d1e3c5b78",
         title: "Marketing Coordinator",
         company: "Coca-Cola",
         location: "Atlanta, GA",
@@ -344,7 +344,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-s4",
+        id: "d6f1a4b5-c8e9-4d4f-b260-5b7e2f4d6c89",
         title: "Marketing Intern",
         company: "Airbnb",
         location: "San Francisco, CA",
@@ -359,7 +359,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     ],
     education: [
       {
-        id: "edu-s1",
+        id: "f4b9c2d3-e6a7-4fc7-9a08-3d5a0b2f4e67",
         degree: "B.A. Marketing & Communications",
         school: "University of Michigan",
         location: "Ann Arbor, MI",
@@ -387,7 +387,7 @@ export const SAMPLE_RESUMES: Resume[] = [
     updatedAt: "2026-02-15T11:00:00Z",
   },
   {
-    id: "sample-5",
+    id: "5d8b7a3e-f1c9-4b72-a4e6-9d852f6c1b34",
     name: "Finance Resume",
     contact: {
       name: "James Wright",
@@ -400,7 +400,7 @@ export const SAMPLE_RESUMES: Resume[] = [
       "CPA-certified financial analyst with 5+ years of experience in investment banking, financial modeling, and corporate finance. Expert in M&A deal analysis, financial due diligence, and client advisory. Strong track record of delivering actionable insights to C-suite executives.",
     experience: [
       {
-        id: "exp-j1",
+        id: "e7a2b5c6-d9f0-4e50-b371-6c8f3a5e7d90",
         title: "Senior Financial Analyst",
         company: "Goldman Sachs",
         location: "New York, NY",
@@ -414,7 +414,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-j2",
+        id: "f8b3c6d7-e0a1-4f61-8482-7d9a4b6f8e01",
         title: "Financial Analyst",
         company: "J.P. Morgan",
         location: "New York, NY",
@@ -427,7 +427,7 @@ export const SAMPLE_RESUMES: Resume[] = [
         ],
       },
       {
-        id: "exp-j3",
+        id: "a9c4d7e8-f1b2-4a72-a593-8e0b5c7a9f12",
         title: "Audit Associate",
         company: "Deloitte",
         location: "Chicago, IL",
@@ -441,14 +441,14 @@ export const SAMPLE_RESUMES: Resume[] = [
     ],
     education: [
       {
-        id: "edu-j1",
+        id: "a5c0d3e4-f7b8-4ad8-ab19-4e6b1c3a5f78",
         degree: "M.B.A. Finance",
         school: "Columbia Business School",
         location: "New York, NY",
         graduationDate: "2023-05",
       },
       {
-        id: "edu-j2",
+        id: "b6d1e4f5-a8c9-4be9-bc2a-5f7c2d4b6a89",
         degree: "B.S. Accounting",
         school: "University of Illinois",
         location: "Champaign, IL",
@@ -482,7 +482,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-1",
     jobId: "1",
     job: MOCK_JOBS.find((j) => j.id === "1")!,
-    resumeId: "sample-1",
+    resumeId: "9c5d2d5e-88c4-40e6-a7a2-b1204e1b8900",
     resumeName: "My Resume",
     status: "interview",
     appliedDate: "2026-01-28T10:00:00Z",
@@ -493,7 +493,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-2",
     jobId: "2",
     job: MOCK_JOBS.find((j) => j.id === "2")!,
-    resumeId: "sample-2",
+    resumeId: "3b54d1c4-9f4a-47b3-8d29-f7c842e9d0a1",
     resumeName: "Product Resume",
     status: "screening",
     appliedDate: "2026-02-05T10:00:00Z",
@@ -504,7 +504,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-3",
     jobId: "10",
     job: MOCK_JOBS.find((j) => j.id === "10")!,
-    resumeId: "sample-1",
+    resumeId: "9c5d2d5e-88c4-40e6-a7a2-b1204e1b8900",
     resumeName: "My Resume",
     status: "applied",
     appliedDate: "2026-02-14T10:00:00Z",
@@ -515,7 +515,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-4",
     jobId: "14",
     job: MOCK_JOBS.find((j) => j.id === "14")!,
-    resumeId: "sample-2",
+    resumeId: "3b54d1c4-9f4a-47b3-8d29-f7c842e9d0a1",
     resumeName: "Product Resume",
     status: "offer",
     appliedDate: "2026-01-15T10:00:00Z",
@@ -526,7 +526,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-5",
     jobId: "5",
     job: MOCK_JOBS.find((j) => j.id === "5")!,
-    resumeId: "sample-3",
+    resumeId: "a2f3e8d7-b1c6-4d59-9e4a-c7830b2f6d12",
     resumeName: "Backend Resume",
     status: "rejected",
     appliedDate: "2026-01-20T10:00:00Z",
@@ -538,7 +538,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-6",
     jobId: "6",
     job: MOCK_JOBS.find((j) => j.id === "6")!,
-    resumeId: "sample-3",
+    resumeId: "a2f3e8d7-b1c6-4d59-9e4a-c7830b2f6d12",
     resumeName: "Backend Resume",
     status: "interview",
     appliedDate: "2026-02-01T10:00:00Z",
@@ -549,7 +549,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-7",
     jobId: "15",
     job: MOCK_JOBS.find((j) => j.id === "15")!,
-    resumeId: "sample-1",
+    resumeId: "9c5d2d5e-88c4-40e6-a7a2-b1204e1b8900",
     resumeName: "My Resume",
     status: "applied",
     appliedDate: "2026-02-15T10:00:00Z",
@@ -561,7 +561,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-8",
     jobId: "18",
     job: MOCK_JOBS.find((j) => j.id === "18")!,
-    resumeId: "sample-5",
+    resumeId: "5d8b7a3e-f1c9-4b72-a4e6-9d852f6c1b34",
     resumeName: "Finance Resume",
     status: "screening",
     appliedDate: "2026-02-12T10:00:00Z",
@@ -572,7 +572,7 @@ export const SAMPLE_APPLICATIONS: Application[] = [
     id: "app-seed-9",
     jobId: "20",
     job: MOCK_JOBS.find((j) => j.id === "20")!,
-    resumeId: "sample-4",
+    resumeId: "7e4a9f3b-d2c8-4a61-b305-8e971c4d0a23",
     resumeName: "Marketing Resume",
     status: "interview",
     appliedDate: "2026-02-08T10:00:00Z",

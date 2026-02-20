@@ -18,9 +18,6 @@ import {
   CheckCheck,
   XCircle,
   ChevronDown,
-  Search,
-  Briefcase,
-  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +33,9 @@ import {
   type TailoredChangeOutput,
 } from "@/lib/ai/schemas";
 import { StreamingChanges } from "@/components/ai/streaming-changes";
+import { HyperText } from "@/components/ui/hyper-text";
+import { toast } from "sonner";
+import { PageHeader } from "@/components/app/page-header";
 
 type Step = "input" | "processing" | "result";
 
@@ -91,12 +91,21 @@ export default function TailorPage() {
   const handleFetchUrl = async () => {
     if (!jobUrl.trim()) return;
     setFetchingUrl(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setJobDescription(
-      `Senior Software Engineer\nTech Company\n\nWe are looking for an experienced engineer to join our team. You will work on building scalable web applications using React, TypeScript, and Node.js. Experience with cloud services (AWS/GCP), CI/CD pipelines, and agile methodologies is required.\n\nRequirements:\n- 5+ years of software engineering experience\n- Strong proficiency in React, TypeScript, and Node.js\n- Experience with cloud infrastructure and DevOps\n- Excellent communication and collaboration skills`
-    );
-    setFetchingUrl(false);
-    setInputTab("description");
+    try {
+      const res = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: jobUrl.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed to fetch");
+      const { markdown } = await res.json();
+      setJobDescription(markdown);
+      setInputTab("description");
+    } catch {
+      toast.error("Could not fetch job description from that URL. Try pasting it manually.");
+    } finally {
+      setFetchingUrl(false);
+    }
   };
 
   const handleTailor = async () => {
@@ -216,7 +225,7 @@ export default function TailorPage() {
 
     const newResume: Resume = {
       ...selectedResume,
-      id: `resume-${Date.now()}`,
+      id: crypto.randomUUID(),
       name: `${selectedResume.name} — Tailored for ${result.jobTitle}`,
       summary: newSummary,
       skills: newSkills,
@@ -290,31 +299,15 @@ export default function TailorPage() {
   }, [result]);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-lg shadow-violet-500/25">
-            <Wand2 className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">
-              Tailor Resume
-            </h1>
-            <p className="text-muted-foreground">
-              AI-powered resume optimization for any job description.
-            </p>
-            <div className="mt-2">
-              <Badge variant="secondary" className="rounded-full text-[10px] uppercase tracking-wide">
-                AI SDK · Mock Provider
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      <PageHeader
+        icon={Wand2}
+        title="Tailor Resume"
+        subtitle="AI-powered resume optimization for any job description."
+        gradient="from-violet-600 to-purple-400"
+        shadow="shadow-violet-500/25"
+      />
 
       <AnimatePresence mode="wait">
         {/* ─── INPUT STEP ─── */}
@@ -480,22 +473,16 @@ export default function TailorPage() {
             <Card className="border-violet-500/20">
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-center gap-4 mb-2">
-                  <motion.div
-                    animate={isTailoring ? { rotate: 360 } : {}}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-lg shadow-violet-500/25"
-                  >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-400 shadow-lg shadow-violet-500/25">
                     <Sparkles className="h-6 w-6 text-white" />
-                  </motion.div>
+                  </div>
                   <div className="flex-1">
                     <h2 className="font-display text-lg font-bold">
-                      {displayScore
-                        ? "Tailoring Complete"
-                        : "Tailoring Your Resume..."}
+                      {displayScore ? (
+                        "Tailoring Complete"
+                      ) : (
+                        <HyperText className="font-display text-lg font-bold" animateOnHover={false}>Tailoring Your Resume...</HyperText>
+                      )}
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       {displayJobTitle && displayCompany
@@ -529,12 +516,10 @@ export default function TailorPage() {
                     {extractionDone ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Search className="h-4 w-4 text-violet-500" />
-                      </motion.div>
+                      <span className="relative flex h-4 w-4 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-50" />
+                        <span className="relative inline-flex h-4 w-4 rounded-full bg-violet-500" />
+                      </span>
                     )}
                     <span className={extractionDone ? "text-green-600 dark:text-green-400" : "text-violet-600 dark:text-violet-400"}>
                       Extract job details
@@ -545,14 +530,14 @@ export default function TailorPage() {
                     {displayChanges && displayChanges.length > 0 ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : extractionDone ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Briefcase className="h-4 w-4 text-violet-500" />
-                      </motion.div>
+                      <span className="relative flex h-4 w-4 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-50" />
+                        <span className="relative inline-flex h-4 w-4 rounded-full bg-violet-500" />
+                      </span>
                     ) : (
-                      <Briefcase className="h-4 w-4 text-muted-foreground/40" />
+                      <span className="relative flex h-4 w-4 shrink-0">
+                        <span className="relative inline-flex h-4 w-4 rounded-full bg-muted-foreground/20" />
+                      </span>
                     )}
                     <span className={
                       displayChanges && displayChanges.length > 0
@@ -569,14 +554,14 @@ export default function TailorPage() {
                     {displayScore ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />
                     ) : displayChanges && displayChanges.length > 0 ? (
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                      >
-                        <Cpu className="h-4 w-4 text-violet-500" />
-                      </motion.div>
+                      <span className="relative flex h-4 w-4 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-500 opacity-50" />
+                        <span className="relative inline-flex h-4 w-4 rounded-full bg-violet-500" />
+                      </span>
                     ) : (
-                      <Cpu className="h-4 w-4 text-muted-foreground/40" />
+                      <span className="relative flex h-4 w-4 shrink-0">
+                        <span className="relative inline-flex h-4 w-4 rounded-full bg-muted-foreground/20" />
+                      </span>
                     )}
                     <span className={
                       displayScore

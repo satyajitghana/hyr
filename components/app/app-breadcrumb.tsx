@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Slash } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,6 +16,7 @@ const routeLabels: Record<string, string> = {
   app: "Dashboard",
   resume: "Resumes",
   tailor: "Tailor",
+  compose: "Compose",
   jobs: "Jobs",
   applications: "Applications",
   "beast-mode": "Beast Mode",
@@ -25,10 +27,8 @@ export function AppBreadcrumb() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
-  // Remove the (app) group segment and the first "app" segment
-  const relevantSegments = segments.filter(
-    (s) => s !== "(app)"
-  );
+  // Remove the (app) group segment
+  const relevantSegments = segments.filter((s) => s !== "(app)");
 
   // Build breadcrumb items
   const items: { label: string; href?: string }[] = [];
@@ -37,14 +37,21 @@ export function AppBreadcrumb() {
     const segment = relevantSegments[i];
     const isLast = i === relevantSegments.length - 1;
 
-    // Skip UUID-like segments and just show them as their parent
-    if (segment.match(/^(sample-|resume-|app-|\d+$)/)) {
-      items.push({ label: `#${segment}` });
+    // Skip UUID segments and pure numeric IDs (job IDs) — show parent label only
+    if (
+      segment.match(
+        /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$|\d+$)/
+      )
+    ) {
       continue;
     }
 
-    const label = routeLabels[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
-    const href = isLast ? undefined : "/" + relevantSegments.slice(0, i + 1).join("/");
+    const label =
+      routeLabels[segment] ||
+      segment.charAt(0).toUpperCase() + segment.slice(1);
+    const href = isLast
+      ? undefined
+      : "/" + relevantSegments.slice(0, i + 1).join("/");
     items.push({ label, href });
   }
 
@@ -66,10 +73,16 @@ export function AppBreadcrumb() {
       <BreadcrumbList>
         {items.map((item, idx) => (
           <React.Fragment key={idx}>
-            {idx > 0 && <BreadcrumbSeparator />}
+            {idx > 0 && (
+              <BreadcrumbSeparator>
+                <Slash />
+              </BreadcrumbSeparator>
+            )}
             <BreadcrumbItem>
               {item.href ? (
-                <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                <BreadcrumbLink href={item.href}>
+                  {item.label}
+                </BreadcrumbLink>
               ) : (
                 <BreadcrumbPage>{item.label}</BreadcrumbPage>
               )}

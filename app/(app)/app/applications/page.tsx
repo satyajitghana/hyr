@@ -1,29 +1,37 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
   ClipboardList,
-  Calendar,
   Clock,
   TrendingUp,
   Send,
   CheckCircle2,
   MoreVertical,
-  Check,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NumberTicker } from "@/components/ui/number-ticker";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  createColumnHelper,
+} from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useJobStore } from "@/lib/store/job-store";
-import { Application } from "@/lib/jobs/types";
+import type { Application } from "@/lib/jobs/types";
 import Link from "next/link";
+import { PageHeader } from "@/components/app/page-header";
 
 const statusConfig: Record<
   string,
@@ -56,6 +64,8 @@ const statusOrder: Application["status"][] = ["applied", "screening", "interview
 
 export default function ApplicationsPage() {
   const { applications, updateApplicationStatus } = useJobStore();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const stats = {
     total: applications.length,
@@ -73,19 +83,123 @@ export default function ApplicationsPage() {
         : 0,
   };
 
+  const columnHelper = createColumnHelper<Application>();
+
+  const columns = [
+    columnHelper.display({
+      id: "company",
+      header: "Company",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-display text-xs font-bold text-primary">
+            {row.original.job.company[0]}
+          </div>
+          <span className="font-medium text-sm">{row.original.job.company}</span>
+        </div>
+      ),
+    }),
+    columnHelper.display({
+      id: "title",
+      header: "Job Title",
+      cell: ({ row }) => (
+        <Link href={`/app/jobs/${row.original.jobId}`} className="text-sm hover:text-primary transition-colors">
+          {row.original.job.title}
+        </Link>
+      ),
+    }),
+    columnHelper.accessor("status", {
+      header: "Status",
+      cell: (info) => {
+        const cfg = statusConfig[info.getValue()];
+        return (
+          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cfg.bg} ${cfg.color}`}>
+            {cfg.label}
+          </span>
+        );
+      },
+    }),
+    columnHelper.accessor("appliedDate", {
+      header: "Applied",
+      cell: (info) => (
+        <span className="text-sm text-muted-foreground">
+          {new Date(info.getValue()).toLocaleDateString()}
+        </span>
+      ),
+    }),
+    columnHelper.accessor("autoApplied", {
+      header: "",
+      cell: (info) => info.getValue() ? (
+        <Badge variant="secondary" className="text-xs">Auto</Badge>
+      ) : null,
+    }),
+    columnHelper.display({
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-7 w-7">
+              <MoreVertical className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            {statusOrder.map((s) => (
+              <DropdownMenuItem
+                key={s}
+                onClick={() => updateApplicationStatus(row.original.id, s)}
+                className={row.original.status === s ? "font-medium" : ""}
+              >
+                {statusConfig[s].label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    }),
+  ] as ColumnDef<Application>[];
+
+  const table = useReactTable({
+    data: applications,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-12 w-12 rounded-2xl shrink-0" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2"><Skeleton className="h-4 w-24" /></CardHeader>
+              <CardContent><Skeleton className="h-8 w-16" /></CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="font-display text-3xl font-bold tracking-tight">
-          Applications
-        </h1>
-        <p className="mt-1 text-muted-foreground">
-          Track all your job applications in one place.
-        </p>
-      </motion.div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={ClipboardList}
+        title="Applications"
+        subtitle="Track all your job applications in one place."
+        gradient="from-amber-600 to-yellow-400"
+        shadow="shadow-amber-500/25"
+      />
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -144,98 +258,47 @@ export default function ApplicationsPage() {
           </Link>
         </motion.div>
       ) : (
-        <>
-          {/* Kanban Board */}
-          <div className="grid gap-4 md:grid-cols-5">
-            {statusOrder.map((status) => {
-              const config = statusConfig[status];
-              const apps = applications.filter((a) => a.status === status);
-
-              return (
-                <div key={status}>
-                  <div className="mb-3 flex items-center justify-between">
-                    <h3 className={`text-sm font-semibold ${config.color}`}>
-                      {config.label}
-                    </h3>
-                    <Badge variant="secondary" className="text-xs">
-                      {apps.length}
-                    </Badge>
-                  </div>
-                  <div className="space-y-3">
-                    {apps.map((app) => (
-                      <motion.div
-                        key={app.id}
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        layout
-                      >
-                        <Card className="transition-all hover:shadow-md hover:border-primary/20">
-                          <CardContent className="p-3">
-                            <div className="flex items-start justify-between mb-2">
-                              <Link href={`/app/jobs/${app.jobId}`} className="flex items-center gap-2 min-w-0 flex-1">
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 font-display text-xs font-bold text-primary">
-                                  {app.job.company[0]}
-                                </div>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-semibold truncate hover:text-primary transition-colors">
-                                    {app.job.title}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {app.job.company}
-                                  </p>
-                                </div>
-                              </Link>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-                                    <MoreVertical className="h-3.5 w-3.5" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-40">
-                                  {statusOrder.map((s) => (
-                                    <DropdownMenuItem
-                                      key={s}
-                                      onClick={() => updateApplicationStatus(app.id, s)}
-                                      className="capitalize"
-                                    >
-                                      {app.status === s && (
-                                        <Check className="mr-2 h-3.5 w-3.5" />
-                                      )}
-                                      <span className={app.status === s ? "font-medium" : "ml-5.5"}>
-                                        {statusConfig[s].label}
-                                      </span>
-                                    </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(app.appliedDate).toLocaleDateString()}
-                            </div>
-                            {app.autoApplied && (
-                              <Badge
-                                variant="secondary"
-                                className="mt-2 text-xs gap-1"
-                              >
-                                Auto-applied
-                              </Badge>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </motion.div>
+        <div className="rounded-lg border overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50 border-b">
+              <tr>
+                {table.getFlatHeaders().map(header => (
+                  <th key={header.id} className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {statusOrder.map((status) => {
+                const statusRows = table.getRowModel().rows.filter(r => r.original.status === status);
+                if (statusRows.length === 0) return null;
+                const cfg = statusConfig[status];
+                return (
+                  <React.Fragment key={status}>
+                    <tr className="bg-muted/20 border-t">
+                      <td colSpan={columns.length} className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-semibold ${cfg.color}`}>{cfg.label}</span>
+                          <Badge variant="secondary" className="text-xs h-4 px-1.5">{statusRows.length}</Badge>
+                        </div>
+                      </td>
+                    </tr>
+                    {statusRows.map(row => (
+                      <tr key={row.id} className="border-t border-border/40 hover:bg-muted/30 transition-colors">
+                        {row.getVisibleCells().map(cell => (
+                          <td key={cell.id} className="px-4 py-3">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                    {apps.length === 0 && (
-                      <p className="text-center text-xs text-muted-foreground py-6">
-                        No applications
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

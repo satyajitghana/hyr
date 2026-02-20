@@ -240,7 +240,7 @@ export default function JobDetailPage({
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       {/* Back nav */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}

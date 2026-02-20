@@ -6,17 +6,8 @@ import { AppBreadcrumb } from "@/components/app/app-breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { PdfWorkerProvider } from "@/components/providers/pdf-worker-provider";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
-import { usePathname } from "next/navigation";
-
-const mockAiPages = ["/app/tailor", "/app/compose", "/app/resume", "/app/jobs"];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const safePathname = pathname ?? "";
-  const isMockAiPage = mockAiPages.some((route) => safePathname.startsWith(route));
-
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -28,12 +19,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <Separator orientation="vertical" className="mr-2 h-4" />
               <AppBreadcrumb />
             </div>
-            {isMockAiPage && (
-              <Badge variant="secondary" className="hidden gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide md:inline-flex">
-                <Sparkles className="h-3 w-3" />
-                AI SDK · Mock Provider
-              </Badge>
-            )}
             <div className="ml-auto flex items-center gap-2">
               <ThemeToggle />
             </div>
