@@ -69,10 +69,13 @@ for (const name of [
   } catch { /* precomputed file not found – silently skip */ }
 }
 
-// ── Renderer warmup: render a minimal ResumePDF at module startup ──
-// Uses the actual component so fonts, Yoga layout, Canvas, and PDFKit are all
-// pre-warmed before the first real request arrives.
-void (async () => {
+// ── Renderer warmup ──
+// Stored as a module-level Promise so the handler can await it.
+// This serialises the warmup render and the first real render — they never run
+// concurrently. @react-pdf/renderer shares internal state (Yoga WASM init,
+// font store) that deadlocks when two renderToBuffer() calls overlap, causing
+// the Vercel function to hang for the full 300 s timeout.
+const warmupPromise: Promise<void> = (async () => {
   try {
     const warmupResume = {
       id: "_warmup",
@@ -99,6 +102,11 @@ void (async () => {
 
 // ── Route handler ──
 export async function POST(req: Request) {
+  // Ensure warmup render has completed before starting the real render.
+  // Awaiting a resolved Promise is a no-op, so this only blocks the very
+  // first request (while warmup is in progress).
+  await warmupPromise;
+
   try {
     const body = await req.json();
     const resume = resumeInputSchema.parse(body.resume);
